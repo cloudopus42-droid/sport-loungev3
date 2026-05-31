@@ -50,22 +50,22 @@ async function main() {
   console.log(`✅ Found Render Owner ID: ${ownerId} (${owners[0].owner.name})`);
 
   // 2. Check if the Render service already exists
-  console.log('2. Checking if service "sport-lounge-backend" already exists on Render...');
+  console.log('2. Checking if service "sport-loungev3" already exists on Render...');
   const services = curlRequest('GET', '/services?limit=50');
 
-  let service = services.find(s => s.service.name === 'sport-lounge-backend');
+  let service = services.find(s => s.service.name === 'sport-loungev3');
   let serviceId = '';
   let renderUrl = '';
 
   if (service) {
     serviceId = service.service.id;
     renderUrl = service.service.url;
-    console.log(`✅ Service "sport-lounge-backend" already exists. ID: ${serviceId}, URL: ${renderUrl}`);
+    console.log(`✅ Service "sport-loungev3" already exists. ID: ${serviceId}, URL: ${renderUrl}`);
   } else {
-    console.log('➕ Creating new Web Service "sport-lounge-backend" on Render...');
+    console.log('➕ Creating new Web Service "sport-loungev3" on Render...');
     const createBody = {
       type: 'web_service',
-      name: 'sport-lounge-backend',
+      name: 'sport-loungev3',
       ownerId: ownerId,
       repo: GITHUB_REPO,
       branch: 'main',
