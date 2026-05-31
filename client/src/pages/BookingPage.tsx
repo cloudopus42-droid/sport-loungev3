@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QrCode, Send, Award, Flame, Gauge, MessageSquare, X, Share2 } from 'lucide-react';
+import { Send, Award, Flame, Gauge, MessageSquare, X, Share2 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { showToast } from '@/components/NotificationToast';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,7 +23,7 @@ const LIQUID_BASES = [
 ];
 
 export function BookingPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [hookahMix, setHookahMix] = useState<string[]>([]);
   const [mixPercentages, setMixPercentages] = useState<Record<string, number>>({});
@@ -185,6 +185,11 @@ export function BookingPage() {
       return;
     }
 
+    if (!phone || phone.trim().length < 5) {
+      showToast('Пожалуйста, укажите контактный телефон для заказа!', 'error');
+      return;
+    }
+
     setLoading(true);
     try {
       const mixString = hookahMix.map(name => `${name} (${mixPercentages[name] || 0}%)`).join(', ');
@@ -197,36 +202,35 @@ export function BookingPage() {
         mix: mixString,
         price: totalPrice,
         comment: comment || 'Без комментариев',
-        phone: phone || 'Не указан',
+        phone: phone,
         ticketId: `MIX-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`
       };
 
-      // If authenticated, save the mix in the background
-      if (isAuthenticated) {
-        try {
-          await api.post('/api/bookings', {
-            seatId: recipeData.ticketId,
-            seatLabel: 'Микс-билет',
-            seatZone: 'hall',
-            date: new Date().toISOString().slice(0, 10),
-            time: new Date().toTimeString().slice(0, 5),
-            guestsCount: 1,
-            phone: phone || '79991234567',
-            hookahMix: `${selectedBowl.name} | ${selectedBase.name} | Mix: ${mixString}`,
-            hookahStrength,
-            hookahCount: 1,
-            comment: comment || undefined,
-          });
-        } catch (dbErr) {
-          console.warn('Could not save mix booking to server:', dbErr);
-        }
-      }
+      // Submit public mix order directly
+      await api.post('/api/bookings/public-mix', {
+        bowl: selectedBowl.name,
+        base: selectedBase.name,
+        strength: strengthLabel,
+        mix: mixString,
+        price: totalPrice,
+        phone: phone,
+        comment: comment || undefined,
+        ticketId: recipeData.ticketId,
+        userId: user?.id,
+        userName: user?.name,
+      });
 
       setTicketData(recipeData);
       setShowTicket(true);
-      showToast('Билет микса успешно сгенерирован!', 'success');
-    } catch (err) {
-      showToast('Ошибка при генерации билета', 'error');
+      
+      // Play a beautiful success sound
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
+      audio.volume = 0.45;
+      audio.play().catch(() => {});
+
+      showToast('Заказ оформлен! Мастер уже готовит ваш кальян! 💨', 'success');
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Ошибка при отправке заказа', 'error');
     } finally {
       setLoading(false);
     }
@@ -452,7 +456,7 @@ export function BookingPage() {
                 </select>
               </div>
 
-              {/* Optional Phone */}
+              {/* Phone Input (Required) */}
               <div>
                 <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
                   📞 Телефон для связи
@@ -463,8 +467,9 @@ export function BookingPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+7 (999) 123-45-67"
                   className="glass-input text-sm"
+                  required
                 />
-                <p className="text-[9px] text-white/30 mt-0.5">Необязательно. Помогает сохранить билет в ваш профиль.</p>
+                <p className="text-[9px] text-white/30 mt-0.5">Обязательно. Помогает кальянному мастеру идентифицировать ваш заказ.</p>
               </div>
 
               {/* Comment */}
@@ -506,7 +511,7 @@ export function BookingPage() {
                 whileTap={{ scale: 0.98 }}
                 disabled={loading}
               >
-                <QrCode className="w-4 h-4 text-accent-gold" /> {loading ? 'Генерация...' : 'Получить QR-код'}
+                <Flame className="w-4 h-4 text-accent-gold" /> {loading ? 'Отправка...' : 'Заказать микс'}
               </motion.button>
 
               {!isAuthenticated && (
@@ -550,15 +555,17 @@ export function BookingPage() {
                 <span className="text-[9px] uppercase tracking-[0.25em] text-accent-gold font-bold block mb-1">Sport Lounge Recipe Ticket</span>
                 <h3 className="text-lg font-display font-semibold text-[#F4E4C4] leading-none">{ticketData.ticketId}</h3>
                 
-                {/* QR Code fetched dynamically */}
-                <div className="w-48 h-48 mx-auto bg-white p-2.5 rounded-2xl flex items-center justify-center shadow-glow-gold/15 my-4">
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                      `Id:${ticketData.ticketId}\nBowl:${ticketData.bowl}\nBase:${ticketData.base}\nStrength:${ticketData.strength}\nMix:${ticketData.mix}\nComment:${ticketData.comment}`
-                    )}`} 
-                    alt="Mix QR Code" 
-                    className="w-full h-full object-contain"
-                  />
+                {/* Elegant Animated Success Chime & Checkmark Graphic */}
+                <div className="flex flex-col items-center justify-center py-4 space-y-2 select-none">
+                  <motion.div 
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1.05, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                    className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/50 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.2)]"
+                  >
+                    <Flame className="w-8 h-8 text-green-400 animate-pulse" />
+                  </motion.div>
+                  <span className="text-xs uppercase tracking-wider text-green-400 font-bold mt-2 block">Заказ отправлен мастеру!</span>
                 </div>
 
                 <div className="text-left space-y-2 bg-[#120f0c] p-4 rounded-2xl border border-glass-border/30 text-xs">
@@ -592,7 +599,7 @@ export function BookingPage() {
                 </div>
 
                 <p className="text-[10px] text-white/35 leading-tight max-w-xs mx-auto">
-                  Сфотографируйте билет или покажите QR-код вашему кальянному мастеру. Мастер приготовит микс в точности с вашим рецептом.
+                  Ваш заказ успешно зарегистрирован! Кальянный мастер уже получил детальное уведомление в Telegram-боте и приступил к сборке и разогреву углей.
                 </p>
 
                 {/* Sharing actions */}
