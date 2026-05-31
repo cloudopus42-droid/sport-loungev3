@@ -13,6 +13,7 @@ import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
+import bowlImage from '@/bowl.png';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -103,6 +104,33 @@ export function MainLayout() {
       <div className="hidden xl:flex fixed right-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-25 select-none">
         <div className="w-[1px] h-32 bg-gradient-to-t from-accent-gold/40 to-transparent" />
         <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr]">PREMIUM 24/7</span>
+      </div>
+
+      {/* Volumetric hookah bowls in bottom corners (smoke origin) */}
+      <div className="hidden md:block fixed bottom-[-15px] left-[-15px] w-28 lg:w-36 z-20 pointer-events-none opacity-50 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.25)]">
+        <img 
+          src={bowlImage} 
+          alt="" 
+          className="w-full h-auto object-contain" 
+          style={{
+            mixBlendMode: 'screen',
+            maskImage: 'linear-gradient(to top, transparent 5%, black 40%)',
+            WebkitMaskImage: 'linear-gradient(to top, transparent 5%, black 40%)'
+          }}
+        />
+      </div>
+      
+      <div className="hidden md:block fixed bottom-[-15px] right-[-15px] w-28 lg:w-36 z-20 pointer-events-none opacity-50 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.25)]">
+        <img 
+          src={bowlImage} 
+          alt="" 
+          className="w-full h-auto object-contain scale-x-[-1]" 
+          style={{
+            mixBlendMode: 'screen',
+            maskImage: 'linear-gradient(to top, transparent 5%, black 40%)',
+            WebkitMaskImage: 'linear-gradient(to top, transparent 5%, black 40%)'
+          }}
+        />
       </div>
       <LuxuryCursor />
       <ParticleEngine />
