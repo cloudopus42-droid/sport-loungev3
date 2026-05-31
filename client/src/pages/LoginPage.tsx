@@ -88,7 +88,7 @@ export function LoginPage() {
         {/* Form */}
         <motion.form
           onSubmit={handleSubmit}
-          className="bg-glass-bg backdrop-blur-glass border border-glass-border rounded-[28px] p-6 space-y-5"
+          className="glass-card p-6 space-y-5"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
