@@ -73,6 +73,22 @@ export function AnalyticsPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>(saved?.inventory || defaultInventory);
   const [editingInventory, setEditingInventory] = useState(false);
 
+  // Liquid glass settings
+  const [blurVal, setBlurVal] = useState(() => Number(localStorage.getItem('glass_blur') || '40'));
+  const [opacityVal, setOpacityVal] = useState(() => Number(localStorage.getItem('glass_opacity') || '0.72'));
+
+  const handleBlurChange = (val: number) => {
+    setBlurVal(val);
+    localStorage.setItem('glass_blur', val.toString());
+    document.documentElement.style.setProperty('--glass-blur', `${val}px`);
+  };
+
+  const handleOpacityChange = (val: number) => {
+    setOpacityVal(val);
+    localStorage.setItem('glass_opacity', val.toString());
+    document.documentElement.style.setProperty('--glass-opacity', val.toString());
+  };
+
   useEffect(() => {
     (async () => {
       try { 
@@ -242,6 +258,44 @@ export function AnalyticsPage() {
                 <label className="text-xs text-white/40 mb-1 block">Средний чек с кальяна (₽)</label>
                 <input type="number" value={hookahPrice} onChange={e => setHookahPrice(Number(e.target.value))}
                   className="glass-input text-sm w-full" />
+              </div>
+            </div>
+
+            {/* Glassmorphism settings */}
+            <div className="border-t border-white/5 pt-3 mt-3 mb-4 space-y-4">
+              <p className="text-xs uppercase tracking-wider text-accent-cyan font-bold">Настройки Жидкого Стекла (Liquid Glass)</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex justify-between items-center mb-1 text-xs">
+                    <span className="text-white/60">Размытие заднего фона (Blur)</span>
+                    <span className="text-accent-cyan font-mono">{blurVal}px</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={blurVal} 
+                    onChange={(e) => handleBlurChange(Number(e.target.value))}
+                    className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1 text-xs">
+                    <span className="text-white/60">Прозрачность стекла (Opacity)</span>
+                    <span className="text-accent-cyan font-mono">{Math.round(opacityVal * 100)}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0.1" 
+                    max="1.0" 
+                    step="0.01"
+                    value={opacityVal} 
+                    onChange={(e) => handleOpacityChange(Number(e.target.value))}
+                    className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
 
