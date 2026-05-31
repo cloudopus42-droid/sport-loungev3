@@ -8,7 +8,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { InvitationBanner } from '@/components/InvitationBanner';
 import { CONTACT } from '@/config/seats';
 import type { Invitation } from '@/types';
-import { LuxuryCursor } from '@/components/ui/LuxuryCursor';
 import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
@@ -101,10 +100,15 @@ export function MainLayout() {
     <div className="min-h-screen pb-16 lg:pb-0 bg-[#080605] text-white relative">
       {/* Volumetric ambient gold fog & depth haze layers */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[#070504]">
-        {/* Dynamic moving radial gold light spots */}
+        {/* Dynamic moving radial gold & neon light spots for Liquid Glass refraction */}
         <div className="absolute top-[-25%] left-[-15%] w-[80%] h-[80%] rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.08)_0%,transparent_70%)] blur-[100px] animate-haze-pulse" style={{ animationDuration: '14s' }} />
         <div className="absolute bottom-[-25%] right-[-15%] w-[85%] h-[85%] rounded-full bg-[radial-gradient(circle,rgba(138,102,35,0.07)_0%,transparent_70%)] blur-[110px] animate-haze-pulse" style={{ animationDuration: '20s' }} />
         <div className="absolute top-[35%] left-[20%] w-[70%] h-[70%] rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.04)_0%,transparent_75%)] blur-[120px]" />
+        
+        {/* Liquid Glass Neon Glow spots */}
+        <div className="absolute top-[10%] left-[60%] w-[55%] h-[55%] rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.18)_0%,transparent_70%)] blur-[120px] animate-haze-pulse" style={{ animationDuration: '18s' }} />
+        <div className="absolute bottom-[15%] left-[5%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(217,70,239,0.16)_0%,transparent_70%)] blur-[110px] animate-haze-pulse" style={{ animationDuration: '16s' }} />
+        <div className="absolute top-[50%] left-[35%] w-[45%] h-[45%] rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.14)_0%,transparent_70%)] blur-[130px] animate-haze-pulse" style={{ animationDuration: '22s' }} />
         
         {/* Ambient smoke/mist overlay */}
         <div className="absolute inset-0 opacity-[0.06] mix-blend-screen bg-[url('https://assets.mixkit.co/videos/preview/mixkit-smoke-in-slow-motion-41814-large.mp4')] bg-cover" />
@@ -355,7 +359,6 @@ export function MainLayout() {
 
 
       </div>
-      <LuxuryCursor />
       <ParticleEngine />
       <ConciergeChat />
       <LuxuryMusicPlayer />
