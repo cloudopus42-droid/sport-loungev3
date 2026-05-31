@@ -449,11 +449,11 @@ export function MainLayout() {
             {/* Float Book Order Pill Button matching reference image perfectly */}
             <NavLink to="/booking">
               <motion.button
-                className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs font-bold text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 rounded-full shadow-gold-pill hover:shadow-glow-gold-lg transition-all flex items-center gap-1.5 border border-yellow-200/35"
+                className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs rounded-full glass-btn-gold shadow-gold-pill hover:shadow-glow-gold-lg transition-all flex items-center gap-1.5"
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
               >
-                <Flame className="w-3.5 h-3.5 text-black" />
+                <Flame className="w-3.5 h-3.5 text-white" />
                 <span>Заказать кальян</span>
               </motion.button>
             </NavLink>
