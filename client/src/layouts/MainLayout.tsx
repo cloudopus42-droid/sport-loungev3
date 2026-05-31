@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Search, Bell, Volume2, VolumeX } from 'lucide-react';
+import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Search, Bell } from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +14,7 @@ import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
 import girlsImage from '../girls.png';
-import speedDialMusic from '../zero-7-speed-dial.mp3';
+import { LuxuryMusicPlayer } from '@/components/ui/LuxuryMusicPlayer';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -72,37 +72,7 @@ export function MainLayout() {
   const rightPath = `M ${rightStart.x} ${rightStart.y} C ${rightStart.x - 220} ${rightStart.y + 220}, ${rightEnd.x + 220} ${rightEnd.y + 220}, ${rightEnd.x} ${rightEnd.y}`;
 
   
-  // Ambient Lounge Player
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const toggleMusic = () => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio(speedDialMusic);
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.10; // 10%
-    }
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play().catch(err => console.log('Audio playback failed', err));
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-    };
-  }, []);
-
-  // Broadcast music play/pause status to canvas particle engine
-  useEffect(() => {
-    const event = new CustomEvent('lounge-music-status', { detail: { isPlaying } });
-    window.dispatchEvent(event);
-  }, [isPlaying]);
+  // Ambient Lounge Player state and audio references are now managed by LuxuryMusicPlayer component
 
   const handleNewInvitation = useCallback((data: Invitation) => {
     setInvitation(data);
@@ -388,6 +358,7 @@ export function MainLayout() {
       <LuxuryCursor />
       <ParticleEngine />
       <ConciergeChat />
+      <LuxuryMusicPlayer />
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Top Luxury Header matching reference image */}
@@ -443,25 +414,7 @@ export function MainLayout() {
               )}
             </nav>
 
-            {/* Premium Ambient Music Player */}
-            <div className="flex items-center gap-2 cursor-pointer p-1.5 px-2.5 rounded-full hover:bg-white/5 transition-all select-none border border-glass-border/30 bg-white/5" onClick={toggleMusic} title="Включить Ambient Lounge">
-              {isPlaying ? (
-                <>
-                  <Volume2 className="w-4 h-4 text-accent-gold animate-pulse animate-duration-1000" />
-                  <div className="flex gap-0.5 items-end h-3 w-4">
-                    <span className="w-0.5 bg-accent-gold soundwave-bar h-[70%] rounded-full" />
-                    <span className="w-0.5 bg-accent-gold soundwave-bar h-[100%] rounded-full animate-delay-200" />
-                    <span className="w-0.5 bg-accent-gold soundwave-bar h-[50%] rounded-full animate-delay-500" />
-                    <span className="w-0.5 bg-accent-gold soundwave-bar h-[80%] rounded-full animate-delay-300" />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <VolumeX className="w-4 h-4 text-white/40" />
-                  <span className="text-[10px] text-white/30 font-medium">Lounge</span>
-                </>
-              )}
-            </div>
+
 
             {/* Notification Bell with animated red badge */}
             <div className="relative cursor-pointer p-2 rounded-full hover:bg-white/5 transition-colors">
