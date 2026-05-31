@@ -13,6 +13,7 @@ import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
+import girlsImage from '../girls.jpg';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -43,22 +44,22 @@ export function MainLayout() {
 
   const { width, height } = dimensions;
 
-  // Calculate centered girls container dimensions to find lips coordinate in screen-space
-  const containerWidth = Math.min(width, 896);
-  const containerHeight = containerWidth * (600 / 1000); // 1000x600 aspect ratio
+  // Calculate centered girls container dimensions to find lips coordinate in screen-space (1:1 aspect ratio)
+  const containerWidth = Math.min(width, 768);
+  const containerHeight = containerWidth;
   const containerLeft = (width - containerWidth) / 2;
   const containerTop = (height - containerHeight) / 2;
 
-  // Left girl's mouth is at 29.5% of container width, 51.6% of container height
+  // Left girl's mouth is at 37% of container width, 44% of container height
   const leftEnd = {
-    x: containerLeft + 0.295 * containerWidth,
-    y: containerTop + 0.516 * containerHeight
+    x: containerLeft + 0.37 * containerWidth,
+    y: containerTop + 0.44 * containerHeight
   };
 
-  // Right girl's mouth is at 69.5% of container width, 51.6% of container height
+  // Right girl's mouth is at 63% of container width, 43% of container height
   const rightEnd = {
-    x: containerLeft + 0.695 * containerWidth,
-    y: containerTop + 0.516 * containerHeight
+    x: containerLeft + 0.63 * containerWidth,
+    y: containerTop + 0.43 * containerHeight
   };
 
   // Large Hookahs are positioned at left-6 (24px) and right-6 (24px).
@@ -112,6 +113,17 @@ export function MainLayout() {
     return () => { socket.off('invitation:published', handleNewInvitation); };
   }, [socket, handleNewInvitation]);
 
+  // Emit user:active heartbeat to socket when authenticated
+  useEffect(() => {
+    if (socket && isAuthenticated && user) {
+      socket.emit('user:active', {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+      });
+    }
+  }, [socket, isAuthenticated, user]);
+
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
@@ -129,88 +141,27 @@ export function MainLayout() {
         {/* 3D WebGL Smoke Render - Drift across entire background */}
         <ThreeSmoke />
 
-        {/* Centered Premium Custom Vector Girls (Golden Outlined Silhouette Art) */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.16] mix-blend-screen pointer-events-none z-0">
-          <div className="relative w-full max-w-4xl aspect-[16/10] px-4">
-            <svg viewBox="0 0 1000 600" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="sofaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#1B1613" />
-                  <stop offset="100%" stopColor="#0B0908" />
-                </linearGradient>
-                <linearGradient id="goldLines" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#8A6623" />
-                  <stop offset="50%" stopColor="#D4AF37" />
-                  <stop offset="100%" stopColor="#FFE485" />
-                </linearGradient>
-                <linearGradient id="skinGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(212,175,55,0.06)" />
-                  <stop offset="100%" stopColor="rgba(138,102,35,0.02)" />
-                </linearGradient>
-                <linearGradient id="skinGradRight" x1="100%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(212,175,55,0.06)" />
-                  <stop offset="100%" stopColor="rgba(138,102,35,0.02)" />
-                </linearGradient>
-              </defs>
-
-              {/* 1. Lounge Sofa / Couch */}
-              {/* Backrest */}
-              <path d="M 120 460 C 110 320, 200 290, 500 290 C 800 290, 890 320, 880 460 Z" fill="url(#sofaGrad)" stroke="url(#goldLines)" strokeWidth="1.2" />
-              {/* Base Cushion */}
-              <path d="M 100 460 Q 500 485 900 460 L 890 530 Q 500 555 110 530 Z" fill="url(#sofaGrad)" stroke="url(#goldLines)" strokeWidth="1.5" />
-              {/* Sofa feet */}
-              <rect x="140" y="530" width="12" height="15" fill="#1A1512" stroke="#D4AF37" strokeWidth="0.8" />
-              <rect x="848" y="530" width="12" height="15" fill="#1A1512" stroke="#D4AF37" strokeWidth="0.8" />
-
-              {/* 2. Left Girl (Inhales & smokes) */}
-              <g>
-                {/* Hair */}
-                <path d="M 230 310 C 200 320, 175 375, 170 435 C 190 440, 220 415, 245 370 Z" fill="rgba(212, 175, 55, 0.08)" stroke="url(#goldLines)" strokeWidth="1" />
-                {/* Face Silhouette */}
-                <path d="M 255 315 C 265 295, 285 295, 295 305 C 298 308, 303 308, 305 310 C 308 312, 306 316, 303 318 C 300 320, 303 322, 305 324 C 308 326, 303 330, 298 330 L 285 332 Z" fill="url(#skinGradLeft)" stroke="url(#goldLines)" strokeWidth="1.2" />
-                {/* Body outline */}
-                <path d="M 285 332 C 275 365, 255 405, 285 445 L 470 475 L 500 435 Z" fill="url(#skinGradLeft)" stroke="url(#goldLines)" strokeWidth="1" />
-                
-                {/* Chest group (animated breathing chest) */}
-                <g className="animate-breathe-left">
-                  <path d="M 285 352 C 315 372, 335 397, 330 422" stroke="url(#goldLines)" strokeWidth="1.8" fill="none" />
-                </g>
-
-                {/* Left Arm holding Hose Mouthpiece */}
-                <path d="M 280 395 C 315 410, 340 385, 305 340" fill="none" stroke="url(#goldLines)" strokeWidth="1.2" />
-                {/* Hose Mouthpiece */}
-                <path d="M 292 322 L 305 340" stroke="url(#goldLines)" strokeWidth="2" fill="none" />
-              </g>
-
-              {/* 3. Right Girl (Sitting, blowing smoke upwards) */}
-              <g>
-                {/* Hair */}
-                <path d="M 770 310 C 800 320, 825 375, 830 435 C 810 440, 780 415, 755 370 Z" fill="rgba(212, 175, 55, 0.08)" stroke="url(#goldLines)" strokeWidth="1" />
-                {/* Face Silhouette */}
-                <path d="M 745 315 C 735 295, 715 295, 705 305 C 702 308, 697 308, 695 310 C 692 312, 694 316, 697 318 C 700 320, 697 322, 695 324 C 692 326, 697 330, 702 330 L 715 332 Z" fill="url(#skinGradRight)" stroke="url(#goldLines)" strokeWidth="1.2" />
-                {/* Body outline */}
-                <path d="M 715 332 C 725 365, 745 405, 715 445 L 530 475 L 500 435 Z" fill="url(#skinGradRight)" stroke="url(#goldLines)" strokeWidth="1" />
-                
-                {/* Chest group (animated breathing chest) */}
-                <g className="animate-breathe-right">
-                  <path d="M 715 352 C 685 372, 665 397, 670 422" stroke="url(#goldLines)" strokeWidth="1.8" fill="none" />
-                </g>
-
-                {/* Right Arm resting */}
-                <path d="M 720 395 C 685 410, 660 385, 695 340" fill="none" stroke="url(#goldLines)" strokeWidth="1.2" />
-                {/* Hose Mouthpiece */}
-                <path d="M 688 348 L 695 362" stroke="url(#goldLines)" strokeWidth="2" fill="none" />
-              </g>
-            </svg>
+        {/* Centered Premium Custom Girls Background (GTA Style Artwork) */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.20] mix-blend-screen pointer-events-none z-0">
+          <div className="relative w-full max-w-3xl aspect-square px-4 flex items-center justify-center">
+            <img 
+              src={girlsImage} 
+              alt="Cyber Lounge Girls" 
+              className="w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(212,175,55,0.25)] animate-breathe-image"
+              style={{
+                WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 40%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0) 75%)',
+                maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 40%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0) 75%)',
+              }}
+            />
 
             {/* Volumetric Exhale Smoke Clouds at girls' mouths */}
-            <div className="absolute" style={{ left: '29.5%', top: '51.6%' }}>
+            <div className="absolute" style={{ left: '37%', top: '44%' }}>
               <div className="smoke-exhale-left absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '2.5s' }} />
               <div className="smoke-exhale-left absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '2.9s' }} />
               <div className="smoke-exhale-left absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '3.3s' }} />
             </div>
 
-            <div className="absolute" style={{ left: '69.5%', top: '51.6%' }}>
+            <div className="absolute" style={{ left: '63%', top: '43%' }}>
               <div className="smoke-exhale-right absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '5.5s' }} />
               <div className="smoke-exhale-right absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '5.9s' }} />
               <div className="smoke-exhale-right absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '6.3s' }} />
@@ -736,25 +687,13 @@ export function MainLayout() {
         .bubble-right-4 { animation: bubble-rise-right-anim 6s infinite ease-in; animation-delay: 1.3s; }
         .bubble-right-5 { animation: bubble-rise-right-anim 6s infinite ease-in; animation-delay: 1.7s; }
 
-        /* --- Left/Right Girl Chest Breathing --- */
-        @keyframes breathe-left-anim {
-          0%, 100% { transform: scale(1) translate(0, 0); }
-          25% { transform: scale(1.03) translate(2px, -1px); }
-          45%, 100% { transform: scale(1) translate(0, 0); }
+        /* --- Background Image Breathing --- */
+        @keyframes breathe-image-anim {
+          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 35px rgba(212,175,55,0.25)) brightness(1); }
+          50% { transform: scale(1.02); filter: drop-shadow(0 0 45px rgba(212,175,55,0.35)) brightness(1.05); }
         }
-        .animate-breathe-left {
-          animation: breathe-left-anim 6s infinite ease-in-out;
-          transform-origin: 285px 445px;
-        }
-
-        @keyframes breathe-right-anim {
-          0%, 50% { transform: scale(1) translate(0, 0); }
-          75% { transform: scale(1.03) translate(-2px, -1px); }
-          95%, 100% { transform: scale(1) translate(0, 0); }
-        }
-        .animate-breathe-right {
-          animation: breathe-right-anim 6s infinite ease-in-out;
-          transform-origin: 715px 445px;
+        .animate-breathe-image {
+          animation: breathe-image-anim 8s infinite ease-in-out;
         }
 
         /* --- Left/Right Smoke Clouds --- */
