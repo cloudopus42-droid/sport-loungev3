@@ -53,6 +53,18 @@ export function MainLayout() {
 
     const handleHookahReady = (data: any) => {
       if (data.userId === user.id && data.hookahStatus === 'ready') {
+        // Avoid duplicate notification if already notified in another session/tab
+        try {
+          const saved = localStorage.getItem('notified_bookings');
+          const notifiedList: string[] = saved ? JSON.parse(saved) : [];
+          if (notifiedList.includes(data.id)) return;
+
+          notifiedList.push(data.id);
+          localStorage.setItem('notified_bookings', JSON.stringify(notifiedList));
+        } catch (err) {
+          console.warn('LocalStorage error in notification check:', err);
+        }
+
         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
         audio.volume = 0.55;
         audio.play().catch(() => {});
