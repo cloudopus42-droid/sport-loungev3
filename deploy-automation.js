@@ -62,7 +62,7 @@ async function main() {
 
   if (service) {
     serviceId = service.service.id;
-    renderUrl = service.service.url;
+    renderUrl = service.service.url || 'https://sport-loungev3.onrender.com';
     console.log(`✅ Service "sport-loungev3" already exists. ID: ${serviceId}, URL: ${renderUrl}`);
   } else {
     console.log('➕ Creating new Web Service "sport-loungev3" on Render...');
