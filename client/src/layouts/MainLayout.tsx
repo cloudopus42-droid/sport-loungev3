@@ -14,6 +14,7 @@ import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
 import bowlImage from '@/bowl.png';
+import girlsImage from '@/girls.jpg';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -28,6 +29,28 @@ export function MainLayout() {
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const { width, height } = dimensions;
+  const leftStart = { x: 55, y: height - 120 };
+  const leftEnd = { x: width / 2 - 120, y: height / 2 + 65 };
+  const leftPath = `M ${leftStart.x} ${leftStart.y} C ${leftStart.x + 200} ${leftStart.y}, ${leftEnd.x - 200} ${leftEnd.y + 150}, ${leftEnd.x} ${leftEnd.y}`;
+
+  const rightStart = { x: width - 55, y: height - 120 };
+  const rightEnd = { x: width / 2 + 100, y: height / 2 + 65 };
+  const rightPath = `M ${rightStart.x} ${rightStart.y} C ${rightStart.x - 200} ${rightStart.y}, ${rightEnd.x + 200} ${rightEnd.y + 150}, ${rightEnd.x} ${rightEnd.y}`;
   
   // Ambient Lounge Player
   const [isPlaying, setIsPlaying] = useState(false);
@@ -88,6 +111,15 @@ export function MainLayout() {
         {/* 3D WebGL Smoke Render - Drift across entire background */}
         <ThreeSmoke />
 
+        {/* Centered Darkened Girls Background Image */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.14] mix-blend-screen pointer-events-none z-0">
+          <img 
+            src={girlsImage} 
+            alt="" 
+            className="w-full max-w-4xl h-full object-contain filter brightness-[0.38] contrast-[1.25] grayscale" 
+          />
+        </div>
+
         {/* CSS Volumetric Haze Layers */}
         <div className="absolute inset-0 opacity-[0.08] mix-blend-color-dodge">
           <div className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.12)_0%,transparent_60%)] animate-haze-float pointer-events-none" />
@@ -106,31 +138,125 @@ export function MainLayout() {
         <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr]">PREMIUM 24/7</span>
       </div>
 
-      {/* Volumetric hookah bowls in bottom corners (smoke origin) */}
-      <div className="hidden md:block fixed bottom-[-15px] left-[-15px] w-28 lg:w-36 z-20 pointer-events-none opacity-50 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.25)]">
-        <img 
-          src={bowlImage} 
-          alt="" 
-          className="w-full h-auto object-contain" 
-          style={{
-            mixBlendMode: 'screen',
-            maskImage: 'linear-gradient(to top, transparent 5%, black 40%)',
-            WebkitMaskImage: 'linear-gradient(to top, transparent 5%, black 40%)'
-          }}
-        />
+      {/* Side Hookahs with Photo Bowls (Left and Right margins) */}
+      <div className="hidden xl:block fixed left-6 bottom-6 z-20 pointer-events-none opacity-30 select-none filter drop-shadow-[0_0_12px_rgba(212,175,55,0.22)]">
+        <div className="relative w-24 h-[260px] flex flex-col items-center">
+          <img 
+            src={bowlImage} 
+            alt="" 
+            className="w-14 h-auto object-contain absolute top-0"
+            style={{
+              mixBlendMode: 'screen',
+              maskImage: 'linear-gradient(to top, transparent 2%, black 25%)',
+              WebkitMaskImage: 'linear-gradient(to top, transparent 2%, black 25%)'
+            }}
+          />
+          <svg width="80" height="260" viewBox="0 0 80 260" fill="none" className="absolute top-[35px]" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 10 H65 C65 16 15 16 15 10 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.08)" />
+            <line x1="40" y1="12" x2="40" y2="120" stroke="#D4AF37" strokeWidth="2.5" />
+            <circle cx="40" cy="35" r="5" stroke="#D4AF37" strokeWidth="1.5" />
+            <circle cx="40" cy="65" r="5" stroke="#D4AF37" strokeWidth="1.5" />
+            <circle cx="40" cy="95" r="5" stroke="#D4AF37" strokeWidth="1.5" />
+            <path d="M30 120 H50 L47 132 H33 L30 120 Z" stroke="#D4AF37" strokeWidth="1.5" />
+            <path d="M34 132 C30 140 20 160 20 185 C20 200 60 200 60 185 C60 160 50 140 46 132 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.05)" />
+            <line x1="23" y1="180" x2="57" y2="180" stroke="#D4AF37" strokeWidth="1" strokeDasharray="3 3" />
+          </svg>
+        </div>
       </div>
       
-      <div className="hidden md:block fixed bottom-[-15px] right-[-15px] w-28 lg:w-36 z-20 pointer-events-none opacity-50 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.25)]">
-        <img 
-          src={bowlImage} 
-          alt="" 
-          className="w-full h-auto object-contain scale-x-[-1]" 
-          style={{
-            mixBlendMode: 'screen',
-            maskImage: 'linear-gradient(to top, transparent 5%, black 40%)',
-            WebkitMaskImage: 'linear-gradient(to top, transparent 5%, black 40%)'
-          }}
-        />
+      <div className="hidden xl:block fixed right-6 bottom-6 z-20 pointer-events-none opacity-30 select-none filter drop-shadow-[0_0_12px_rgba(212,175,55,0.22)] scale-x-[-1]">
+        <div className="relative w-24 h-[260px] flex flex-col items-center">
+          <img 
+            src={bowlImage} 
+            alt="" 
+            className="w-14 h-auto object-contain absolute top-0"
+            style={{
+              mixBlendMode: 'screen',
+              maskImage: 'linear-gradient(to top, transparent 2%, black 25%)',
+              WebkitMaskImage: 'linear-gradient(to top, transparent 2%, black 25%)'
+            }}
+          />
+          <svg width="80" height="260" viewBox="0 0 80 260" fill="none" className="absolute top-[35px]" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 10 H65 C65 16 15 16 15 10 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.08)" />
+            <line x1="40" y1="12" x2="40" y2="120" stroke="#D4AF37" strokeWidth="2.5" />
+            <circle cx="40" cy="35" r="5" stroke="#D4AF37" strokeWidth="1.5" />
+            <circle cx="40" cy="65" r="5" stroke="#D4AF37" strokeWidth="1.5" />
+            <circle cx="40" cy="95" r="5" stroke="#D4AF37" strokeWidth="1.5" />
+            <path d="M30 120 H50 L47 132 H33 L30 120 Z" stroke="#D4AF37" strokeWidth="1.5" />
+            <path d="M34 132 C30 140 20 160 20 185 C20 200 60 200 60 185 C60 160 50 140 46 132 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.05)" />
+            <line x1="23" y1="180" x2="57" y2="180" stroke="#D4AF37" strokeWidth="1" strokeDasharray="3 3" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Dynamic Animated Hoses and Smoke (Wide screens only) */}
+      <div className="hidden xl:block fixed inset-0 w-full h-full pointer-events-none z-10 select-none">
+        <svg className="w-full h-full">
+          {/* Left Hose Background */}
+          <path
+            d={leftPath}
+            stroke="rgba(212, 175, 55, 0.12)"
+            strokeWidth="3.5"
+            fill="none"
+          />
+          {/* Left Hose Active Inhale Flow */}
+          <path
+            d={leftPath}
+            stroke="url(#goldGradient)"
+            strokeWidth="2.2"
+            fill="none"
+            strokeDasharray="25, 200"
+            className="animate-hose-flow"
+            style={{ filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.75))' }}
+          />
+
+          {/* Right Hose Background */}
+          <path
+            d={rightPath}
+            stroke="rgba(212, 175, 55, 0.12)"
+            strokeWidth="3.5"
+            fill="none"
+          />
+          {/* Right Hose Active Inhale Flow */}
+          <path
+            d={rightPath}
+            stroke="url(#goldGradient)"
+            strokeWidth="2.2"
+            fill="none"
+            strokeDasharray="25, 200"
+            className="animate-hose-flow"
+            style={{ filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.75))' }}
+          />
+
+          {/* Defs for gold gradient flow */}
+          <defs>
+            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFE485" />
+              <stop offset="50%" stopColor="#D4AF37" />
+              <stop offset="100%" stopColor="#8A6623" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Left Girl Smoke Puff Clouds */}
+        <div 
+          className="absolute" 
+          style={{ left: `${leftEnd.x}px`, top: `${leftEnd.y}px` }}
+        >
+          <div className="smoke-exhale-left absolute w-5 h-5 bg-white/20 rounded-full blur-[4px]" style={{ animationDelay: '2.5s' }} />
+          <div className="smoke-exhale-left absolute w-7 h-7 bg-white/15 rounded-full blur-[6px]" style={{ animationDelay: '2.9s' }} />
+          <div className="smoke-exhale-left absolute w-9 h-9 bg-white/10 rounded-full blur-[8px]" style={{ animationDelay: '3.3s' }} />
+        </div>
+
+        {/* Right Girl Smoke Puff Clouds */}
+        <div 
+          className="absolute" 
+          style={{ left: `${rightEnd.x}px`, top: `${rightEnd.y}px` }}
+        >
+          <div className="smoke-exhale-right absolute w-5 h-5 bg-white/20 rounded-full blur-[4px]" style={{ animationDelay: '2.5s' }} />
+          <div className="smoke-exhale-right absolute w-7 h-7 bg-white/15 rounded-full blur-[6px]" style={{ animationDelay: '2.9s' }} />
+          <div className="smoke-exhale-right absolute w-9 h-9 bg-white/10 rounded-full blur-[8px]" style={{ animationDelay: '3.3s' }} />
+        </div>
       </div>
       <LuxuryCursor />
       <ParticleEngine />
@@ -368,6 +494,64 @@ export function MainLayout() {
         }
         .animate-haze-pulse {
           animation: haze-pulse 12s ease-in-out infinite;
+        }
+
+        /* Hookah Inhale & Exhale Animations */
+        @keyframes hose-flow {
+          0% { opacity: 0; stroke-dashoffset: 0; }
+          5% { opacity: 1; }
+          40% { opacity: 1; stroke-dashoffset: -400; }
+          45%, 100% { opacity: 0; stroke-dashoffset: -400; }
+        }
+        .animate-hose-flow {
+          animation: hose-flow 6s linear infinite;
+        }
+
+        @keyframes smoke-cloud-exhale-left {
+          0%, 40% {
+            transform: translate(0, 0) scale(0.2);
+            opacity: 0;
+          }
+          42% {
+            opacity: 0.65;
+            filter: blur(4px);
+          }
+          75% {
+            transform: translate(-50px, -65px) scale(1.6);
+            opacity: 0.35;
+            filter: blur(10px);
+          }
+          100% {
+            transform: translate(-90px, -115px) scale(2.6);
+            opacity: 0;
+            filter: blur(18px);
+          }
+        }
+        @keyframes smoke-cloud-exhale-right {
+          0%, 40% {
+            transform: translate(0, 0) scale(0.2);
+            opacity: 0;
+          }
+          42% {
+            opacity: 0.65;
+            filter: blur(4px);
+          }
+          75% {
+            transform: translate(50px, -65px) scale(1.6);
+            opacity: 0.35;
+            filter: blur(10px);
+          }
+          100% {
+            transform: translate(90px, -115px) scale(2.6);
+            opacity: 0;
+            filter: blur(18px);
+          }
+        }
+        .smoke-exhale-left {
+          animation: smoke-cloud-exhale-left 6s ease-out infinite;
+        }
+        .smoke-exhale-right {
+          animation: smoke-cloud-exhale-right 6s ease-out infinite;
         }
       `}</style>
     </div>
