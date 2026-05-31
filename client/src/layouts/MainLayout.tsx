@@ -94,6 +94,16 @@ export function MainLayout() {
     }
   }, [socket, isAuthenticated, user]);
 
+  // Load and apply custom glassmorphism settings from localStorage
+  useEffect(() => {
+    try {
+      const b = localStorage.getItem('glass_blur') || '40';
+      const o = localStorage.getItem('glass_opacity') || '0.72';
+      document.documentElement.style.setProperty('--glass-blur', `${b}px`);
+      document.documentElement.style.setProperty('--glass-opacity', o);
+    } catch {}
+  }, []);
+
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
