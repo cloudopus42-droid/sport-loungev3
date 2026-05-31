@@ -7,9 +7,8 @@ import { GlowButton } from '@/components/ui/GlowButton';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
-import { StoriesSlider } from '@/components/StoriesSlider';
-import type { Promo, Story } from '@/types';
-import { ThreeSmoke } from '@/components/ThreeSmoke';
+import { showToast } from '@/components/NotificationToast';
+import type { Promo } from '@/types';
 
 // Predefined luxury zones with background images matching reference design
 const PREMIUM_ZONES = [
@@ -50,8 +49,6 @@ const PREMIUM_ZONES = [
 
 export function HomePage() {
   const [promos, setPromos] = useState<Promo[]>([]);
-  const [stories, setStories] = useState<Story[]>([]);
-  const [storiesLoading, setStoriesLoading] = useState(true);
   const [activeZoneSlide, setActiveZoneSlide] = useState<Record<string, number>>({
     'hookah-lounge': 0,
     'restaurant': 0,
@@ -59,18 +56,23 @@ export function HomePage() {
   });
 
   useEffect(() => {
-    Promise.allSettled([
-      api.get<Promo[]>('/api/promos'),
-      api.get<Story[]>('/api/stories'),
-    ]).then(([promosRes, storiesRes]) => {
-      if (promosRes.status === 'fulfilled') setPromos(promosRes.value.data);
-      if (storiesRes.status === 'fulfilled') setStories(storiesRes.value.data);
-      setStoriesLoading(false);
-    }).catch(err => {
-      console.error('Error fetching homepage data:', err);
-      setStoriesLoading(false);
-    });
+    api.get<Promo[]>('/api/promos')
+      .then((res) => {
+        setPromos(res.data);
+      })
+      .catch(err => {
+        console.error('Error fetching homepage promos:', err);
+      });
   }, []);
+
+  const handleAddressClick = () => {
+    window.open('https://yandex.ru/maps/-/CDT1Z-pC', '_blank');
+  };
+
+  const handleHoursClick = () => {
+    navigator.clipboard.writeText(CONTACT.address);
+    showToast('Адрес скопирован в буфер обмена!', 'success');
+  };
 
   const handleNextSlide = (zoneId: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -98,13 +100,6 @@ export function HomePage() {
       transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
       className="space-y-8 pb-16 overflow-x-hidden"
     >
-      {/* Premium Ambient Stories */}
-      {stories.length > 0 && (
-        <section className="pb-2 border-b border-glass-border/20">
-          <StoriesSlider stories={stories} loading={storiesLoading} />
-        </section>
-      )}
-      
       {/* Dynamic Hero Section */}
       <section className="relative overflow-hidden pt-2 sm:pt-4 min-h-[380px] lg:min-h-[460px] flex items-center">
         {/* Cinematic loop background video */}
@@ -117,9 +112,6 @@ export function HomePage() {
         >
           <source src="https://assets.mixkit.co/videos/preview/mixkit-smoke-in-slow-motion-41814-large.mp4" type="video/mp4" />
         </video>
-
-        {/* 3D WebGL Smoke Render */}
-        <ThreeSmoke />
 
         <div className="absolute inset-0 pointer-events-none z-[1]">
           <div className="absolute top-0 left-1/4 w-80 h-80 bg-amber-500/5 rounded-full blur-[120px]" />
@@ -164,7 +156,10 @@ export function HomePage() {
 
           {/* Elegant Address Cards (Right side on desktop) */}
           <div className="hidden lg:flex flex-col gap-4 w-80">
-            <GlassCard className="p-4.5 flex items-center gap-3.5 hover:border-accent-gold/35 transition-all">
+            <GlassCard 
+              onClick={handleAddressClick}
+              className="p-4.5 flex items-center gap-3.5 hover:border-accent-gold/60 cursor-pointer hover:scale-[1.03] active:scale-[0.97] transition-all"
+            >
               <div className="w-11 h-11 rounded-xl bg-accent-gold/10 flex items-center justify-center flex-shrink-0">
                 <MapPin className="w-5.5 h-5.5 text-accent-gold" />
               </div>
@@ -174,7 +169,10 @@ export function HomePage() {
               </div>
             </GlassCard>
             
-            <GlassCard className="p-4.5 flex items-center gap-3.5 hover:border-accent-gold/35 transition-all">
+            <GlassCard 
+              onClick={handleHoursClick}
+              className="p-4.5 flex items-center gap-3.5 hover:border-accent-gold/60 cursor-pointer hover:scale-[1.03] active:scale-[0.97] transition-all"
+            >
               <div className="w-11 h-11 rounded-xl bg-accent-gold/10 flex items-center justify-center flex-shrink-0">
                 <Clock className="w-5.5 h-5.5 text-accent-gold" />
               </div>
