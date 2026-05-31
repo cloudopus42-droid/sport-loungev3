@@ -113,7 +113,7 @@ export function LuxuryMusicPlayer() {
       {/* 1. Floating Round Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center text-black shadow-glow-gold hover:shadow-glow-gold-lg border border-accent-gold/20 outline-none transition-all flex-shrink-0 cursor-pointer"
+        className="w-14 h-14 rounded-full glass-btn-gold flex items-center justify-center text-white shadow-glow-gold hover:shadow-glow-gold-lg outline-none transition-all flex-shrink-0 cursor-pointer"
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -158,7 +158,7 @@ export function LuxuryMusicPlayer() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 50 }}
             transition={{ type: 'spring', damping: 20, stiffness: 220 }}
-            className="fixed bottom-24 left-4 right-4 sm:right-auto sm:left-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-80 bg-dark-bg/95 border border-glass-border rounded-2xl overflow-hidden shadow-2xl flex flex-col backdrop-blur-glass z-50 p-4 space-y-4"
+            className="fixed bottom-24 left-4 right-4 sm:right-auto sm:left-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-80 glass-card overflow-hidden shadow-2xl flex flex-col z-50 p-4 space-y-4"
           >
             {/* Header */}
             <div className="flex justify-between items-center pb-2 border-b border-glass-border/40">
