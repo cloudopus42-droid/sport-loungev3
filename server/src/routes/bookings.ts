@@ -4,6 +4,8 @@ import { isAdmin } from '../middleware/isAdmin';
 import { sendBookingNotification } from '../services/telegram';
 import { z } from 'zod';
 import { supabase } from '../config/supabase';
+import { getIO } from '../socket';
+
 
 const router = Router();
 
@@ -194,6 +196,87 @@ router.get('/date/:date', async (req: Request, res: Response, next: NextFunction
   }
 });
 
+// GET /api/bookings/taste-stats — Hookah flavor analytics (admin)
+router.get('/taste-stats', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data: bookings, error: dbErr } = await supabase
+      .from('bookings')
+      .select('hookah_mix, hookah_strength, user_id, user:user_id(id, name, email)')
+      .neq('status', 'cancelled');
+
+    if (dbErr) {
+      res.status(500).json({ error: dbErr.message });
+      return;
+    }
+
+    const { count: totalUsers, error: usersErr } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+
+    if (usersErr) {
+      res.status(500).json({ error: usersErr.message });
+      return;
+    }
+
+    const mixCounts: Record<string, number> = {};
+    const strengthCounts: Record<string, number> = { light: 0, medium: 0, strong: 0 };
+    const userStats: Record<string, { name: string; email: string; mixCount: Record<string, number>; total: number }> = {};
+
+    (bookings || []).forEach((b: any) => {
+      const mix = b.hookah_mix || 'Фирменный микс';
+      mixCounts[mix] = (mixCounts[mix] || 0) + 1;
+
+      const strength = b.hookah_strength || 'medium';
+      if (strengthCounts[strength] !== undefined) {
+        strengthCounts[strength]++;
+      }
+
+      const uObj = b.user || b.user_id;
+      if (uObj && typeof uObj === 'object') {
+        const uid = uObj.id;
+        if (uid) {
+          if (!userStats[uid]) {
+            userStats[uid] = {
+              name: uObj.name || 'Гость',
+              email: uObj.email || '-',
+              mixCount: {},
+              total: 0
+            };
+          }
+          userStats[uid].total++;
+          userStats[uid].mixCount[mix] = (userStats[uid].mixCount[mix] || 0) + 1;
+        }
+      }
+    });
+
+    const mixesList = Object.entries(mixCounts).map(([name, count]) => ({
+      name,
+      count
+    })).sort((a, b) => b.count - a.count);
+
+    const usersList = Object.entries(userStats).map(([id, data]) => {
+      const favMix = Object.entries(data.mixCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Нет';
+      return {
+        id,
+        name: data.name,
+        email: data.email,
+        totalOrders: data.total,
+        favoriteMix: favMix
+      };
+    }).sort((a, b) => b.totalOrders - a.totalOrders);
+
+    res.json({
+      totalAnalyzed: bookings?.length || 0,
+      totalUsers: totalUsers || 0,
+      mixes: mixesList,
+      strengths: strengthCounts,
+      users: usersList
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET /api/bookings/all — All bookings (admin)
 router.get('/all', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -298,6 +381,54 @@ router.delete('/:id', auth, async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+// PUT /api/bookings/:id/hookah-status — Update hookah status (admin)
+router.put(
+  '/:id/hookah-status',
+  auth,
+  isAdmin,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { hookahStatus } = req.body;
+      if (!['accepted', 'heating', 'almost', 'ready'].includes(hookahStatus)) {
+        res.status(400).json({ error: 'Неверный статус кальяна', status: 400 });
+        return;
+      }
+
+      const { data: booking, error } = await supabase
+        .from('bookings')
+        .update({
+          hookah_status: hookahStatus,
+          hookah_status_updated_at: new Date().toISOString()
+        })
+        .eq('id', req.params.id)
+        .select('*, user:user_id(id, name, email, avatar, phone)')
+        .single();
+
+      if (error || !booking) {
+        res.status(404).json({ error: 'Заказ не найден', status: 404 });
+        return;
+      }
+
+      // Broadcast update via Socket.IO
+      try {
+        const io = getIO();
+        const progressMap: Record<string, number> = { accepted: 15, heating: 45, almost: 75, ready: 100 };
+        io.emit('booking:updated', {
+          id: booking.id,
+          hookahStatus,
+          progressPercent: progressMap[hookahStatus] || 15
+        });
+      } catch (socketErr: any) {
+        console.warn('⚠️ Failed to broadcast booking status change via socket:', socketErr.message);
+      }
+
+      res.json(mapBookingToFrontend(booking));
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 // GET /api/bookings/:id/hookah-status — Public hookah status with progress
 router.get('/:id/hookah-status', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -332,14 +463,37 @@ function getHookahStatusByTime(booking: any): {
   progress: number;
   minutesLeft: number;
 } {
-  const startTime = new Date(booking.hookahStatusUpdatedAt || booking.createdAt).getTime();
-  const elapsed = (Date.now() - startTime) / 1000 / 60; // minutes
-  const totalMinutes = 10;
-
   if (booking.status === 'cancelled') {
     return { status: 'cancelled', label: 'Отменён', progress: 0, minutesLeft: 0 };
   }
 
+  if (booking.hookahStatus === 'ready') {
+    return { status: 'ready', label: 'Готово! 🔥', progress: 100, minutesLeft: 0 };
+  }
+
+  const startTime = new Date(booking.hookahStatusUpdatedAt || booking.createdAt).getTime();
+  const elapsed = (Date.now() - startTime) / 1000 / 60; // minutes
+  const totalMinutes = 10;
+
+  // If explicit status from DB is set, we adjust progress thresholds
+  const currentStatus = booking.hookahStatus || 'accepted';
+
+  if (currentStatus === 'almost') {
+    // 8 minutes elapsed or manual almost
+    const baseProgress = 75;
+    const progress = Math.min(99, Math.round(baseProgress + (elapsed / 2.5) * 24));
+    const left = Math.max(1, Math.ceil(2 - elapsed));
+    return { status: 'almost', label: 'Почти готово', progress, minutesLeft: left };
+  }
+
+  if (currentStatus === 'heating') {
+    const baseProgress = 45;
+    const progress = Math.min(74, Math.round(baseProgress + (elapsed / 3.0) * 29));
+    const left = Math.max(1, Math.ceil(5 - elapsed));
+    return { status: 'heating', label: 'Угли горят', progress, minutesLeft: left };
+  }
+
+  // default 'accepted'
   if (elapsed < 2.5) {
     return {
       status: 'accepted',
