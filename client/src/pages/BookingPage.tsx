@@ -1,41 +1,46 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Users, Phone, MessageSquare, Check, Flame, Gauge } from 'lucide-react';
-import { GlowButton } from '@/components/ui/GlowButton';
+import { QrCode, Send, Award, Flame, Gauge, MessageSquare, X } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { showToast } from '@/components/NotificationToast';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { HOOKAH_FLAVORS, FLAVOR_CATEGORIES } from '@/config/seats';
 import { ThreeDNA } from '@/components/ThreeDNA';
 
-const timeSlots = [
-  '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
-  '20:00', '21:00', '22:00', '23:00', '00:00', '01:00',
+const BOWL_TYPES = [
+  { id: 'clay', name: 'Глиняная чаша', price: 1200, emoji: '🏺', desc: 'Классическая тяга, чистая вкусопередача' },
+  { id: 'grapefruit', name: 'На грейпфруте', price: 1500, emoji: '🍊', desc: 'Придает мягкую цитрусовую кислинку' },
+  { id: 'pineapple', name: 'На ананасе', price: 1700, emoji: '🍍', desc: 'Увеличивает сладость и время курения' },
+  { id: 'pomelo', name: 'На помело', price: 1800, emoji: '🍈', desc: 'Максимальный объем чаши и мягкость пара' },
+];
+
+const LIQUID_BASES = [
+  { id: 'water', name: 'На воде', price: 0, emoji: '💧', desc: 'Классическая легкая фильтрация' },
+  { id: 'milk', name: 'На молоке', price: 150, emoji: '🥛', desc: 'Делает пар более плотным и нежным' },
+  { id: 'juice', name: 'На соке', price: 200, emoji: '🍹', desc: 'Усиливает фруктовые и ягодные оттенки' },
+  { id: 'wine', name: 'На вине / Коктейле', price: 450, emoji: '🍷', desc: 'Эксклюзивная алкогольная ароматика' },
 ];
 
 export function BookingPage() {
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
 
-  const [orderType, setOrderType] = useState<'table' | 'preorder'>('table');
-  const [tableNumber, setTableNumber] = useState('');
-  const [date, setDate] = useState(() => {
-    const d = new Date();
-    return d.toISOString().slice(0, 10);
-  });
-  const [time, setTime] = useState('19:00');
-  const [guestsCount, setGuestsCount] = useState(2);
-  const [phone, setPhone] = useState('');
   const [hookahMix, setHookahMix] = useState<string[]>([]);
   const [mixPercentages, setMixPercentages] = useState<Record<string, number>>({});
   const [hookahStrength, setHookahStrength] = useState<'light' | 'medium' | 'strong'>('medium');
-  const [hookahCount, setHookahCount] = useState(1);
+  const [bowlType, setBowlType] = useState('clay');
+  const [liquidBase, setLiquidBase] = useState('water');
   const [flavorCategory, setFlavorCategory] = useState('Все');
   const [comment, setComment] = useState('');
+  const [phone, setPhone] = useState('');
+  
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [ticketData, setTicketData] = useState<any | null>(null);
+  const [showTicket, setShowTicket] = useState(false);
+
+  const selectedBowl = BOWL_TYPES.find(b => b.id === bowlType) || BOWL_TYPES[0];
+  const selectedBase = LIQUID_BASES.find(l => l.id === liquidBase) || LIQUID_BASES[0];
+  const totalPrice = selectedBowl.price + selectedBase.price;
 
   const updateMixFlavors = (name: string) => {
     let nextMix = [...hookahMix];
@@ -117,372 +122,440 @@ export function BookingPage() {
 
   const chars = getMixCharacteristics();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleGenerateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isAuthenticated) {
-      showToast('Войдите, чтобы оформить заказ', 'error');
-      navigate('/login');
-      return;
-    }
-
-    if (orderType === 'table' && !tableNumber) {
-      showToast('Укажите номер стола', 'error');
-      return;
-    }
-
     if (hookahMix.length === 0) {
-      showToast('Выберите хотя бы один вкус для кальяна', 'error');
+      showToast('Выберите хотя бы один вкус для микса', 'error');
       return;
     }
 
     setLoading(true);
     try {
-      const finalSeatId = orderType === 'table' 
-        ? `table-${tableNumber}-${Date.now()}` 
-        : `preorder-${Date.now()}`;
+      const mixString = hookahMix.map(name => `${name} (${mixPercentages[name] || 0}%)`).join(', ');
+      const strengthLabel = hookahStrength === 'light' ? 'Лёгкий' : hookahStrength === 'medium' ? 'Средний' : 'Крепкий';
       
-      const finalSeatLabel = orderType === 'table'
-        ? `Стол № ${tableNumber}`
-        : `Предзаказ (${time})`;
+      const recipeData = {
+        strength: strengthLabel,
+        bowl: selectedBowl.name,
+        base: selectedBase.name,
+        mix: mixString,
+        price: totalPrice,
+        comment: comment || 'Без комментариев',
+        phone: phone || 'Не указан',
+        ticketId: `MIX-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`
+      };
 
-      const finalSeatZone = orderType === 'table' ? 'hall' : 'vip';
-      const finalDate = orderType === 'table' ? new Date().toISOString().slice(0, 10) : date;
-      const finalTime = orderType === 'table' ? new Date().toTimeString().slice(0, 5) : time;
-      const finalGuestsCount = orderType === 'table' ? 1 : guestsCount;
+      // If authenticated, save the mix in the background
+      if (isAuthenticated) {
+        try {
+          await api.post('/api/bookings', {
+            seatId: recipeData.ticketId,
+            seatLabel: 'Микс-билет',
+            seatZone: 'hall',
+            date: new Date().toISOString().slice(0, 10),
+            time: new Date().toTimeString().slice(0, 5),
+            guestsCount: 1,
+            phone: phone || '79991234567',
+            hookahMix: `${selectedBowl.name} | ${selectedBase.name} | Mix: ${mixString}`,
+            hookahStrength,
+            hookahCount: 1,
+            comment: comment || undefined,
+          });
+        } catch (dbErr) {
+          console.warn('Could not save mix booking to server:', dbErr);
+        }
+      }
 
-      await api.post('/api/bookings', {
-        seatId: finalSeatId,
-        seatLabel: finalSeatLabel,
-        seatZone: finalSeatZone,
-        date: finalDate,
-        time: finalTime,
-        guestsCount: finalGuestsCount,
-        phone,
-        hookahMix: hookahMix.map(name => `${name} (${mixPercentages[name] || 0}%)`).join(', '),
-        hookahStrength,
-        hookahCount,
-        comment: comment || undefined,
-      });
-      
-      setSuccess(true);
-      showToast('Заказ оформлен! Кальянный мастер уже приступает.', 'success');
-      setTableNumber('');
-      setPhone('');
-      setComment('');
-      setHookahMix([]);
-      setMixPercentages({});
-    } catch (err: any) {
-      showToast(err.response?.data?.error || 'Ошибка при создании заказа', 'error');
+      setTicketData(recipeData);
+      setShowTicket(true);
+      showToast('Билет микса успешно сгенерирован!', 'success');
+    } catch (err) {
+      showToast('Ошибка при генерации билета', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  const getTelegramShareUrl = () => {
+    if (!ticketData) return '#';
+    const text = `💨 *НОВЫЙ КАЛЬЯННЫЙ МИКС (${ticketData.ticketId})*\n\n` +
+      `🏺 Чаша: *${ticketData.bowl}*\n` +
+      `💧 База: *${ticketData.base}*\n` +
+      `⚡ Крепость: *${ticketData.strength}*\n` +
+      `🍓 Микс вкусов: *${ticketData.mix}*\n` +
+      `💬 Пожелания: _${ticketData.comment}_\n` +
+      `💵 Стоимость: *${ticketData.price} ₽*`;
+    return `https://t.me/NHSC_founder?text=${encodeURIComponent(text)}`;
+  };
+
   return (
-    <div className="px-4 py-6 space-y-6 max-w-3xl mx-auto">
+    <div className="px-4 py-6 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <h1 className="text-3xl font-display font-bold gradient-text">Заказать кальян</h1>
-        <p className="text-sm text-white/40 mt-1">Миксуйте премиальные вкусы под свои предпочтения</p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center select-none">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-accent-gold font-bold flex items-center justify-center gap-1.5 mb-1.5">
+          <Flame className="w-4 h-4 text-accent-gold animate-pulse" /> КОНСТРУКТОР КАЛЬЯНОВ
+        </span>
+        <h1 className="text-3xl font-display font-light text-white uppercase tracking-wider">
+          Миксолог <span className="gradient-text font-semibold italic">Pro v2</span>
+        </h1>
+        <p className="text-xs text-white/50 mt-1 font-light">
+          Создайте уникальный рецепт под собственные предпочтения и получите QR-код для мастера
+        </p>
       </motion.div>
 
-      {/* Success state */}
-      <AnimatePresence>
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <GlassCard className="p-6 text-center border-accent-gold/30">
-              <div className="w-16 h-16 mx-auto rounded-full bg-accent-gold/20 flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-accent-gold" />
-              </div>
-              <h3 className="text-lg font-display font-bold text-white mb-1">Заказ успешно отправлен!</h3>
-              <p className="text-sm text-white/50">Кальянный мастер начнет готовить его прямо сейчас</p>
-              <GlowButton className="mt-4" onClick={() => setSuccess(false)}>
-                Заказать ещё один
-              </GlowButton>
-            </GlassCard>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left column: Mixologist controls */}
+        <div className="lg:col-span-8 space-y-6">
+          
+          {/* Flavor customizer */}
+          <GlassCard className="p-5 space-y-4">
+            <h3 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5 mb-0">
+              <Award className="w-4 h-4 text-accent-gold" /> Выберите вкусы табака (до 4 видов)
+            </h3>
 
-      {!success && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Customizer Panel */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Tab Selector */}
-            <GlassCard className="p-2 flex gap-2">
-              <button
-                onClick={() => setOrderType('table')}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
-                  orderType === 'table'
-                    ? 'glass-btn-gold text-white shadow-glow-gold-lg'
-                    : 'text-white/55 hover:text-white hover:bg-white/5'
-                }`}
+            {/* Category filter tabs */}
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-2 border-b border-glass-border/10">
+              {FLAVOR_CATEGORIES.map(cat => (
+                <button key={cat} type="button" onClick={() => setFlavorCategory(cat)}
+                  className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all border ${
+                    flavorCategory === cat
+                      ? 'bg-accent-gold text-black border-accent-gold/20 shadow-glow-gold'
+                      : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}>{cat}</button>
+              ))}
+            </div>
+
+            {/* Flavor grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[190px] overflow-y-auto scrollbar-hide pr-1 border-b border-glass-border/10 pb-3">
+              {HOOKAH_FLAVORS
+                .filter(f => flavorCategory === 'Все' || f.category === flavorCategory)
+                .map(flavor => {
+                  const selected = hookahMix.includes(flavor.name);
+                  return (
+                    <button key={flavor.name} type="button"
+                      onClick={() => updateMixFlavors(flavor.name)}
+                      className={`px-3 py-2.5 rounded-xl text-xs text-left transition-all flex items-center gap-1.5 ${
+                        selected
+                          ? 'bg-accent-gold/15 border border-accent-gold/45 text-accent-gold shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                          : 'bg-glass-bg border border-glass-border/60 text-white/60 hover:border-accent-gold/30 hover:text-white/80'
+                      }`}>
+                      <span className="text-base">{flavor.emoji}</span>
+                      <span className="truncate font-semibold">{flavor.name}</span>
+                      {selected && <span className="ml-auto text-accent-gold font-bold text-[10px]">✓</span>}
+                    </button>
+                  );
+              })}
+            </div>
+
+            {/* dynamic Taste DNA Visualizer */}
+            {hookahMix.length > 0 && (
+              <motion.div 
+                className="space-y-4 bg-white/5 p-4 rounded-2xl border border-glass-border/30 animate-fade-in"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
               >
-                💨 Я в заведении
-              </button>
-              <button
-                onClick={() => setOrderType('preorder')}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
-                  orderType === 'preorder'
-                    ? 'glass-btn-gold text-white shadow-glow-gold-lg'
-                    : 'text-white/55 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                📅 Предзаказ ко времени
-              </button>
-            </GlassCard>
+                <ThreeDNA 
+                  mix={hookahMix}
+                  mixPercentages={mixPercentages}
+                  activeCategory={flavorCategory}
+                  onSelectCategory={setFlavorCategory}
+                />
 
-            {/* Mixologist Section */}
-            <GlassCard className="p-4 space-y-4">
-              <label className="flex items-center gap-1.5 text-xs text-white/50 mb-0 font-medium">
-                <Flame className="w-3.5 h-3.5 text-accent-gold" /> Соберите свой микс (Mixologist Pro v2)
-              </label>
-
-              {/* Category filter */}
-              <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1 border-b border-glass-border/10">
-                {FLAVOR_CATEGORIES.map(cat => (
-                  <button key={cat} type="button" onClick={() => setFlavorCategory(cat)}
-                    className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
-                      flavorCategory === cat
-                        ? 'bg-accent-gold text-black border border-accent-gold/25'
-                        : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'
-                    }`}>{cat}</button>
-                ))}
-              </div>
-
-              {/* Flavor grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[170px] overflow-y-auto scrollbar-hide pr-1 border-b border-glass-border/10 pb-3">
-                {HOOKAH_FLAVORS
-                  .filter(f => flavorCategory === 'Все' || f.category === flavorCategory)
-                  .map(flavor => {
-                    const selected = hookahMix.includes(flavor.name);
-                    return (
-                      <button key={flavor.name} type="button"
-                        onClick={() => updateMixFlavors(flavor.name)}
-                        className={`px-2.5 py-2 rounded-xl text-xs text-left transition-all flex items-center gap-1.5 ${
-                          selected
-                            ? 'bg-accent-gold/15 border border-accent-gold/45 text-accent-gold'
-                            : 'bg-glass-bg border border-glass-border/60 text-white/60 hover:border-accent-gold/30 hover:text-white/80'
-                        }`}>
-                        <span className="text-sm">{flavor.emoji}</span>
-                        <span className="truncate font-medium">{flavor.name}</span>
-                        {selected && <span className="ml-auto text-accent-gold">✓</span>}
-                      </button>
-                    );
-                })}
-              </div>
-
-              {/* Dynamic Taste DNA Visualizer */}
-              {hookahMix.length > 0 && (
-                <motion.div 
-                  className="space-y-4 bg-white/5 p-4 rounded-2xl border border-glass-border/30 animate-fade-in"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <ThreeDNA 
-                    mix={hookahMix}
-                    mixPercentages={mixPercentages}
-                    activeCategory={flavorCategory}
-                    onSelectCategory={setFlavorCategory}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-glass-border/10 pt-4">
-                    {/* Characteristic meters */}
-                    <div className="space-y-2">
-                      <div className="text-[10px] uppercase tracking-wider text-accent-gold font-bold">Свойства микса</div>
-                      {[
-                        { label: '🍬 Сладость', value: chars.sweetness, color: 'from-yellow-300 to-amber-500' },
-                        { label: '❄️ Свежесть', value: chars.freshness, color: 'from-sky-400 to-blue-500' },
-                        { label: '🍋 Кислинка', value: chars.sourness, color: 'from-green-400 to-yellow-400' },
-                        { label: '⚡ Крепость', value: chars.strength, color: 'from-red-500 to-orange-600' },
-                      ].map(item => (
-                        <div key={item.label} className="space-y-0.5">
-                          <div className="flex justify-between text-[9px] text-white/50">
-                            <span>{item.label}</span>
-                            <span>{item.value}%</span>
-                          </div>
-                          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full bg-gradient-to-r ${item.color} shadow-lg`} style={{ width: `${item.value}%` }} />
-                          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-glass-border/10 pt-4">
+                  {/* Characteristic meters */}
+                  <div className="space-y-2 select-none">
+                    <div className="text-[10px] uppercase tracking-wider text-accent-gold font-bold">Свойства микса</div>
+                    {[
+                      { label: '🍬 Сладость', value: chars.sweetness, color: 'from-yellow-300 to-amber-500' },
+                      { label: '❄️ Свежесть', value: chars.freshness, color: 'from-sky-400 to-blue-500' },
+                      { label: '🍋 Кислинка', value: chars.sourness, color: 'from-green-400 to-yellow-400' },
+                      { label: '⚡ Крепость', value: chars.strength, color: 'from-red-500 to-orange-600' },
+                    ].map(item => (
+                      <div key={item.label} className="space-y-0.5">
+                        <div className="flex justify-between text-[9px] text-white/50">
+                          <span>{item.label}</span>
+                          <span>{item.value}%</span>
                         </div>
-                      ))}
-                    </div>
-
-                    {/* Proportion sliders */}
-                    <div className="space-y-3 flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-glass-border/10 pt-3 sm:pt-0 sm:pl-4">
-                      <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Пропорции чаши</div>
-                      {hookahMix.map(name => (
-                        <div key={name} className="space-y-1">
-                          <div className="flex justify-between text-[11px] font-semibold text-white/80">
-                            <span className="truncate max-w-[120px]">{name}</span>
-                            <span className="text-accent-gold font-bold">{mixPercentages[name] || 0}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="10"
-                            max="90"
-                            value={mixPercentages[name] || 0}
-                            onChange={(e) => handlePercentageChange(name, Number(e.target.value))}
-                            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-accent-gold"
-                          />
+                        <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full bg-gradient-to-r ${item.color} shadow-lg`} style={{ width: `${item.value}%` }} />
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                </motion.div>
-              )}
-            </GlassCard>
-          </div>
 
-          {/* Form details panel */}
-          <div>
-            <GlassCard className="p-4 h-full flex flex-col justify-between">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Dynamically shown details based on Tab */}
-                {orderType === 'table' ? (
-                  <div>
-                    <label className="block text-xs text-white/50 mb-1.5 font-medium">Номер стола</label>
-                    <input
-                      type="text"
-                      placeholder="Например: 12"
-                      value={tableNumber}
-                      onChange={(e) => setTableNumber(e.target.value)}
-                      className="glass-input text-sm"
-                      required
-                    />
-                    <p className="text-[10px] text-white/30 mt-1">Укажите номер стола, за которым вы находитесь в зале</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                          <Calendar className="w-3.5 h-3.5" /> Дата
-                        </label>
+                  {/* Proportion sliders */}
+                  <div className="space-y-3 flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-glass-border/10 pt-3 sm:pt-0 sm:pl-4">
+                    <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Пропорции чаши</div>
+                    {hookahMix.map(name => (
+                      <div key={name} className="space-y-1">
+                        <div className="flex justify-between text-[11px] font-semibold text-white/80">
+                          <span className="truncate max-w-[120px]">{name}</span>
+                          <span className="text-accent-gold font-bold">{mixPercentages[name] || 0}%</span>
+                        </div>
                         <input
-                          type="date"
-                          value={date}
-                          onChange={(e) => setDate(e.target.value)}
-                          min={new Date().toISOString().slice(0, 10)}
-                          className="glass-input text-sm"
-                          required
+                          type="range"
+                          min="10"
+                          max="90"
+                          value={mixPercentages[name] || 0}
+                          onChange={(e) => handlePercentageChange(name, Number(e.target.value))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-accent-gold"
                         />
                       </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </GlassCard>
+
+          {/* Selectors for Bowl & Liquid Base */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Bowl selector */}
+            <GlassCard className="p-5 space-y-3">
+              <h4 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5">
+                🏺 Выберите тип чаши
+              </h4>
+              <div className="space-y-2">
+                {BOWL_TYPES.map(b => (
+                  <div key={b.id} 
+                    onClick={() => setBowlType(b.id)}
+                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                      bowlType === b.id 
+                        ? 'bg-accent-gold/10 border-accent-gold text-white' 
+                        : 'bg-glass-bg border-glass-border/60 hover:border-accent-gold/30 text-white/70'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl bg-black/45 w-9 h-9 rounded-xl flex items-center justify-center border border-white/5">{b.emoji}</span>
                       <div>
-                        <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                          <Clock className="w-3.5 h-3.5" /> Время
-                        </label>
-                        <select
-                          value={time}
-                          onChange={(e) => setTime(e.target.value)}
-                          className="glass-input text-sm"
-                        >
-                          {timeSlots.map((t) => (
-                            <option key={t} value={t}>{t}</option>
-                          ))}
-                        </select>
+                        <div className="text-xs font-semibold">{b.name}</div>
+                        <div className="text-[10px] text-white/40 font-light mt-0.5 leading-tight">{b.desc}</div>
                       </div>
                     </div>
-                    <div>
-                      <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                        <Users className="w-3.5 h-3.5" /> Количество гостей
-                      </label>
-                      <input
-                        type="number"
-                        value={guestsCount}
-                        onChange={(e) => setGuestsCount(Math.max(1, Math.min(20, Number(e.target.value))))}
-                        min={1}
-                        max={20}
-                        className="glass-input text-sm"
-                        required
-                      />
+                    <span className="text-xs font-bold text-accent-gold">
+                      {b.id === 'clay' ? 'Входит' : `+${b.price - 1200}₽`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+
+            {/* Liquid base selector */}
+            <GlassCard className="p-5 space-y-3">
+              <h4 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5">
+                💧 Выберите основу (жидкость)
+              </h4>
+              <div className="space-y-2">
+                {LIQUID_BASES.map(l => (
+                  <div key={l.id} 
+                    onClick={() => setLiquidBase(l.id)}
+                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                      liquidBase === l.id 
+                        ? 'bg-accent-gold/10 border-accent-gold text-white' 
+                        : 'bg-glass-bg border-glass-border/60 hover:border-accent-gold/30 text-white/70'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl bg-black/45 w-9 h-9 rounded-xl flex items-center justify-center border border-white/5">{l.emoji}</span>
+                      <div>
+                        <div className="text-xs font-semibold">{l.name}</div>
+                        <div className="text-[10px] text-white/40 font-light mt-0.5 leading-tight">{l.desc}</div>
+                      </div>
                     </div>
+                    <span className="text-xs font-bold text-accent-gold">
+                      {l.price === 0 ? 'Входит' : `+${l.price}₽`}
+                    </span>
                   </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                      <Gauge className="w-3.5 h-3.5" /> Крепость
-                    </label>
-                    <select
-                      value={hookahStrength}
-                      onChange={(e) => setHookahStrength(e.target.value as 'light' | 'medium' | 'strong')}
-                      className="glass-input text-sm"
-                    >
-                      <option value="light">Лёгкий</option>
-                      <option value="medium">Средний</option>
-                      <option value="strong">Крепкий</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                      💨 Кол-во
-                    </label>
-                    <input
-                      type="number"
-                      value={hookahCount}
-                      onChange={(e) => setHookahCount(Math.max(1, Math.min(10, Number(e.target.value))))}
-                      min={1}
-                      max={10}
-                      className="glass-input text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                    <Phone className="w-3.5 h-3.5" /> Телефон
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+7 (999) 123-45-67"
-                    className="glass-input text-sm"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                    <MessageSquare className="w-3.5 h-3.5" /> Комментарий
-                  </label>
-                  <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Пожелания, вкусовые акценты..."
-                    className="glass-input text-sm min-h-[60px] resize-none"
-                    rows={2}
-                  />
-                </div>
-
-                <GlowButton
-                  type="submit"
-                  size="lg"
-                  className="w-full mt-4"
-                  loading={loading}
-                >
-                  {orderType === 'table' 
-                    ? (tableNumber ? `Заказать на стол № ${tableNumber}` : 'Укажите номер стола')
-                    : `Оформить предзаказ`}
-                </GlowButton>
-
-                {!isAuthenticated && (
-                  <p className="text-center text-xs text-white/30 mt-2">
-                    Для заказа необходимо <a href="/login" className="text-accent-gold hover:underline">войти в аккаунт</a>
-                  </p>
-                )}
-              </form>
+                ))}
+              </div>
             </GlassCard>
           </div>
         </div>
-      )}
+
+        {/* Right column: Ticket details and generation */}
+        <div className="lg:col-span-4">
+          <GlassCard className="p-5 space-y-5">
+            <form onSubmit={handleGenerateTicket} className="space-y-4">
+              <h3 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5 border-b border-glass-border/10 pb-2 mb-0">
+                📝 Параметры билета
+              </h3>
+
+              {/* Strength dial */}
+              <div>
+                <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
+                  <Gauge className="w-3.5 h-3.5" /> Желаемая крепость
+                </label>
+                <select
+                  value={hookahStrength}
+                  onChange={(e) => setHookahStrength(e.target.value as 'light' | 'medium' | 'strong')}
+                  className="glass-input text-sm"
+                >
+                  <option value="light">Лёгкий (Light)</option>
+                  <option value="medium">Средний (Medium)</option>
+                  <option value="strong">Крепкий (Strong)</option>
+                </select>
+              </div>
+
+              {/* Optional Phone */}
+              <div>
+                <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
+                  📞 Телефон для связи
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+7 (999) 123-45-67"
+                  className="glass-input text-sm"
+                />
+                <p className="text-[9px] text-white/30 mt-0.5">Необязательно. Помогает сохранить билет в ваш профиль.</p>
+              </div>
+
+              {/* Comment */}
+              <div>
+                <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
+                  <MessageSquare className="w-3.5 h-3.5" /> Пожелания / Комментарий
+                </label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Добавить льда, сделать послаще..."
+                  className="glass-input text-sm min-h-[70px] resize-none"
+                  rows={3}
+                />
+              </div>
+
+              {/* Real-time Receipt breakdown */}
+              <div className="bg-[#14100c]/85 rounded-2xl p-4 border border-glass-border/20 space-y-2 select-none">
+                <div className="text-[9px] uppercase tracking-wider text-accent-gold font-bold">Детализация стоимости</div>
+                <div className="flex justify-between text-xs text-white/60">
+                  <span>Тип чаши:</span>
+                  <span>{selectedBowl.price} ₽</span>
+                </div>
+                <div className="flex justify-between text-xs text-white/60">
+                  <span>Добавка основы:</span>
+                  <span>+{selectedBase.price} ₽</span>
+                </div>
+                <div className="h-px bg-glass-border/10 my-1" />
+                <div className="flex justify-between items-center text-sm font-bold text-white">
+                  <span>Итоговая цена:</span>
+                  <span className="text-base text-accent-gold">{totalPrice} ₽</span>
+                </div>
+              </div>
+
+              <motion.button
+                type="submit"
+                className="w-full py-3 rounded-full border border-accent-gold/60 text-[#F4E4C4] bg-gradient-to-r from-[#7c5c24] to-[#4a3410] hover:from-[#926e2e] hover:to-[#5c4315] shadow-[0_4px_16px_rgba(0,0,0,0.45)] flex items-center justify-center gap-2 text-sm font-bold tracking-wider uppercase transition-all"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={loading}
+              >
+                <QrCode className="w-4 h-4 text-accent-gold" /> {loading ? 'Генерация...' : 'Получить QR-код'}
+              </motion.button>
+
+              {!isAuthenticated && (
+                <p className="text-center text-[10px] text-white/30 mt-2 leading-snug">
+                  Вы можете заказать билет анонимно. Войдите в <a href="/login" className="text-accent-gold hover:underline font-semibold">аккаунт</a> для сохранения микса.
+                </p>
+              )}
+            </form>
+          </GlassCard>
+        </div>
+      </div>
+
+      {/* Ticket QR Modal */}
+      <AnimatePresence>
+        {showTicket && ticketData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/85 backdrop-blur-md">
+            {/* Modal Glass Box */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative max-w-sm w-full bg-gradient-to-b from-[#1c1814] to-black rounded-3xl border border-accent-gold/25 p-6 shadow-2xl"
+            >
+              {/* Close trigger */}
+              <button 
+                onClick={() => setShowTicket(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-colors"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+
+              {/* Digital Ticket Frame */}
+              <div className="text-center space-y-4 pt-2 relative">
+                {/* Decorative gold corner accents */}
+                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-accent-gold/45" />
+                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-accent-gold/45" />
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-accent-gold/45" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-accent-gold/45" />
+
+                <span className="text-[9px] uppercase tracking-[0.25em] text-accent-gold font-bold block mb-1">Sport Lounge Recipe Ticket</span>
+                <h3 className="text-lg font-display font-semibold text-[#F4E4C4] leading-none">{ticketData.ticketId}</h3>
+                
+                {/* QR Code fetched dynamically */}
+                <div className="w-48 h-48 mx-auto bg-white p-2.5 rounded-2xl flex items-center justify-center shadow-glow-gold/15 my-4">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                      `Id:${ticketData.ticketId}\nBowl:${ticketData.bowl}\nBase:${ticketData.base}\nStrength:${ticketData.strength}\nMix:${ticketData.mix}\nComment:${ticketData.comment}`
+                    )}`} 
+                    alt="Mix QR Code" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div className="text-left space-y-2 bg-[#120f0c] p-4 rounded-2xl border border-glass-border/30 text-xs">
+                  <div className="flex justify-between text-white/45">
+                    <span>Тип чаши:</span>
+                    <span className="text-white font-medium">{ticketData.bowl}</span>
+                  </div>
+                  <div className="flex justify-between text-white/45">
+                    <span>Основа:</span>
+                    <span className="text-white font-medium">{ticketData.base}</span>
+                  </div>
+                  <div className="flex justify-between text-white/45">
+                    <span>Крепость:</span>
+                    <span className="text-white font-medium">{ticketData.strength}</span>
+                  </div>
+                  <div className="h-px bg-glass-border/10 my-1.5" />
+                  <div className="text-white/45 space-y-0.5">
+                    <span>Вкусовой микс:</span>
+                    <p className="text-accent-gold font-semibold leading-relaxed">{ticketData.mix}</p>
+                  </div>
+                  <div className="h-px bg-glass-border/10 my-1.5" />
+                  <div className="text-white/45 space-y-0.5">
+                    <span>Пожелания:</span>
+                    <p className="text-white/70 italic leading-snug">"{ticketData.comment}"</p>
+                  </div>
+                  <div className="h-px bg-glass-border/10 my-1.5" />
+                  <div className="flex justify-between items-center text-sm font-bold text-white pt-1">
+                    <span>Итого к оплате:</span>
+                    <span className="text-accent-gold">{ticketData.price} ₽</span>
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-white/35 leading-tight max-w-xs mx-auto">
+                  Сфотографируйте билет или покажите QR-код вашему кальянному мастеру. Мастер приготовит микс в точности с вашим рецептом.
+                </p>
+
+                {/* Sharing actions */}
+                <div className="pt-2">
+                  <a 
+                    href={getTelegramShareUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 rounded-full bg-[#229ED9] hover:bg-[#1e8cb3] text-white flex items-center justify-center gap-2 text-xs font-semibold shadow-md transition-all"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Отправить мастеру в Telegram
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
