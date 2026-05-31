@@ -122,6 +122,8 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
       .eq('id', req.user!.id)
       .single();
 
+    // Telegram notifications are now disabled to focus purely on the real-time admin dashboard.
+    /*
     if (user) {
       sendBookingNotification({
         seatLabel: data.seatLabel,
@@ -138,6 +140,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
         comment: data.comment,
       }).catch(() => {});
     }
+    */
 
     const populated = { ...booking, user };
     res.status(201).json(mapBookingToFrontend(populated));
