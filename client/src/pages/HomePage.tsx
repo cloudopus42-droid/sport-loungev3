@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { MapPin, Clock, Send, Flame, Sparkles, ChevronLeft, ChevronRight, Award, Compass, Calendar } from 'lucide-react';
+import { MapPin, Clock, Send, Flame, Sparkles, ChevronLeft, ChevronRight, Award, Compass } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
@@ -136,7 +136,7 @@ export function HomePage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Flame className="w-4 h-4 text-accent-gold animate-pulse" /> Заказать кальян
+                  <Flame className="w-4 h-4 text-accent-gold animate-pulse" /> Создать свой микс
                 </motion.button>
               </NavLink>
               <a 
@@ -339,13 +339,13 @@ export function HomePage() {
               
               <div className="space-y-4 max-w-xl z-10">
                 <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold font-semibold flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-pulse" /> БРОНИРОВАНИЕ
+                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-pulse" /> КОНСТРУКТОР ВКУСОВ
                 </span>
                 <h3 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider leading-none">
-                  Забронируйте <span className="gradient-text font-semibold italic">столик</span>
+                  Создайте идеальный <span className="gradient-text font-semibold italic">микс</span>
                 </h3>
                 <p className="text-xs sm:text-sm text-white/50 leading-relaxed font-light">
-                  Выберите удобное время и наслаждайтесь отдыхом в лучшей кальянной Чебоксар.
+                  Смешивайте крепость, чаши, жидкую основу и до 4 вкусов в реальном времени. Сгенерируйте QR-код и покажите вашему кальянному мастеру.
                 </p>
               </div>
 
@@ -356,7 +356,7 @@ export function HomePage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Calendar className="w-4 h-4 text-accent-gold" /> Забронировать столик
+                    <Flame className="w-4 h-4 text-accent-gold animate-pulse" /> Открыть конструктор
                   </motion.button>
                 </NavLink>
               </div>
