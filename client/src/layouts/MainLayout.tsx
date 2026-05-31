@@ -88,6 +88,11 @@ export function MainLayout() {
         <div className="absolute bottom-[15%] left-[5%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(217,70,239,0.16)_0%,transparent_70%)] blur-[110px] animate-haze-pulse" style={{ animationDuration: '16s' }} />
         <div className="absolute top-[50%] left-[35%] w-[45%] h-[45%] rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.14)_0%,transparent_70%)] blur-[130px] animate-haze-pulse" style={{ animationDuration: '22s' }} />
         
+        {/* Floating Ambient Mesh Gradient Spheres */}
+        <div className="float-sphere-1" />
+        <div className="float-sphere-2" />
+        <div className="float-sphere-3" />
+        
         {/* Ambient smoke/mist overlay */}
         <div className="absolute inset-0 opacity-[0.06] mix-blend-screen bg-[url('https://assets.mixkit.co/videos/preview/mixkit-smoke-in-slow-motion-41814-large.mp4')] bg-cover" />
         

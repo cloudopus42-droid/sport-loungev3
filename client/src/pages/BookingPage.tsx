@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QrCode, Send, Award, Flame, Gauge, MessageSquare, X } from 'lucide-react';
+import { QrCode, Send, Award, Flame, Gauge, MessageSquare, X, Share2 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { showToast } from '@/components/NotificationToast';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,12 +37,64 @@ export function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [ticketData, setTicketData] = useState<any | null>(null);
   const [showTicket, setShowTicket] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+
+  const triggerHaptic = (ms: number = 20) => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(ms);
+      } catch (err) {}
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('prefilled_mix');
+      if (saved) {
+        const mix = JSON.parse(saved);
+        if (mix.bowlType) setBowlType(mix.bowlType);
+        if (mix.liquidBase) setLiquidBase(mix.liquidBase);
+        if (mix.hookahStrength) setHookahStrength(mix.hookahStrength);
+        if (mix.hookahMix) setHookahMix(mix.hookahMix);
+        if (mix.mixPercentages) setMixPercentages(mix.mixPercentages);
+        if (mix.comment) setComment(mix.comment);
+        localStorage.removeItem('prefilled_mix');
+        showToast('Рецепт успешно загружен в конструктор!', 'success');
+      }
+    } catch (e) {
+      console.warn('Failed to load prefilled mix:', e);
+    }
+  }, []);
+
+  const handlePublishToFeed = async () => {
+    if (!ticketData) return;
+    setPublishing(true);
+    try {
+      const response = await fetch('/icon-512.png');
+      const blob = await response.blob();
+      const imageFile = new File([blob], 'recipe-hookah.png', { type: 'image/png' });
+
+      const fd = new FormData();
+      fd.append('title', `Рецепт ${ticketData.ticketId}`);
+      fd.append('description', `На чаше: ${ticketData.bowl}\nБаза: ${ticketData.base}\nКрепость: ${ticketData.strength}\nМикс: ${ticketData.mix}\n"${ticketData.comment}"`);
+      fd.append('image', imageFile);
+
+      await api.post('/api/posts', fd);
+      showToast('Ваш рецепт опубликован в ленту!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Не удалось опубликовать рецепт', 'error');
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   const selectedBowl = BOWL_TYPES.find(b => b.id === bowlType) || BOWL_TYPES[0];
   const selectedBase = LIQUID_BASES.find(l => l.id === liquidBase) || LIQUID_BASES[0];
   const totalPrice = selectedBowl.price + selectedBase.price;
 
   const updateMixFlavors = (name: string) => {
+    triggerHaptic(15);
     let nextMix = [...hookahMix];
     const selected = nextMix.includes(name);
     if (selected) {
@@ -70,6 +122,9 @@ export function BookingPage() {
   };
 
   const handlePercentageChange = (name: string, val: number) => {
+    if (val % 5 === 0) {
+      triggerHaptic(10);
+    }
     const nextPerc = { ...mixPercentages, [name]: val };
     const keys = Object.keys(nextPerc).filter(k => k !== name);
     if (keys.length === 0) return;
@@ -319,7 +374,7 @@ export function BookingPage() {
               <div className="space-y-2">
                 {BOWL_TYPES.map(b => (
                   <div key={b.id} 
-                    onClick={() => setBowlType(b.id)}
+                    onClick={() => { triggerHaptic(20); setBowlType(b.id); }}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                       bowlType === b.id 
                         ? 'bg-accent-gold/10 border-accent-gold text-white' 
@@ -349,7 +404,7 @@ export function BookingPage() {
               <div className="space-y-2">
                 {LIQUID_BASES.map(l => (
                   <div key={l.id} 
-                    onClick={() => setLiquidBase(l.id)}
+                    onClick={() => { triggerHaptic(20); setLiquidBase(l.id); }}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                       liquidBase === l.id 
                         ? 'bg-accent-gold/10 border-accent-gold text-white' 
@@ -388,7 +443,7 @@ export function BookingPage() {
                 </label>
                 <select
                   value={hookahStrength}
-                  onChange={(e) => setHookahStrength(e.target.value as 'light' | 'medium' | 'strong')}
+                  onChange={(e) => { triggerHaptic(20); setHookahStrength(e.target.value as any); }}
                   className="glass-input text-sm"
                 >
                   <option value="light">Лёгкий (Light)</option>
@@ -541,7 +596,7 @@ export function BookingPage() {
                 </p>
 
                 {/* Sharing actions */}
-                <div className="pt-2">
+                <div className="pt-2 space-y-2">
                   <a 
                     href={getTelegramShareUrl()}
                     target="_blank"
@@ -550,6 +605,16 @@ export function BookingPage() {
                   >
                     <Send className="w-3.5 h-3.5" /> Отправить мастеру в Telegram
                   </a>
+
+                  {isAuthenticated && (
+                    <button 
+                      onClick={handlePublishToFeed}
+                      disabled={publishing}
+                      className="w-full py-2.5 rounded-full border border-accent-gold/40 text-accent-gold hover:text-[#F4E4C4] hover:bg-accent-gold/15 flex items-center justify-center gap-2 text-xs font-semibold shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Share2 className="w-3.5 h-3.5" /> {publishing ? 'Публикация...' : 'Опубликовать в ленту'}
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

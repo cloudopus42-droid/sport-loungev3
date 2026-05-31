@@ -170,6 +170,22 @@ async function bootstrap(): Promise<void> {
     } else {
       console.log('🤖 [Support Bot] Disabled in development (set SUPPORT_BOT_ENABLED=true to run locally)');
     }
+
+    // Auto-pinger to prevent Render.com from sleeping
+    if (config.isProduction) {
+      console.log('🤖 [Auto-Pinger] Started. Will ping self health check every 10 minutes.');
+      setInterval(async () => {
+        try {
+          const healthUrl = `http://localhost:${config.port}/api/health`;
+          const res = await fetch(healthUrl);
+          if (res.ok) {
+            console.log(`🤖 [Auto-Pinger] Self health check ping successful at ${new Date().toISOString()}`);
+          }
+        } catch (pingErr: any) {
+          console.warn('⚠️ [Auto-Pinger] Self ping failed:', pingErr.message);
+        }
+      }, 600000); // 10 minutes in ms
+    }
   });
 
   // 10. Graceful shutdown

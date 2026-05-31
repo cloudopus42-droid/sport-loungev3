@@ -107,6 +107,61 @@ export function ProfilePage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [hookahStatuses, setHookahStatuses] = useState<Record<string, any>>({});
+  const [activeTab, setActiveTab] = useState<'visits' | 'mixes'>('visits');
+
+  const handleRepeatMix = (booking: any) => {
+    try {
+      const parts = (booking.hookahMix || '').split(' | ');
+      let bowlType = 'clay';
+      let liquidBase = 'water';
+      let hookahMix: string[] = [];
+      let mixPercentages: Record<string, number> = {};
+
+      if (parts.length >= 3) {
+        const bowlName = parts[0];
+        const baseName = parts[1];
+        const mixPart = parts[2].replace('Mix: ', '');
+
+        if (bowlName.includes('грейпфрут')) bowlType = 'grapefruit';
+        else if (bowlName.includes('ананас')) bowlType = 'pineapple';
+        else if (bowlName.includes('помело')) bowlType = 'pomelo';
+        else bowlType = 'clay';
+
+        if (baseName.includes('молок')) liquidBase = 'milk';
+        else if (baseName.includes('сок')) liquidBase = 'juice';
+        else if (baseName.includes('вин') || baseName.includes('Коктейл')) liquidBase = 'wine';
+        else liquidBase = 'water';
+
+        const flavorStrings = mixPart.split(', ');
+        flavorStrings.forEach((fStr: string) => {
+          const match = fStr.match(/(.+?)\s*\((\d+)%\)/);
+          if (match) {
+            const name = match[1].trim();
+            const pct = parseInt(match[2]);
+            hookahMix.push(name);
+            mixPercentages[name] = pct;
+          }
+        });
+      }
+
+      const prefilledMix = {
+        bowlType,
+        liquidBase,
+        hookahStrength: booking.hookahStrength || 'medium',
+        hookahMix,
+        mixPercentages,
+        comment: booking.comment || ''
+      };
+
+      localStorage.setItem('prefilled_mix', JSON.stringify(prefilledMix));
+      showToast('Рецепт загружен! Перенаправление...', 'success');
+      setTimeout(() => {
+        window.location.href = '/booking';
+      }, 1000);
+    } catch (err) {
+      showToast('Не удалось скопировать рецепт', 'error');
+    }
+  };
 
   // Editable fields
   const [editing, setEditing] = useState(false);
@@ -741,99 +796,190 @@ export function ProfilePage() {
           <Flame className="w-4 h-4 text-accent-cyan" /> Мои визиты и заказы
         </h3>
 
+        {/* Tab Selection */}
+        <div className="flex gap-2 border-b border-glass-border/10 pb-3 mb-4 select-none">
+          <button 
+            onClick={() => setActiveTab('visits')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+              activeTab === 'visits'
+                ? 'bg-accent-cyan/15 text-accent-cyan border-accent-cyan/45 shadow-[0_0_12px_rgba(0,242,254,0.15)]'
+                : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            Бронирования и визиты
+          </button>
+          <button 
+            onClick={() => setActiveTab('mixes')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+              activeTab === 'mixes'
+                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45 shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            Мои миксы 💨
+          </button>
+        </div>
+
         {loadingBookings ? (
           <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" /></div>
-        ) : bookings.length === 0 ? (
-          <GlassCard className="p-6 sm:p-8 text-center">
-            <p className="text-xs sm:text-sm text-white/40">У вас пока нет заказов</p>
-            <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = '/booking'}>Оформить заказ</GlowButton>
-          </GlassCard>
         ) : (
-          <div className="space-y-3">
-            {bookings.map((booking, i) => {
-              const st = statusLabels[booking.status] || statusLabels.pending;
-              const hs = hookahStatuses[booking._id];
-              return (
-                <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.04 }}>
-                  <GlassCard className="p-3 sm:p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-semibold text-white">{booking.seatLabel}</span>
-                        <Badge text={st.text} color={st.color} size="sm" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {booking.status === 'confirmed' && (
-                          <button 
-                            onClick={() => setReviewBookingId(booking._id)}
-                            className="text-[10px] text-accent-gold border border-accent-gold/25 bg-accent-gold/5 px-2 py-0.5 rounded-md hover:bg-accent-gold/15 transition-all flex items-center gap-1 font-semibold"
-                          >
-                            <Star className="w-2.5 h-2.5 fill-accent-gold" /> Оценить визит
-                          </button>
-                        )}
-                        {booking.status === 'pending' && (
-                          <button onClick={() => handleCancelBooking(booking._id)}
-                            className="text-[10px] sm:text-xs text-red-400/60 hover:text-red-400">Отменить</button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-white/40">
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{booking.time}</span>
-                      <span className="flex items-center gap-1"><User className="w-3 h-3" />{booking.guestsCount} чел</span>
-                    </div>
-                    {(booking as any).hookahMix && (
-                      <div className="text-[10px] sm:text-xs text-white/40 mt-1">💨 {(booking as any).hookahMix} • {(booking as any).hookahCount || 1} шт</div>
-                    )}
-
-                    {hs && booking.status !== 'cancelled' && (
-                      <div className="mt-2.5 p-3 rounded-2xl bg-white/5 border border-glass-border/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <Flame className="w-3.5 h-3.5 text-accent-gold animate-bounce animate-duration-1000" />
-                            <span className="text-xs font-semibold text-white/95">Приготовление: <span className="text-accent-gold">{hs.hookahStatusLabel}</span></span>
+          <div>
+            {activeTab === 'visits' ? (
+              // VISITS TAB
+              bookings.filter(b => b.seatLabel !== 'Микс-билет' && !b.seatId?.startsWith('MIX-')).length === 0 ? (
+                <GlassCard className="p-6 sm:p-8 text-center">
+                  <p className="text-xs sm:text-sm text-white/40">У вас пока нет бронирований столов</p>
+                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = '/'}>Забронировать стол</GlowButton>
+                </GlassCard>
+              ) : (
+                <div className="space-y-3">
+                  {bookings.filter(b => b.seatLabel !== 'Микс-билет' && !b.seatId?.startsWith('MIX-')).map((booking, i) => {
+                    const st = statusLabels[booking.status] || statusLabels.pending;
+                    const hs = hookahStatuses[booking._id];
+                    return (
+                      <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                        <GlassCard className="p-3 sm:p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs sm:text-sm font-semibold text-white">{booking.seatLabel}</span>
+                              <Badge text={st.text} color={st.color} size="sm" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {booking.status === 'confirmed' && (
+                                <button 
+                                  onClick={() => setReviewBookingId(booking._id)}
+                                  className="text-[10px] text-accent-gold border border-accent-gold/25 bg-accent-gold/5 px-2 py-0.5 rounded-md hover:bg-accent-gold/15 transition-all flex items-center gap-1 font-semibold"
+                                >
+                                  <Star className="w-2.5 h-2.5 fill-accent-gold" /> Оценить визит
+                                </button>
+                              )}
+                              {booking.status === 'pending' && (
+                                <button onClick={() => handleCancelBooking(booking._id)}
+                                  className="text-[10px] sm:text-xs text-red-400/60 hover:text-red-400">Отменить</button>
+                              )}
+                            </div>
                           </div>
-                          {hs.minutesLeft > 0 && <span className="text-[10px] text-white/40">{hs.minutesLeft} мин осталось</span>}
-                        </div>
-                        
-                        {/* Burning Coals indicators */}
-                        <div className="flex items-center justify-between gap-3 bg-black/45 p-2.5 rounded-xl border border-glass-border/20 mb-2">
-                          <div className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">Угли чаши:</div>
-                          <div className="flex gap-2.5">
-                            {[
-                              { minPct: 15, label: 'Сборка' },
-                              { minPct: 45, label: 'Разогрев' },
-                              { minPct: 80, label: 'Подача' },
-                            ].map((coal, idx) => {
-                              const active = hs.progressPercent >= coal.minPct;
-                              return (
-                                <div key={idx} className="flex flex-col items-center gap-1">
-                                  <div 
-                                    className={`w-5 h-5 rounded-full transition-all duration-700 flex items-center justify-center text-[10px] font-bold ${
-                                      active 
-                                        ? 'bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500 shadow-[0_0_16px_rgba(239,68,68,0.9)] text-black border border-yellow-300/30' 
-                                        : 'bg-stone-850 text-stone-500 border border-stone-700/30'
-                                    }`}
-                                  >
-                                    {idx + 1}
-                                  </div>
-                                  <span className="text-[8px] text-white/30 uppercase tracking-wider">{coal.label}</span>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-white/40">
+                            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{booking.time}</span>
+                            <span className="flex items-center gap-1"><User className="w-3 h-3" />{booking.guestsCount} чел</span>
+                          </div>
+                          {(booking as any).hookahMix && (
+                            <div className="text-[10px] sm:text-xs text-white/40 mt-1">💨 {(booking as any).hookahMix} • {(booking as any).hookahCount || 1} шт</div>
+                          )}
+
+                          {hs && booking.status !== 'cancelled' && (
+                            <div className="mt-2.5 p-3 rounded-2xl bg-white/5 border border-glass-border/30">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-1.5">
+                                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-bounce animate-duration-1000" />
+                                  <span className="text-xs font-semibold text-white/95">Приготовление: <span className="text-accent-gold">{hs.hookahStatusLabel}</span></span>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        </div>
+                                {hs.minutesLeft > 0 && <span className="text-[10px] text-white/40">{hs.minutesLeft} мин осталось</span>}
+                              </div>
+                              
+                              <div className="flex items-center justify-between gap-3 bg-black/45 p-2.5 rounded-xl border border-glass-border/20 mb-2">
+                                <div className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">Угли чаши:</div>
+                                <div className="flex gap-2.5">
+                                  {[
+                                    { minPct: 15, label: 'Сборка' },
+                                    { minPct: 45, label: 'Разогрев' },
+                                    { minPct: 80, label: 'Подача' },
+                                  ].map((coal, idx) => {
+                                    const active = hs.progressPercent >= coal.minPct;
+                                    return (
+                                      <div key={idx} className="flex flex-col items-center gap-1">
+                                        <div 
+                                          className={`w-5 h-5 rounded-full transition-all duration-700 flex items-center justify-center text-[10px] font-bold ${
+                                            active 
+                                              ? 'bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500 shadow-[0_0_16px_rgba(239,68,68,0.9)] text-black border border-yellow-300/30' 
+                                              : 'bg-stone-850 text-stone-500 border border-stone-700/30'
+                                          }`}
+                                        >
+                                          {idx + 1}
+                                        </div>
+                                        <span className="text-[8px] text-white/30 uppercase tracking-wider">{coal.label}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
 
-                        <div className="h-1.5 rounded-full bg-stone-900 overflow-hidden">
-                          <motion.div className="h-full rounded-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 shadow-[0_0_10px_rgba(212,175,55,0.7)]"
-                            initial={{ width: 0 }} animate={{ width: `${hs.progressPercent}%` }}
-                            transition={{ duration: 0.8, ease: 'easeOut' }} />
-                        </div>
-                      </div>
-                    )}
-                  </GlassCard>
-                </motion.div>
-              );
-            })}
+                              <div className="h-1.5 rounded-full bg-stone-900 overflow-hidden">
+                                <motion.div className="h-full rounded-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 shadow-[0_0_10px_rgba(212,175,55,0.7)]"
+                                  initial={{ width: 0 }} animate={{ width: `${hs.progressPercent}%` }}
+                                  transition={{ duration: 0.8, ease: 'easeOut' }} />
+                              </div>
+                            </div>
+                          )}
+                        </GlassCard>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )
+            ) : (
+              // MIXES TAB
+              bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-')).length === 0 ? (
+                <GlassCard className="p-6 sm:p-8 text-center">
+                  <p className="text-xs sm:text-sm text-white/40">У вас пока нет сохраненных миксов</p>
+                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = '/booking'}>Создать новый микс</GlowButton>
+                </GlassCard>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-')).map((booking, i) => {
+                    return (
+                      <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                        <GlassCard className="p-4 border border-accent-gold/20 flex flex-col justify-between h-full hover:border-accent-gold/40 transition-colors">
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-[10px] font-mono text-accent-gold font-bold tracking-widest">{booking.seatId}</span>
+                              <span className="text-[9px] text-white/30">{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
+                            </div>
+                            
+                            {(booking as any).hookahMix && (
+                              <div className="space-y-2 mt-2">
+                                <div className="text-xs text-white font-semibold flex items-center gap-1.5">
+                                  <Flame className="w-3.5 h-3.5 text-accent-gold" />
+                                  <span>Детали рецепта</span>
+                                </div>
+                                <div className="text-[11px] text-white/70 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-glass-border/10 space-y-1">
+                                  {(booking as any).hookahMix.split(' | ').map((line: string, idx: number) => {
+                                    if (line.startsWith('Mix: ')) {
+                                      return (
+                                        <div key={idx} className="mt-1 pt-1 border-t border-white/5 text-accent-gold">
+                                          <strong>Вкусы:</strong> {line.replace('Mix: ', '')}
+                                        </div>
+                                      );
+                                    }
+                                    return <div key={idx}>{line}</div>;
+                                  })}
+                                  {booking.comment && (
+                                    <div className="text-[10px] text-white/50 italic mt-1 font-light">
+                                      "{booking.comment}"
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-4 pt-3 border-t border-white/5 flex gap-2">
+                            <button
+                              onClick={() => handleRepeatMix(booking)}
+                              className="w-full py-2 bg-gradient-to-r from-accent-gold/10 to-amber-500/10 border border-accent-gold/30 hover:border-accent-gold/60 text-accent-gold text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                            >
+                              <Flame className="w-3.5 h-3.5 text-accent-gold animate-pulse" />
+                              <span>Повторить микс</span>
+                            </button>
+                          </div>
+                        </GlassCard>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )
+            )}
           </div>
         )}
       </motion.div>
