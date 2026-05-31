@@ -529,4 +529,82 @@ function getHookahStatusByTime(booking: any): {
   }
 }
 
+// POST /api/bookings/public-mix — Public mix order (guest or authenticated)
+router.post('/public-mix', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { bowl, base, strength, mix, price, phone, comment, ticketId, userId, userName } = req.body;
+
+    if (!mix || !phone) {
+      res.status(400).json({ error: 'Вкусовой микс и телефон обязательны', status: 400 });
+      return;
+    }
+
+    const hookahStrength = strength === 'Лёгкий' ? 'light' : strength === 'Средний' ? 'medium' : 'strong';
+    const hookahMix = `${bowl} | ${base} | Mix: ${mix}`;
+
+    // 1. Create booking in Supabase DB
+    const { data: booking, error: insertError } = await supabase
+      .from('bookings')
+      .insert({
+        user_id: userId || null,
+        seat_id: ticketId || `MIX-${Math.floor(1000 + Math.random() * 9000)}`,
+        seat_label: 'Микс-билет',
+        seat_zone: 'hall',
+        date: new Date().toISOString().slice(0, 10),
+        time: new Date().toTimeString().slice(0, 5),
+        guests_count: 1,
+        phone: phone,
+        hookah_mix: hookahMix,
+        hookah_strength: hookahStrength,
+        hookah_count: 1,
+        comment: comment || '',
+        status: 'pending',
+        hookah_status: 'accepted',
+        hookah_status_updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (insertError || !booking) {
+      res.status(500).json({ error: 'Не удалось оформить заказ: ' + insertError?.message });
+      return;
+    }
+
+    // 2. Trigger Telegram bot notification immediately
+    sendBookingNotification({
+      seatLabel: 'Микс-конструктор',
+      seatZone: 'hall',
+      date: new Date().toLocaleDateString('ru-RU'),
+      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      guestsCount: 1,
+      phone: phone,
+      userName: userName || 'Анонимный гость',
+      userEmail: '-',
+      hookahMix: hookahMix,
+      hookahStrength: hookahStrength,
+      hookahCount: 1,
+      comment: comment || 'Без комментариев',
+    }).catch(() => {});
+
+    // 3. Broadcast to admin panel via Socket.IO for real-time chime and toast
+    try {
+      const io = getIO();
+      io.emit('booking:created', {
+        id: booking.id,
+        seatLabel: 'Микс-билет',
+        seatZone: 'hall',
+        phone: phone,
+        hookahMix: hookahMix,
+        guestsCount: 1
+      });
+    } catch (socketErr) {
+      console.warn('⚠️ Socket emit failed for public mix:', socketErr);
+    }
+
+    res.status(201).json(mapBookingToFrontend(booking));
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
