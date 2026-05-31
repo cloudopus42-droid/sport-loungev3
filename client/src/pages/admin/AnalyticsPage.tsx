@@ -11,6 +11,15 @@ import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 import type { Booking } from '@/types';
 
+interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  date: string;
+  totalAmount: number;
+  items: Array<{ name: string; qty: number; price: number }>;
+  createdAt: string;
+}
+
 interface InventoryItem {
   name: string; currentStock: number; minStock: number; unit: string; pricePerUnit: number; dailyUsage: number;
 }
@@ -52,6 +61,8 @@ const defaultInventory: InventoryItem[] = [
 export function AnalyticsPage() {
   const saved = loadSettings();
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [showConfig, setShowConfig] = useState(false);
@@ -67,6 +78,10 @@ export function AnalyticsPage() {
       try { 
         const { data } = await api.get<Booking[]>('/api/bookings/all'); 
         setAllBookings(data); 
+      } catch {}
+      try {
+        const { data } = await api.get<Invoice[]>('/api/invoices');
+        setInvoices(data);
       } catch {}
       setLoading(false);
     })();
@@ -99,6 +114,13 @@ export function AnalyticsPage() {
     return d >= prevPeriodStart && d < periodStart;
   });
 
+  const periodInvoices = invoices.filter(i => {
+    const d = new Date(i.date);
+    return d >= periodStart;
+  });
+
+  const totalInvoiceSpend = periodInvoices.reduce((s, i) => s + i.totalAmount, 0);
+
   const monthFrac = daysInPeriod / 30;
 
   // Financial aggregates
@@ -106,7 +128,7 @@ export function AnalyticsPage() {
   const grossRevenue = totalHookahs * hookahPrice;
   const fixedExpenses = Math.round(expenses.reduce((s, e) => s + e.amount, 0) * monthFrac);
   const inventoryExpenses = Math.round(inventory.reduce((s, i) => s + i.dailyUsage * i.pricePerUnit * daysInPeriod, 0));
-  const totalExpenses = fixedExpenses + inventoryExpenses;
+  const totalExpenses = fixedExpenses + inventoryExpenses + totalInvoiceSpend;
   const totalGuests = periodBookings.reduce((s, b) => s + b.guestsCount, 0);
   const totalOrders = periodBookings.length;
 
@@ -422,6 +444,19 @@ export function AnalyticsPage() {
               <div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0" />
               <span className="text-[10px] sm:text-xs text-white/60 flex-1">Расходники</span>
               <span className="text-[10px] sm:text-xs text-white/80 font-medium">{fmt(inventoryExpenses)}</span>
+              <div className="w-12 sm:w-20 h-1.5 rounded-full bg-glass-bg overflow-hidden">
+                <div className="h-full rounded-full bg-purple-400 opacity-60"
+                  style={{ width: `${totalExpenses > 0 ? (inventoryExpenses / totalExpenses * 100) : 0}%` }} />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-accent-gold flex-shrink-0" />
+              <span className="text-[10px] sm:text-xs text-white/60 flex-1">Закупки сырья (ИП Восторгин)</span>
+              <span className="text-[10px] sm:text-xs text-white/80 font-medium">{fmt(totalInvoiceSpend)}</span>
+              <div className="w-12 sm:w-20 h-1.5 rounded-full bg-glass-bg overflow-hidden">
+                <div className="h-full rounded-full bg-accent-gold opacity-60"
+                  style={{ width: `${totalExpenses > 0 ? (totalInvoiceSpend / totalExpenses * 100) : 0}%` }} />
+              </div>
             </div>
             <div className="h-px bg-glass-border" />
             <div className="flex items-center justify-between">
@@ -451,6 +486,59 @@ export function AnalyticsPage() {
           </div>
         </GlassCard>
       </div>
+
+      {/* Raw Material Invoices Section */}
+      <GlassCard className="p-4 sm:p-5">
+        <h3 className="text-xs sm:text-sm font-display font-semibold text-white mb-4 flex items-center gap-2">
+          <Package className="w-4 h-4 text-accent-gold" /> Журнал закупок (ИП Восторгин А.В.)
+        </h3>
+        <div className="space-y-3">
+          {periodInvoices.length === 0 ? (
+            <p className="text-xs text-white/30 text-center py-4">Нет закупок за выбранный период</p>
+          ) : (
+            periodInvoices.map(invoice => {
+              const isExpanded = expandedInvoice === invoice.id;
+              return (
+                <div key={invoice.id} className="border border-glass-border/30 rounded-2xl overflow-hidden bg-black/10">
+                  <div 
+                    onClick={() => setExpandedInvoice(isExpanded ? null : invoice.id)}
+                    className="flex justify-between items-center p-3 cursor-pointer hover:bg-white/5 transition-colors"
+                  >
+                    <div>
+                      <span className="text-xs font-semibold text-white font-mono">{invoice.invoiceNumber}</span>
+                      <span className="text-[10px] text-white/40 ml-3">
+                        {new Date(invoice.date).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-accent-gold">{fmt(invoice.totalAmount)}</span>
+                      <span className="text-[10px] text-white/30">{isExpanded ? '▲' : '▼'}</span>
+                    </div>
+                  </div>
+                  {isExpanded && (
+                    <div className="p-3 bg-black/20 border-t border-glass-border/10 space-y-2">
+                      <div className="text-[10px] text-white/40 font-semibold grid grid-cols-12 gap-2 border-b border-glass-border/10 pb-1">
+                        <span className="col-span-6">Товар / Услуга</span>
+                        <span className="col-span-2 text-right">Кол-во</span>
+                        <span className="col-span-2 text-right">Цена</span>
+                        <span className="col-span-2 text-right">Сумма</span>
+                      </div>
+                      {invoice.items.map((item, idx) => (
+                        <div key={idx} className="text-[10px] text-white/70 grid grid-cols-12 gap-2 py-0.5">
+                          <span className="col-span-6 truncate">{item.name}</span>
+                          <span className="col-span-2 text-right font-mono">{item.qty} шт</span>
+                          <span className="col-span-2 text-right font-mono">{fmt(item.price)}</span>
+                          <span className="col-span-2 text-right font-mono text-white">{fmt(item.qty * item.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </GlassCard>
 
       {/* Consumables Inventory */}
       <GlassCard className="p-4 sm:p-5">
