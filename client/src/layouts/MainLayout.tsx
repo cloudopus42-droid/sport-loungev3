@@ -14,6 +14,7 @@ import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
 import girlsImage from '../girls.jpg';
+import speedDialMusic from '../zero-7-speed-dial.mp3';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -77,9 +78,9 @@ export function MainLayout() {
 
   const toggleMusic = () => {
     if (!audioRef.current) {
-      audioRef.current = new Audio('https://stream.sol.fm/lounge?direct=true');
+      audioRef.current = new Audio(speedDialMusic);
       audioRef.current.loop = true;
-      audioRef.current.volume = 0.25;
+      audioRef.current.volume = 0.10; // 10%
     }
     if (isPlaying) {
       audioRef.current.pause();
