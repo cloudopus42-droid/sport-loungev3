@@ -12,6 +12,7 @@ import { LuxuryCursor } from '@/components/ui/LuxuryCursor';
 import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
+import { ThreeSmoke } from '@/components/ThreeSmoke';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -83,11 +84,25 @@ export function MainLayout() {
         {/* Ambient smoke/mist overlay */}
         <div className="absolute inset-0 opacity-[0.06] mix-blend-screen bg-[url('https://assets.mixkit.co/videos/preview/mixkit-smoke-in-slow-motion-41814-large.mp4')] bg-cover" />
         
+        {/* 3D WebGL Smoke Render - Drift across entire background */}
+        <ThreeSmoke />
+
         {/* CSS Volumetric Haze Layers */}
         <div className="absolute inset-0 opacity-[0.08] mix-blend-color-dodge">
           <div className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.12)_0%,transparent_60%)] animate-haze-float pointer-events-none" />
           <div className="absolute w-[180%] h-[180%] top-[-40%] left-[-40%] bg-[radial-gradient(circle_at_center,rgba(138,102,35,0.08)_0%,transparent_70%)] animate-haze-float-reverse pointer-events-none" />
         </div>
+      </div>
+
+      {/* Decorative luxury side margins for wide screens (fill empty space) */}
+      <div className="hidden xl:flex fixed left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-25 select-none">
+        <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr] rotate-180">SPORT LOUNGE</span>
+        <div className="w-[1px] h-32 bg-gradient-to-b from-accent-gold/40 to-transparent" />
+      </div>
+      
+      <div className="hidden xl:flex fixed right-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-25 select-none">
+        <div className="w-[1px] h-32 bg-gradient-to-t from-accent-gold/40 to-transparent" />
+        <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr]">PREMIUM 24/7</span>
       </div>
       <LuxuryCursor />
       <ParticleEngine />
