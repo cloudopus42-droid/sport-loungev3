@@ -143,6 +143,27 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     */
 
     const populated = { ...booking, user };
+
+    // Trigger n8n Google Sheets Accounting and AI Sommelier
+    try {
+      const payload = mapBookingToFrontend(populated);
+      if (payload) {
+        fetch('https://sport-lounge-n8n.onrender.com/webhook/booking-accounting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch((err: any) => console.warn('⚠️ n8n accounting failed:', err.message));
+
+        fetch('https://sport-lounge-n8n.onrender.com/webhook/ai-sommelier-mix', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch((err: any) => console.warn('⚠️ n8n sommelier failed:', err.message));
+      }
+    } catch (n8nErr: any) {
+      console.warn('⚠️ Failed to notify n8n:', n8nErr.message);
+    }
+
     res.status(201).json(mapBookingToFrontend(populated));
   } catch (error) {
     next(error);
@@ -338,6 +359,20 @@ router.put(
       if (error || !booking) {
         res.status(404).json({ error: 'Бронь не найдена', status: 404 });
         return;
+      }
+
+      // Trigger status update sync in Google Sheets via n8n
+      try {
+        const payload = mapBookingToFrontend(booking);
+        if (payload) {
+          fetch('https://sport-lounge-n8n.onrender.com/webhook/booking-accounting', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).catch((err: any) => console.warn('⚠️ n8n accounting update failed:', err.message));
+        }
+      } catch (n8nErr: any) {
+        console.warn('⚠️ Failed to notify n8n of status change:', n8nErr.message);
       }
 
       res.json(mapBookingToFrontend(booking));
@@ -599,6 +634,26 @@ router.post('/public-mix', async (req: Request, res: Response, next: NextFunctio
       });
     } catch (socketErr) {
       console.warn('⚠️ Socket emit failed for public mix:', socketErr);
+    }
+
+    // Trigger n8n Google Sheets Accounting and AI Sommelier
+    try {
+      const payload = mapBookingToFrontend(booking);
+      if (payload) {
+        fetch('https://sport-lounge-n8n.onrender.com/webhook/booking-accounting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch((err: any) => console.warn('⚠️ n8n accounting failed:', err.message));
+
+        fetch('https://sport-lounge-n8n.onrender.com/webhook/ai-sommelier-mix', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch((err: any) => console.warn('⚠️ n8n sommelier failed:', err.message));
+      }
+    } catch (n8nErr: any) {
+      console.warn('⚠️ Failed to notify n8n of public mix:', n8nErr.message);
     }
 
     res.status(201).json(mapBookingToFrontend(booking));
