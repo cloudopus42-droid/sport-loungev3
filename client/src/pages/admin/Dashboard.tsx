@@ -119,10 +119,10 @@ export function Dashboard() {
   }, []);
 
   const statKPIs = [
-    { label: 'Total Revenue', value: stats?.totalRevenue ?? 13725, icon: DollarSign, prefix: '$' },
-    { label: 'Total Orders', value: stats?.totalOrders ?? 741, icon: TrendingUp, prefix: '' },
-    { label: 'Recolat/ngtless', value: 330, icon: Blend, prefix: '+' },
-    { label: 'Soda gaterils', value: 350, icon: Sparkles, prefix: '$' },
+    { label: 'Выручка (руб)', value: stats?.totalRevenue ?? 15000, icon: DollarSign, prefix: '₽' },
+    { label: 'Всего заказов', value: stats?.totalOrders ?? 12, icon: TrendingUp, prefix: '' },
+    { label: 'Всего миксов', value: stats?.totalMixes ?? 18, icon: Blend, prefix: '' },
+    { label: 'Активные акции', value: stats?.activePromos ?? 3, icon: Sparkles, prefix: '' },
   ];
 
   return (
@@ -240,7 +240,7 @@ export function Dashboard() {
                 <span>Active Orders</span>
               </h3>
               <button className="px-3 py-1 rounded-full bg-white/5 border border-glass-border/30 text-[10px] font-bold text-accent-gold select-none">
-                Annuin
+                Обзор
               </button>
             </div>
 
@@ -276,7 +276,7 @@ export function Dashboard() {
                               ? 'bg-amber-600/10 border-amber-500/35 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.15)]'
                               : 'bg-emerald-500/10 border-emerald-400/35 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
                           }`}>
-                            {order.status === 'pending' ? 'Prrlow' : order.status === 'in_progress' ? 'Lourng' : 'Unow'}
+                            {order.status === 'pending' ? 'Новый' : order.status === 'in_progress' ? 'В работе' : 'Готов'}
                           </span>
                         </td>
                       </tr>
@@ -333,9 +333,9 @@ export function Dashboard() {
 
             <div className="space-y-4">
               {[
-                { title: 'Order Orders', time: 'Batinred 2 hours ago' },
-                { title: 'Order Notification', time: 'Batinred 5 hours ago' },
-                { title: 'Order Notifications', time: 'Batinred 1 day ago' },
+                { title: 'Новый заказ кальяна', time: '2 часа назад' },
+                { title: 'Пользователь оценил визит', time: '5 часов назад' },
+                { title: 'Обновлена витрина миксов', time: '1 день назад' },
               ].map((feed, idx) => (
                 <div key={idx} className="flex items-center justify-between gap-3 border-b border-glass-border/5 pb-3 last:border-b-0 last:pb-0">
                   <div className="flex gap-2.5 items-center">
@@ -348,7 +348,7 @@ export function Dashboard() {
                     </div>
                   </div>
                   <button className="px-3 py-1 rounded-full bg-white/5 border border-glass-border/30 hover:border-accent-gold/45 text-[9px] font-bold text-accent-gold transition-colors select-none">
-                    Upgrade
+                    Открыть
                   </button>
                 </div>
               ))}

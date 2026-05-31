@@ -4,6 +4,7 @@
  * When served from port 5000 (SPA via Express), returns empty string (same origin).
  */
 export function getApiBase(): string {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
   const { protocol, hostname, port } = window.location;
   if (port === '5000' || port === '') return '';
   return `${protocol}//${hostname}:5000`;
@@ -15,5 +16,9 @@ export function getApiBase(): string {
 export function resolveImageUrl(url: string): string {
   if (!url) return '';
   if (url.startsWith('http')) return url;
-  return `${getApiBase()}${url}`;
+  // If absolute path but lacks host
+  if (url.startsWith('/uploads')) {
+    return `${getApiBase()}${url}`;
+  }
+  return url;
 }

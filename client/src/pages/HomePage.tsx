@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { Armchair, MapPin, Clock, Send, Flame, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Clock, Send, Flame, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
 import api from '@/lib/api';
@@ -14,48 +14,37 @@ import { ThreeSmoke } from '@/components/ThreeSmoke';
 // Predefined luxury zones with background images matching reference design
 const PREMIUM_ZONES = [
   {
-    id: 'pc-zone',
-    title: 'PC Zone',
-    subtitle: 'Premium PC Club',
-    images: [
-      'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1560253023-3ec5d502959f?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800&auto=format&fit=crop'
-    ],
-    description: 'High-end gaming systems with 600Hz screens and premium chairs.',
-  },
-  {
     id: 'hookah-lounge',
     title: 'Hookah Lounge',
-    subtitle: 'Premium lounge area',
+    subtitle: 'Премиум лаунж-зона',
     images: [
       'https://images.unsplash.com/photo-1527661591475-527312dd65f5?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?q=80&w=800&auto=format&fit=crop'
     ],
-    description: 'Cozy private VIP rooms with soft sofas and premium hookah blends.',
+    description: 'Уютные приватные VIP-комнаты с мягкими диванами и премиальным выбором табаков.',
   },
   {
     id: 'restaurant',
     title: 'Restaurant',
-    subtitle: 'Hookah Lounge',
+    subtitle: 'Ресторанная зона',
     images: [
       'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=800&auto=format&fit=crop'
     ],
-    description: 'Exquisite cuisine and unique blends prepared by hookah masters.',
+    description: 'Изысканная кухня и авторские миксы, созданные нашими кальянными мастерами.',
   },
   {
     id: 'terrace',
     title: 'Terrace',
-    subtitle: 'Restaurant terrace',
+    subtitle: 'Открытая терраса',
     images: [
       'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1515516969-d4008cc6241a?q=80&w=800&auto=format&fit=crop'
     ],
-    description: 'Beautiful open-air rooftop terrace with panoramic city views.',
+    description: 'Прекрасная открытая терраса на крыше с панорамным видом на город.',
   },
 ];
 
@@ -64,7 +53,6 @@ export function HomePage() {
   const [stories, setStories] = useState<Story[]>([]);
   const [storiesLoading, setStoriesLoading] = useState(true);
   const [activeZoneSlide, setActiveZoneSlide] = useState<Record<string, number>>({
-    'pc-zone': 0,
     'hookah-lounge': 0,
     'restaurant': 0,
     'terrace': 0,
@@ -152,15 +140,15 @@ export function HomePage() {
               </span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-black text-white leading-tight">
-              PREMIUM <span className="gradient-text">LOUNGE</span> CLUB
+              ИСТИННЫЙ <span className="gradient-text">ВКУС</span> И КРЕПОСТЬ
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-white/50 max-w-lg mx-auto lg:mx-0 leading-relaxed font-light">
-              Погрузитесь в атмосферу исключительной роскоши и комфорта. Лучшие кальяны, премиальный ресторан, 24/7 игровой зал и открытая терраса.
+              Мы готовим кальяны на 4 углях под специальной баней. Это позволяет табаку раскрыться полностью, отдавая свой глубокий вкус и истинную крепость без перегрева и горечи.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-2">
               <NavLink to="/booking">
                 <GlowButton size="lg" className="w-full sm:w-auto shadow-glow-gold-lg">
-                  <Armchair className="w-5 h-5 mr-1" /> Оформить бронь
+                  <Flame className="w-5 h-5 mr-1 text-black" /> Оформить заказ
                 </GlowButton>
               </NavLink>
               <a 
@@ -270,8 +258,8 @@ export function HomePage() {
               >
                 {/* Micro-sparkle effect in background */}
                 <span className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-                <Armchair className="w-5 h-5" />
-                <span>Book Hookah</span>
+                <Flame className="w-5 h-5" />
+                <span>Заказать кальян</span>
               </motion.button>
             </NavLink>
           </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Armchair, UserCircle, Shield, LogOut, MapPin, MessageCircle, Search, Bell, Volume2, VolumeX } from 'lucide-react';
+import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Search, Bell, Volume2, VolumeX } from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,10 +11,11 @@ import type { Invitation } from '@/types';
 import { LuxuryCursor } from '@/components/ui/LuxuryCursor';
 import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
+import { resolveImageUrl } from '@/lib/urls';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
-  { path: '/booking', icon: Armchair, label: 'Бронь' },
+  { path: '/booking', icon: Flame, label: 'Заказ' },
   { path: '/feed', icon: MessageCircle, label: 'Лента' },
   { path: '/profile', icon: UserCircle, label: 'Профиль' },
 ];
@@ -126,6 +127,12 @@ export function MainLayout() {
               )}>
                 Главная
               </NavLink>
+              <NavLink to="/booking" className={({ isActive }) => clsx(
+                "text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full transition-all",
+                isActive ? "text-accent-gold bg-white/5 border border-accent-gold/25" : "text-white/60 hover:text-white hover:bg-white/5"
+              )}>
+                Заказ кальяна
+              </NavLink>
               <NavLink to="/feed" className={({ isActive }) => clsx(
                 "text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full transition-all",
                 isActive ? "text-accent-gold bg-white/5 border border-accent-gold/25" : "text-white/60 hover:text-white hover:bg-white/5"
@@ -171,7 +178,7 @@ export function MainLayout() {
               <div className="flex items-center gap-2">
                 <NavLink to="/profile" className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-white/10 transition-all text-xs font-semibold text-white/80">
                   {user?.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
+                    <img src={resolveImageUrl(user.avatar)} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
                   ) : (
                     <UserCircle className="w-4 h-4 text-accent-gold" />
                   )}
@@ -194,8 +201,8 @@ export function MainLayout() {
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
               >
-                <Armchair className="w-3.5 h-3.5" />
-                <span>Book Order</span>
+                <Flame className="w-3.5 h-3.5 text-black" />
+                <span>Заказать кальян</span>
               </motion.button>
             </NavLink>
 
