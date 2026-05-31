@@ -1,3 +1,8 @@
+:root {
+  --glass-blur: 40px;
+  --glass-opacity: 0.72;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,17 +34,18 @@
   .glass-card {
     background: linear-gradient(
       135deg,
-      rgba(15, 12, 10, 0.72) 0%,
-      rgba(8, 6, 5, 0.52) 100%
+      rgba(15, 12, 10, var(--glass-opacity)) 0%,
+      rgba(8, 6, 5, calc(var(--glass-opacity) * 0.72)) 100%
     );
-    backdrop-filter: blur(40px) saturate(220%);
-    -webkit-backdrop-filter: blur(40px) saturate(220%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
     border-radius: 28px;
     position: relative;
     overflow: hidden;
     box-shadow: 
       0 12px 40px 0 rgba(0, 0, 0, 0.35),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.2),
       inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
       inset 0 0 16px 0 rgba(255, 255, 255, 0.01);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -92,9 +98,10 @@
   }
 
   .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.28);
     box-shadow:
       0 20px 48px rgba(0, 0, 0, 0.45),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.25),
       inset 0 1px 2px rgba(255, 255, 255, 0.25),
       inset 0 0 24px rgba(255, 255, 255, 0.03);
   }
@@ -104,9 +111,10 @@
   }
 
   .glass-card-hover:hover {
-    border-color: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.35);
     box-shadow:
       0 24px 56px rgba(0, 0, 0, 0.5),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
       inset 0 1px 2px rgba(255, 255, 255, 0.35),
       inset 0 0 32px rgba(255, 255, 255, 0.05);
     transform: translateY(-2px);
@@ -116,17 +124,18 @@
   .glass-card-purple {
     background: linear-gradient(
       135deg,
-      rgba(38, 20, 75, 0.75) 0%,
-      rgba(20, 10, 35, 0.55) 100%
+      rgba(38, 20, 75, var(--glass-opacity)) 0%,
+      rgba(20, 10, 35, calc(var(--glass-opacity) * 0.73)) 100%
     );
-    backdrop-filter: blur(40px) saturate(220%);
-    -webkit-backdrop-filter: blur(40px) saturate(220%);
-    border: 1px solid rgba(138, 92, 245, 0.24);
+    backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    border: 0.5px solid rgba(138, 92, 245, 0.28);
     border-radius: 28px;
     position: relative;
     overflow: hidden;
     box-shadow: 
       0 12px 32px 0 rgba(138, 92, 245, 0.1),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.22),
       inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25),
       inset 0 0 16px 0 rgba(255, 255, 255, 0.02);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -177,9 +186,10 @@
   }
 
   .glass-card-purple:hover {
-    border-color: rgba(138, 92, 245, 0.4);
+    border-color: rgba(138, 92, 245, 0.48);
     box-shadow: 
       0 20px 48px 0 rgba(138, 92, 245, 0.25),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.3),
       inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
   }
 
@@ -187,18 +197,18 @@
   .glass-card-gold {
     background: linear-gradient(
       135deg,
-      rgba(35, 28, 15, 0.78) 0%,
-      rgba(20, 16, 10, 0.58) 100%
+      rgba(35, 28, 15, var(--glass-opacity)) 0%,
+      rgba(20, 16, 10, calc(var(--glass-opacity) * 0.74)) 100%
     );
-    backdrop-filter: blur(40px) saturate(220%);
-    -webkit-backdrop-filter: blur(40px) saturate(220%);
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    border: 0.5px solid rgba(212, 175, 55, 0.32);
     border-radius: 28px;
     position: relative;
     overflow: hidden;
     box-shadow: 
       0 12px 32px 0 rgba(212, 175, 55, 0.1),
-      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.24),
       inset 0 0 16px 0 rgba(255, 255, 255, 0.02);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -248,9 +258,10 @@
   }
 
   .glass-card-gold:hover {
-    border-color: rgba(212, 175, 55, 0.45);
+    border-color: rgba(212, 175, 55, 0.5);
     box-shadow: 
-      0 20px 48px 0 rgba(212, 175, 55, 0.22),
+      0 20px 48px 0 rgba(212, 175, 55, 0.25),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.3),
       inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
   }
 
