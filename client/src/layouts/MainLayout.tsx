@@ -16,7 +16,7 @@ import { LuxuryMusicPlayer } from '@/components/ui/LuxuryMusicPlayer';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
-  { path: '/booking', icon: Flame, label: 'Заказ' },
+  { path: '/booking', icon: Flame, label: 'Миксолог' },
   { path: '/feed', icon: MessageCircle, label: 'Лента' },
   { path: '/profile', icon: UserCircle, label: 'Профиль' },
 ];
@@ -152,7 +152,7 @@ export function MainLayout() {
             )}>
               {({ isActive }) => (
                 <>
-                  Заказ кальяна
+                  Создать микс
                   {isActive && (
                     <motion.div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-accent-gold shadow-glow-gold" layoutId="activeHeaderDot" />
                   )}
@@ -240,7 +240,7 @@ export function MainLayout() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                Заказать кальян
+                Создать микс
               </motion.button>
             </NavLink>
           </div>
