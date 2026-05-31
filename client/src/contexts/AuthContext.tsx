@@ -55,7 +55,11 @@ function getInitialUser(): User | null {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [user, setUser] = useState<User | null>(() => getInitialUser());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = getInitialUser();
+    return !savedToken || !savedUser;
+  });
 
   const isAuthenticated = !!token && !!user;
   const isAdmin = user?.role === 'admin';
