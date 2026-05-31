@@ -11,8 +11,8 @@ interface GlassCardProps {
 
 export function GlassCard({ children, className, animate = true, onClick }: GlassCardProps) {
   const baseClasses = clsx(
-    'bg-glass-bg backdrop-blur-glass border border-glass-border rounded-2xl shadow-lg',
-    onClick && 'cursor-pointer',
+    'glass-card',
+    onClick && 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]',
     className
   );
 
