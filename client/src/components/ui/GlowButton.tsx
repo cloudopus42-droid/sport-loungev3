@@ -5,14 +5,15 @@ import type { ReactNode } from 'react';
 
 interface GlowButtonProps extends HTMLMotionProps<'button'> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'danger' | 'gold';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
 }
 
 const variantStyles = {
-  primary: 'bg-gradient-to-r from-[#8A5CF5] to-[#D946EF] shadow-[0_4px_20px_rgba(217,70,239,0.4)] border border-white/20 text-white',
-  secondary: 'bg-gradient-to-r from-[#06B6D4] to-[#2DD4BF] shadow-[0_4px_20px_rgba(6,182,212,0.4)] border border-white/20 text-white',
+  primary: 'glass-btn-purple',
+  secondary: 'glass-btn-cyan',
+  gold: 'glass-btn-gold',
   danger: 'bg-gradient-to-r from-red-600 to-red-500 shadow-[0_4px_20px_rgba(239,68,68,0.4)] border border-white/20 text-white',
 };
 
