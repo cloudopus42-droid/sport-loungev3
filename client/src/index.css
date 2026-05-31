@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-white font-sans antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    @apply bg-accent-amber/30 text-white;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-dark-bg; }
+  ::-webkit-scrollbar-thumb { @apply bg-accent-gold/20 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-accent-gold/40; }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.2) #080604;
+  }
+}
+
+@layer components {
+  /* ──── Luxury Gold Glass Card ──── */
+  .glass-card {
+    background: linear-gradient(
+      135deg,
+      rgba(24, 18, 12, 0.75) 0%,
+      rgba(15, 11, 8, 0.8) 100%
+    );
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Gold liquid glass shimmer — top edge light refraction */
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.15) 20%,
+      rgba(212, 175, 55, 0.35) 50%,
+      rgba(255, 255, 255, 0.15) 80%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(212, 175, 55, 0.25);
+    box-shadow:
+      0 10px 30px rgba(212, 175, 55, 0.08),
+      0 0 1px rgba(212, 175, 55, 0.3),
+      inset 0 0 40px rgba(212, 175, 55, 0.03);
+  }
+
+  .glass-card-hover {
+    @apply glass-card;
+  }
+
+  .glass-card-hover:hover {
+    border-color: rgba(212, 175, 55, 0.35);
+    box-shadow:
+      0 12px 40px rgba(212, 175, 55, 0.15),
+      0 0 2px rgba(212, 175, 55, 0.5),
+      inset 0 0 40px rgba(212, 175, 55, 0.05);
+    transform: translateY(-2px);
+  }
+
+  /* ──── Majestic Gold Glass Button ──── */
+  .glow-btn {
+    position: relative;
+    overflow: hidden;
+    @apply px-6 py-3 rounded-xl font-semibold text-white;
+    background: linear-gradient(135deg, #FFD700 0%, #D4AF37 50%, #8A6623 100%);
+    box-shadow:
+      0 4px 20px rgba(212, 175, 55, 0.35),
+      0 0 1px rgba(212, 175, 55, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glow-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.25),
+      transparent
+    );
+    transition: left 0.6s ease;
+  }
+
+  .glow-btn:hover::before {
+    left: 100%;
+  }
+
+  .glow-btn:hover {
+    box-shadow:
+      0 8px 32px rgba(212, 175, 55, 0.55),
+      0 0 2px rgba(212, 175, 55, 0.8),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  .glow-btn:active {
+    transform: scale(0.97);
+  }
+
+  .glow-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .glow-btn:disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25);
+  }
+
+  /* ──── Luxury Gold Input ──── */
+  .glass-input {
+    @apply w-full px-4 py-3 text-white placeholder-white/30;
+    background: rgba(20, 16, 12, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 14px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-input:focus {
+    border-color: rgba(212, 175, 55, 0.45);
+    box-shadow:
+      0 0 16px rgba(212, 175, 55, 0.15),
+      inset 0 0 20px rgba(212, 175, 55, 0.05);
+  }
+
+  .glass-input option {
+    @apply bg-dark-bg text-white;
+  }
+
+  /* ──── Luxury Gold Gradient Text ──── */
+  .gradient-text {
+    background: linear-gradient(135deg, #FFE485 0%, #D4AF37 50%, #8A6623 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .neon-border {
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+  }
+
+  /* ──── Premium Ambient Gold Glow ──── */
+  .ambient-glow {
+    position: relative;
+  }
+
+  .ambient-glow::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      circle,
+      rgba(212, 175, 55, 0.05) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
