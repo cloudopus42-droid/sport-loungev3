@@ -415,6 +415,7 @@ router.put(
         const progressMap: Record<string, number> = { accepted: 15, heating: 45, almost: 75, ready: 100 };
         io.emit('booking:updated', {
           id: booking.id,
+          userId: booking.user_id,
           hookahStatus,
           progressPercent: progressMap[hookahStatus] || 15
         });

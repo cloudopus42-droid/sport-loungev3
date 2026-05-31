@@ -1,0 +1,20 @@
+[package]
+name = "sport-lounge"
+version = "3.0.0"
+description = "SPORT LOUNGE Premium Client"
+authors = ["SPORT LOUNGE Team"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5" }
+
+[dependencies]
+tauri = { version = "1.5", features = ["api-all"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "z"

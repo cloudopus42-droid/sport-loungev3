@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from '@/hooks/useSocket';
+import { showToast } from '@/components/NotificationToast';
 
 const sidebarItems = [
   { path: '/admin', icon: LayoutDashboard, label: 'Дашборд', end: true },
@@ -31,8 +33,45 @@ const sidebarItems = [
 
 export function AdminLayout() {
   const { user, isAdmin, loading, logout } = useAuth();
+  const { socket } = useSocket();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Request browser desktop notification permissions on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Listen globally to incoming order bookings and alert the admin
+  useEffect(() => {
+    if (!socket || !isAdmin) return;
+
+    const handleNewBooking = (bookingData: any) => {
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav');
+      audio.volume = 0.5;
+      audio.play().catch((e) => console.log('Chime failed to play:', e.message));
+
+      showToast(`Новый заказ кальяна! Стол: ${bookingData?.seatLabel || 'Микс-билет'}`, 'success');
+
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification('Новый заказ SPORT LOUNGE', {
+            body: `Стол: ${bookingData?.seatLabel || 'Микс-билет'} • Смесь: ${bookingData?.hookahMix || 'Смотрите детали'}`,
+            icon: '/icon-192.png'
+          });
+        } catch (err) {
+          console.warn('Notification trigger fail:', err);
+        }
+      }
+    };
+
+    socket.on('booking:created', handleNewBooking);
+    return () => {
+      socket.off('booking:created', handleNewBooking);
+    };
+  }, [socket, isAdmin]);
 
   useEffect(() => {
     if (!loading && !isAdmin) {

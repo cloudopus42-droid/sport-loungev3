@@ -294,6 +294,9 @@ export function ProfilePage() {
     fetchVIPClubData();
   }, []);
 
+  // Keep track of notified booking ready alerts
+  const [notifiedReady, setNotifiedReady] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchStatuses = async () => {
       const active = bookings.filter(b => b.status !== 'cancelled');
@@ -302,6 +305,27 @@ export function ProfilePage() {
         try { 
           const { data } = await api.get(`/api/bookings/${b._id}/hookah-status`); 
           results[b._id] = data; 
+          
+          if (data.hookahStatus === 'ready' && !notifiedReady.includes(b._id)) {
+            setNotifiedReady(prev => [...prev, b._id]);
+            
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
+            audio.volume = 0.55;
+            audio.play().catch(() => {});
+            
+            showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
+
+            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+              try {
+                new Notification('SPORT LOUNGE', {
+                  body: 'Ваш кальян готов! Приятного покура! 💨',
+                  icon: '/icon-192.png'
+                });
+              } catch (err) {
+                console.warn('Native notification alert fail:', err);
+              }
+            }
+          }
         } catch {}
       }
       setHookahStatuses(results);
@@ -309,7 +333,7 @@ export function ProfilePage() {
     if (bookings.length > 0) fetchStatuses();
     const interval = setInterval(() => { if (bookings.length > 0) fetchStatuses(); }, 10000);
     return () => clearInterval(interval);
-  }, [bookings]);
+  }, [bookings, notifiedReady]);
 
   const handleSave = async () => {
     setSaving(true);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Instagram, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Instagram, Send, Download, Smartphone, Monitor, X } from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
 import { LuxuryMusicPlayer } from '@/components/ui/LuxuryMusicPlayer';
+import { showToast } from '@/components/NotificationToast';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -26,6 +27,56 @@ export function MainLayout() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  // Request browser push notification permission for guests/clients
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Listen for native PWA installation prompt capability
+  useEffect(() => {
+    const handlePrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handlePrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handlePrompt);
+  }, []);
+
+  // Listen to real-time hookah ready notifications matching current user ID
+  useEffect(() => {
+    if (!socket || !user) return;
+
+    const handleHookahReady = (data: any) => {
+      if (data.userId === user.id && data.hookahStatus === 'ready') {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
+        audio.volume = 0.55;
+        audio.play().catch(() => {});
+
+        showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
+
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          try {
+            new Notification('SPORT LOUNGE', {
+              body: 'Ваш кальян готов! Приятного покура! 💨',
+              icon: '/icon-192.png'
+            });
+          } catch (err) {
+            console.warn('Push alert failed:', err);
+          }
+        }
+      }
+    };
+
+    socket.on('booking:updated', handleHookahReady);
+    return () => {
+      socket.off('booking:updated', handleHookahReady);
+    };
+  }, [socket, user]);
 
   const handleNavClick = (anchor: string) => {
     if (window.location.pathname !== '/') {
@@ -216,6 +267,18 @@ export function MainLayout() {
                 <Send className="w-3.5 h-3.5" />
               </a>
             </div>
+
+            {/* Install App Button */}
+            <motion.button
+              onClick={() => setShowInstallModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#F4E4C4] border border-accent-gold/40 hover:border-accent-gold/80 rounded-full bg-accent-gold/5 transition-all shadow-[0_2px_8px_rgba(212,175,55,0.05)]"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              title="Установить приложение"
+            >
+              <Download className="w-3.5 h-3.5 text-accent-gold" />
+              <span className="hidden sm:inline">Приложение</span>
+            </motion.button>
 
             {/* Authentication Buttons */}
             {isAuthenticated ? (
@@ -492,6 +555,136 @@ export function MainLayout() {
           animation: smoke-cloud-right 6s ease-out infinite;
         }
       `}</style>
+
+      {/* Premium App Download Modal */}
+      <AnimatePresence>
+        {showInstallModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+            <motion.div 
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowInstallModal(false)}
+            />
+
+            <motion.div
+              className="relative w-full max-w-md bg-gradient-to-b from-[#181512] to-black border border-accent-gold/25 rounded-3xl p-6 shadow-2xl z-10 overflow-hidden"
+              initial={{ opacity: 0, scale: 0.92, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 15 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Corner accents */}
+              <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-accent-gold/30 rounded-tl-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-accent-gold/30 rounded-tr-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-accent-gold/30 rounded-bl-3xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-accent-gold/30 rounded-br-3xl pointer-events-none" />
+
+              <button 
+                onClick={() => setShowInstallModal(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-colors"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+
+              <div className="text-center space-y-4 pt-2">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-accent-gold font-bold block mb-1">Premium Mobile & Desktop Apps</span>
+                <h3 className="text-xl font-display font-light text-white uppercase tracking-wider">
+                  SPORT LOUNGE <span className="gradient-text font-semibold italic">Client App</span>
+                </h3>
+                <p className="text-xs text-white/45 max-w-xs mx-auto leading-relaxed font-light">
+                  Установите наше приложение на любое устройство, чтобы получать уведомления о готовности кальянов, бронировать места и заказывать миксы в один клик.
+                </p>
+
+                <div className="space-y-3.5 pt-2 text-left">
+                  {/* Apple iOS Platform Card */}
+                  <div className="p-4 rounded-2xl bg-white/5 border border-glass-border/30 space-y-2 relative overflow-hidden group hover:border-accent-gold/35 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Smartphone className="w-5 h-5 text-accent-gold" />
+                        <span className="text-xs font-semibold text-white">Apple iOS (iPhone / iPad)</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-accent-gold/10 border border-accent-gold/25 text-[8px] font-bold text-accent-gold uppercase tracking-wider">PWA App</span>
+                    </div>
+                    <div className="text-[11px] text-white/50 space-y-1 font-light pl-7 leading-relaxed">
+                      <p>1. Откройте сайт в стандартном браузере **Safari**.</p>
+                      <p>2. Нажмите кнопку **«Поделиться»** 📤 на нижней панели.</p>
+                      <p>3. Выберите пункт **«На экран „Домой“»** ➕.</p>
+                    </div>
+                  </div>
+
+                  {/* Android Platform Card */}
+                  <div className="p-4 rounded-2xl bg-white/5 border border-glass-border/30 space-y-2.5 relative overflow-hidden group hover:border-accent-gold/35 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Smartphone className="w-5 h-5 text-accent-cyan" />
+                        <span className="text-xs font-semibold text-white">Google Android (Samsung, Xiaomi, etc)</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/25 text-[8px] font-bold text-accent-cyan uppercase tracking-wider">APK & PWA</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5 pl-7">
+                      <a 
+                        href="https://sport-loungev3.onrender.com/uploads/apps/sport-lounge.apk" 
+                        download
+                        className="py-2 bg-gradient-to-r from-accent-cyan/10 to-blue-500/10 border border-accent-cyan/30 hover:border-accent-cyan/60 text-accent-cyan text-[10px] font-bold rounded-xl transition-all text-center"
+                      >
+                        Скачать .APK
+                      </a>
+                      <button 
+                        onClick={() => {
+                          setShowInstallModal(false);
+                          if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                          } else {
+                            showToast('Пожалуйста, нажмите на значок установки в адресной строке Chrome', 'info');
+                          }
+                        }}
+                        className="py-2 bg-white/5 border border-glass-border/40 hover:bg-white/10 hover:border-glass-border/80 text-white text-[10px] font-bold rounded-xl transition-all"
+                      >
+                        Установить PWA
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Windows Platform Card */}
+                  <div className="p-4 rounded-2xl bg-white/5 border border-glass-border/30 space-y-2.5 relative overflow-hidden group hover:border-accent-gold/35 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Monitor className="w-5 h-5 text-[#FFE485]" />
+                        <span className="text-xs font-semibold text-white">Windows Desktop (ПК / Ноутбук)</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[8px] font-bold text-white/50 uppercase tracking-wider">EXE client</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5 pl-7">
+                      <a 
+                        href="https://sport-loungev3.onrender.com/uploads/apps/sport-lounge.exe" 
+                        download
+                        className="py-2 bg-gradient-to-r from-[#7c5c24]/20 to-[#4a3410]/20 border border-accent-gold/30 hover:border-accent-gold/60 text-accent-gold text-[10px] font-bold rounded-xl transition-all text-center"
+                      >
+                        Скачать .EXE (ПК)
+                      </a>
+                      <button 
+                        onClick={() => {
+                          setShowInstallModal(false);
+                          if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                          } else {
+                            showToast('Пожалуйста, нажмите на значок установки в адресной строке браузера', 'info');
+                          }
+                        }}
+                        className="py-2 bg-white/5 border border-glass-border/40 hover:bg-white/10 hover:border-glass-border/80 text-white text-[10px] font-bold rounded-xl transition-all"
+                      >
+                        Установить PWA
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
