@@ -200,6 +200,50 @@ export async function sendStatusNotification(
   }
 }
 
+export async function sendChatMessageNotification(
+  userName: string,
+  userEmail: string,
+  messageText: string
+): Promise<boolean> {
+  const chatId = config.telegramChatId;
+  if (!chatId || !config.telegramToken) return false;
+
+  const message = [
+    '💬 *Новое сообщение в чате на сайте\\!*',
+    '',
+    `👤 *От кого:* ${escapeMarkdown(userName)}`,
+    `📧 *Email:* ${escapeMarkdown(userEmail)}`,
+    '',
+    `✉️ *Сообщение:*`,
+    `${escapeMarkdown(messageText)}`,
+  ].join('\n');
+
+  try {
+    const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'MarkdownV2',
+      }),
+      signal: AbortSignal.timeout(2500)
+    });
+    const data = (await res.json()) as any;
+    return !!(data && data.ok);
+  } catch {
+    try {
+      const targetUrl = `${TELEGRAM_API}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=MarkdownV2`;
+      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(6000) });
+      const data = (await res.json()) as any;
+      return !!(data && data.ok);
+    } catch {
+      return false;
+    }
+  }
+}
+
 function escapeMarkdown(text: string): string {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
 }

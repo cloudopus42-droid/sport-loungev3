@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { auth } from '../middleware/auth';
+import { supabase } from '../config/supabase';
+import { sendChatMessageNotification } from '../services/telegram';
 
 const router = Router();
 
@@ -26,6 +28,20 @@ router.post('/chat', auth, async (req: Request, res: Response, next: NextFunctio
   try {
     const { message, history } = chatSchema.parse(req.body);
     const msgLower = message.toLowerCase();
+
+    // Fetch user details for Telegram notification
+    const { data: dbUser } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', req.user!.id)
+      .maybeSingle();
+
+    const userName = dbUser?.name || 'Пользователь';
+
+    // Send Telegram notification in background
+    sendChatMessageNotification(userName, req.user!.email, message).catch((err) => {
+      console.error('⚠️ Failed to send Telegram chat notification:', err);
+    });
 
     // 1. Fallback Luxury Sommelier Rules Engine
     let responseText = '';
