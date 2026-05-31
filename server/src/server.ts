@@ -31,6 +31,7 @@ import showcaseRoutes from './routes/showcases';
 import seatRoutes from './routes/seats';
 import aiRoutes from './routes/ai';
 import membershipRoutes from './routes/memberships';
+import { startSupportBot } from './services/supportBot';
 
 // Custom lightweight memory-based API Rate Limiter
 const rateLimits: Record<string, { count: number; resetTime: number }> = {};
@@ -156,6 +157,13 @@ async function bootstrap(): Promise<void> {
     console.log(`   Environment: ${config.nodeEnv}`);
     console.log(`   API: http://localhost:${config.port}/api`);
     console.log(`   Health: http://localhost:${config.port}/api/health\n`);
+
+    // Start automated Telegram support bot
+    try {
+      startSupportBot();
+    } catch (err: any) {
+      console.error('❌ Failed to start support bot:', err.message);
+    }
   });
 
   // 10. Graceful shutdown
