@@ -219,7 +219,7 @@ export function BookingPage() {
                 onClick={() => setOrderType('table')}
                 className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
                   orderType === 'table'
-                    ? 'bg-gradient-to-r from-yellow-300 via-accent-gold to-yellow-500 text-black shadow-glow-gold-lg'
+                    ? 'glass-btn-gold text-white shadow-glow-gold-lg'
                     : 'text-white/55 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -229,7 +229,7 @@ export function BookingPage() {
                 onClick={() => setOrderType('preorder')}
                 className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
                   orderType === 'preorder'
-                    ? 'bg-gradient-to-r from-yellow-300 via-accent-gold to-yellow-500 text-black shadow-glow-gold-lg'
+                    ? 'glass-btn-gold text-white shadow-glow-gold-lg'
                     : 'text-white/55 hover:text-white hover:bg-white/5'
                 }`}
               >
