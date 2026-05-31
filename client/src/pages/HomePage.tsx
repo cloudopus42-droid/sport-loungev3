@@ -139,8 +139,8 @@ export function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-2">
               <NavLink to="/booking">
-                <GlowButton size="lg" className="w-full sm:w-auto shadow-glow-gold-lg">
-                  <Flame className="w-5 h-5 mr-1 text-black" /> Оформить заказ
+                <GlowButton variant="gold" size="lg" className="w-full sm:w-auto shadow-glow-gold-lg">
+                  <Flame className="w-5 h-5 mr-1 text-white" /> Оформить заказ
                 </GlowButton>
               </NavLink>
               <a 
@@ -250,13 +250,13 @@ export function HomePage() {
           <div className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 z-30">
             <NavLink to="/booking">
               <motion.button
-                className="px-10 py-4 text-base sm:text-lg font-display font-semibold text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 rounded-full shadow-[0_10px_35px_rgba(212,175,55,0.5)] hover:shadow-[0_15px_45px_rgba(212,175,55,0.7)] transition-all flex items-center gap-2 border border-yellow-200/40 relative overflow-hidden group/btn"
+                className="px-10 py-4 text-base sm:text-lg font-display font-semibold rounded-full glass-btn-gold shadow-[0_10px_35px_rgba(212,175,55,0.3)] hover:shadow-[0_15px_45px_rgba(212,175,55,0.45)] transition-all flex items-center gap-2 relative overflow-hidden group/btn"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 {/* Micro-sparkle effect in background */}
                 <span className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-                <Flame className="w-5 h-5" />
+                <Flame className="w-5 h-5 text-white" />
                 <span>Заказать кальян</span>
               </motion.button>
             </NavLink>
