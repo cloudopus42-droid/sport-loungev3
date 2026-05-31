@@ -294,8 +294,15 @@ export function ProfilePage() {
     fetchVIPClubData();
   }, []);
 
-  // Keep track of notified booking ready alerts
-  const [notifiedReady, setNotifiedReady] = useState<string[]>([]);
+  // Keep track of notified booking ready alerts (synchronized with localStorage)
+  const [notifiedReady, setNotifiedReady] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('notified_bookings');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     const fetchStatuses = async () => {
@@ -307,7 +314,13 @@ export function ProfilePage() {
           results[b._id] = data; 
           
           if (data.hookahStatus === 'ready' && !notifiedReady.includes(b._id)) {
-            setNotifiedReady(prev => [...prev, b._id]);
+            const updated = [...notifiedReady, b._id];
+            setNotifiedReady(updated);
+            try {
+              localStorage.setItem('notified_bookings', JSON.stringify(updated));
+            } catch (err) {
+              console.error('Failed to sync notified_bookings:', err);
+            }
             
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
             audio.volume = 0.55;
