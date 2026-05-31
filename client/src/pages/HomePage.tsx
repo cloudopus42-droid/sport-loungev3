@@ -297,7 +297,7 @@ export function HomePage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/50 line-clamp-2 leading-relaxed">{promo.description}</p>
+                    <p className="text-xs text-white/50 leading-relaxed">{promo.description}</p>
                   </div>
                 </GlassCard>
               </motion.div>
@@ -319,7 +319,7 @@ export function HomePage() {
                 src="https://yandex.ru/map-widget/v1/?ll=47.2725%2C56.1366&z=17&pt=47.2725%2C56.1366%2Cpm2rdm&lang=ru_RU"
                 width="100%"
                 height="320"
-                style={{ border: 0, display: 'block' }}
+                style={{ border: 0, display: 'block', filter: 'invert(90%) hue-rotate(15deg) saturate(75%) brightness(70%) contrast(110%)' }}
                 allowFullScreen
                 loading="lazy"
                 title="Sport Lounge на карте"
