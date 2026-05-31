@@ -1,7 +1,24 @@
 import toast from 'react-hot-toast';
 import { CheckCircle2, XCircle, Info } from 'lucide-react';
+import failureSound from '../Failure-Final.wav';
+import successSound from '../Email-Notification-Quick-Note.wav';
 
 export function showToast(message: string, variant: 'success' | 'error' | 'info' = 'info') {
+  // Play sound effect based on toast variant
+  try {
+    if (variant === 'error') {
+      const audio = new Audio(failureSound);
+      audio.volume = 0.10; // 10% volume
+      audio.play().catch((e) => console.log('Audio playback failed:', e.message));
+    } else if (variant === 'success') {
+      const audio = new Audio(successSound);
+      audio.volume = 0.10; // 10% volume
+      audio.play().catch((e) => console.log('Audio playback failed:', e.message));
+    }
+  } catch (err) {
+    console.warn('Toast sound play error:', err);
+  }
+
   const icons = {
     success: <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />,
     error: <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />,
