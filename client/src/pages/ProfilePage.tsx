@@ -159,6 +159,22 @@ export function ProfilePage() {
   const [selectedFrameId, setSelectedFrameId] = useState('none');
   const [selectedStatus, setSelectedStatus] = useState('');
 
+  // Liquid Glass customization states
+  const [blurVal, setBlurVal] = useState(40);
+  const [opacityVal, setOpacityVal] = useState(0.72);
+
+  const handleBlurChange = (val: number) => {
+    setBlurVal(val);
+    localStorage.setItem('glass_blur', val.toString());
+    document.documentElement.style.setProperty('--glass-blur', `${val}px`);
+  };
+
+  const handleOpacityChange = (val: number) => {
+    setOpacityVal(val);
+    localStorage.setItem('glass_opacity', val.toString());
+    document.documentElement.style.setProperty('--glass-opacity', val.toString());
+  };
+
   const updatePrefs = (updated: any) => {
     const prefs = {
       bio: editBio,
@@ -185,6 +201,12 @@ export function ProfilePage() {
         setSelectedFrameId(p.frameId || 'none');
         setSelectedStatus(p.statusText || '');
       }
+
+      const savedBlur = localStorage.getItem('glass_blur');
+      if (savedBlur) setBlurVal(Number(savedBlur));
+
+      const savedOpacity = localStorage.getItem('glass_opacity');
+      if (savedOpacity) setOpacityVal(Number(savedOpacity));
     } catch {}
   }, []);
 
@@ -630,6 +652,42 @@ export function ProfilePage() {
                     className={`w-7 h-7 rounded-full transition-all ${selectedAccent === c.value ? 'ring-2 ring-white ring-offset-2 ring-offset-dark-bg scale-110' : 'hover:scale-105'}`}
                     style={{ backgroundColor: c.value }} />
                 ))}
+              </div>
+            </div>
+
+            {/* Glassmorphism settings */}
+            <div className="border-t border-white/5 pt-3 mt-3 space-y-4">
+              <p className="text-xs uppercase tracking-wider text-accent-gold font-bold">Настройки Жидкого Стекла (Liquid Glass)</p>
+              
+              <div>
+                <div className="flex justify-between items-center mb-1 text-xs">
+                  <span className="text-white/60">Размытие заднего фона (Blur)</span>
+                  <span className="text-accent-cyan font-mono">{blurVal}px</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={blurVal} 
+                  onChange={(e) => handleBlurChange(Number(e.target.value))}
+                  className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1 text-xs">
+                  <span className="text-white/60">Прозрачность стекла (Opacity)</span>
+                  <span className="text-accent-cyan font-mono">{Math.round(opacityVal * 100)}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.1" 
+                  max="1.0" 
+                  step="0.01"
+                  value={opacityVal} 
+                  onChange={(e) => handleOpacityChange(Number(e.target.value))}
+                  className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                />
               </div>
             </div>
           </GlassCard>
