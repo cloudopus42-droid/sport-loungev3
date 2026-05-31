@@ -159,10 +159,14 @@ async function bootstrap(): Promise<void> {
     console.log(`   Health: http://localhost:${config.port}/api/health\n`);
 
     // Start automated Telegram support bot
-    try {
-      startSupportBot();
-    } catch (err: any) {
-      console.error('❌ Failed to start support bot:', err.message);
+    if (process.env.SUPPORT_BOT_ENABLED === 'true' || config.isProduction) {
+      try {
+        startSupportBot();
+      } catch (err: any) {
+        console.error('❌ Failed to start support bot:', err.message);
+      }
+    } else {
+      console.log('🤖 [Support Bot] Disabled in development (set SUPPORT_BOT_ENABLED=true to run locally)');
     }
   });
 
