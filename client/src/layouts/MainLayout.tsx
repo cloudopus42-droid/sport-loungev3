@@ -13,7 +13,7 @@ import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
-import girlsImage from '../girls.jpg';
+import girlsImage from '../girls.png';
 import speedDialMusic from '../zero-7-speed-dial.mp3';
 
 const navItems = [
@@ -45,22 +45,22 @@ export function MainLayout() {
 
   const { width, height } = dimensions;
 
-  // Calculate centered girls container dimensions to find lips coordinate in screen-space (1:1 aspect ratio)
-  const containerWidth = Math.min(width, 768);
-  const containerHeight = containerWidth;
+  // Calculate centered girls container dimensions to find lips coordinate in screen-space (3:2 aspect ratio)
+  const containerWidth = Math.min(width, 896);
+  const containerHeight = containerWidth * (493 / 740);
   const containerLeft = (width - containerWidth) / 2;
   const containerTop = (height - containerHeight) / 2;
 
-  // Left girl's mouth is at 37% of container width, 44% of container height
+  // Left girl's mouth is at 41.5% of container width, 47.8% of container height
   const leftEnd = {
-    x: containerLeft + 0.37 * containerWidth,
-    y: containerTop + 0.44 * containerHeight
+    x: containerLeft + 0.415 * containerWidth,
+    y: containerTop + 0.478 * containerHeight
   };
 
-  // Right girl's mouth is at 63% of container width, 43% of container height
+  // Right girl's mouth is at 59.5% of container width, 50% of container height
   const rightEnd = {
-    x: containerLeft + 0.63 * containerWidth,
-    y: containerTop + 0.43 * containerHeight
+    x: containerLeft + 0.595 * containerWidth,
+    y: containerTop + 0.50 * containerHeight
   };
 
   // Large Hookahs are positioned at left-6 (24px) and right-6 (24px).
@@ -144,7 +144,7 @@ export function MainLayout() {
 
         {/* Centered Premium Custom Girls Background (GTA Style Artwork) */}
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.20] mix-blend-screen pointer-events-none z-0">
-          <div className="relative w-full max-w-3xl aspect-square px-4 flex items-center justify-center">
+          <div className="relative w-full max-w-4xl aspect-[3/2] px-4 flex items-center justify-center">
             <img 
               src={girlsImage} 
               alt="Cyber Lounge Girls" 
@@ -156,13 +156,13 @@ export function MainLayout() {
             />
 
             {/* Volumetric Exhale Smoke Clouds at girls' mouths */}
-            <div className="absolute" style={{ left: '37%', top: '44%' }}>
+            <div className="absolute" style={{ left: '41.5%', top: '47.8%' }}>
               <div className="smoke-exhale-left absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '2.5s' }} />
               <div className="smoke-exhale-left absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '2.9s' }} />
               <div className="smoke-exhale-left absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '3.3s' }} />
             </div>
 
-            <div className="absolute" style={{ left: '63%', top: '43%' }}>
+            <div className="absolute" style={{ left: '59.5%', top: '50%' }}>
               <div className="smoke-exhale-right absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '5.5s' }} />
               <div className="smoke-exhale-right absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '5.9s' }} />
               <div className="smoke-exhale-right absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '6.3s' }} />
