@@ -13,8 +13,6 @@ import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
-import bowlImage from '@/bowl.png';
-import girlsImage from '@/girls.jpg';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Главная' },
@@ -44,13 +42,33 @@ export function MainLayout() {
   }, []);
 
   const { width, height } = dimensions;
-  const leftStart = { x: 55, y: height - 120 };
-  const leftEnd = { x: width / 2 - 120, y: height / 2 + 65 };
-  const leftPath = `M ${leftStart.x} ${leftStart.y} C ${leftStart.x + 200} ${leftStart.y}, ${leftEnd.x - 200} ${leftEnd.y + 150}, ${leftEnd.x} ${leftEnd.y}`;
 
-  const rightStart = { x: width - 55, y: height - 120 };
-  const rightEnd = { x: width / 2 + 100, y: height / 2 + 65 };
-  const rightPath = `M ${rightStart.x} ${rightStart.y} C ${rightStart.x - 200} ${rightStart.y}, ${rightEnd.x + 200} ${rightEnd.y + 150}, ${rightEnd.x} ${rightEnd.y}`;
+  // Calculate centered girls container dimensions to find lips coordinate in screen-space
+  const containerWidth = Math.min(width, 896);
+  const containerHeight = containerWidth * (600 / 1000); // 1000x600 aspect ratio
+  const containerLeft = (width - containerWidth) / 2;
+  const containerTop = (height - containerHeight) / 2;
+
+  // Left girl's mouth is at 29.5% of container width, 51.6% of container height
+  const leftEnd = {
+    x: containerLeft + 0.295 * containerWidth,
+    y: containerTop + 0.516 * containerHeight
+  };
+
+  // Right girl's mouth is at 69.5% of container width, 51.6% of container height
+  const rightEnd = {
+    x: containerLeft + 0.695 * containerWidth,
+    y: containerTop + 0.516 * containerHeight
+  };
+
+  // Large Hookahs are positioned at left-6 (24px) and right-6 (24px).
+  // Port is relative at x=160 (going to the right) inside the 280px width hookah frame.
+  const leftStart = { x: 24 + 160, y: height - 270 };
+  const rightStart = { x: width - (24 + 160), y: height - 270 };
+
+  const leftPath = `M ${leftStart.x} ${leftStart.y} C ${leftStart.x + 220} ${leftStart.y + 220}, ${leftEnd.x - 220} ${leftEnd.y + 220}, ${leftEnd.x} ${leftEnd.y}`;
+  const rightPath = `M ${rightStart.x} ${rightStart.y} C ${rightStart.x - 220} ${rightStart.y + 220}, ${rightEnd.x + 220} ${rightEnd.y + 220}, ${rightEnd.x} ${rightEnd.y}`;
+
   
   // Ambient Lounge Player
   const [isPlaying, setIsPlaying] = useState(false);
@@ -111,13 +129,93 @@ export function MainLayout() {
         {/* 3D WebGL Smoke Render - Drift across entire background */}
         <ThreeSmoke />
 
-        {/* Centered Darkened Girls Background Image */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.14] mix-blend-screen pointer-events-none z-0">
-          <img 
-            src={girlsImage} 
-            alt="" 
-            className="w-full max-w-4xl h-full object-contain filter brightness-[0.38] contrast-[1.25] grayscale" 
-          />
+        {/* Centered Premium Custom Vector Girls (Golden Outlined Silhouette Art) */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.16] mix-blend-screen pointer-events-none z-0">
+          <div className="relative w-full max-w-4xl aspect-[16/10] px-4">
+            <svg viewBox="0 0 1000 600" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="sofaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#1B1613" />
+                  <stop offset="100%" stopColor="#0B0908" />
+                </linearGradient>
+                <linearGradient id="goldLines" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#8A6623" />
+                  <stop offset="50%" stopColor="#D4AF37" />
+                  <stop offset="100%" stopColor="#FFE485" />
+                </linearGradient>
+                <linearGradient id="skinGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(212,175,55,0.06)" />
+                  <stop offset="100%" stopColor="rgba(138,102,35,0.02)" />
+                </linearGradient>
+                <linearGradient id="skinGradRight" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(212,175,55,0.06)" />
+                  <stop offset="100%" stopColor="rgba(138,102,35,0.02)" />
+                </linearGradient>
+              </defs>
+
+              {/* 1. Lounge Sofa / Couch */}
+              {/* Backrest */}
+              <path d="M 120 460 C 110 320, 200 290, 500 290 C 800 290, 890 320, 880 460 Z" fill="url(#sofaGrad)" stroke="url(#goldLines)" strokeWidth="1.2" />
+              {/* Base Cushion */}
+              <path d="M 100 460 Q 500 485 900 460 L 890 530 Q 500 555 110 530 Z" fill="url(#sofaGrad)" stroke="url(#goldLines)" strokeWidth="1.5" />
+              {/* Sofa feet */}
+              <rect x="140" y="530" width="12" height="15" fill="#1A1512" stroke="#D4AF37" strokeWidth="0.8" />
+              <rect x="848" y="530" width="12" height="15" fill="#1A1512" stroke="#D4AF37" strokeWidth="0.8" />
+
+              {/* 2. Left Girl (Inhales & smokes) */}
+              <g>
+                {/* Hair */}
+                <path d="M 230 310 C 200 320, 175 375, 170 435 C 190 440, 220 415, 245 370 Z" fill="rgba(212, 175, 55, 0.08)" stroke="url(#goldLines)" strokeWidth="1" />
+                {/* Face Silhouette */}
+                <path d="M 255 315 C 265 295, 285 295, 295 305 C 298 308, 303 308, 305 310 C 308 312, 306 316, 303 318 C 300 320, 303 322, 305 324 C 308 326, 303 330, 298 330 L 285 332 Z" fill="url(#skinGradLeft)" stroke="url(#goldLines)" strokeWidth="1.2" />
+                {/* Body outline */}
+                <path d="M 285 332 C 275 365, 255 405, 285 445 L 470 475 L 500 435 Z" fill="url(#skinGradLeft)" stroke="url(#goldLines)" strokeWidth="1" />
+                
+                {/* Chest group (animated breathing chest) */}
+                <g className="animate-breathe-left">
+                  <path d="M 285 352 C 315 372, 335 397, 330 422" stroke="url(#goldLines)" strokeWidth="1.8" fill="none" />
+                </g>
+
+                {/* Left Arm holding Hose Mouthpiece */}
+                <path d="M 280 395 C 315 410, 340 385, 305 340" fill="none" stroke="url(#goldLines)" strokeWidth="1.2" />
+                {/* Hose Mouthpiece */}
+                <path d="M 292 322 L 305 340" stroke="url(#goldLines)" strokeWidth="2" fill="none" />
+              </g>
+
+              {/* 3. Right Girl (Sitting, blowing smoke upwards) */}
+              <g>
+                {/* Hair */}
+                <path d="M 770 310 C 800 320, 825 375, 830 435 C 810 440, 780 415, 755 370 Z" fill="rgba(212, 175, 55, 0.08)" stroke="url(#goldLines)" strokeWidth="1" />
+                {/* Face Silhouette */}
+                <path d="M 745 315 C 735 295, 715 295, 705 305 C 702 308, 697 308, 695 310 C 692 312, 694 316, 697 318 C 700 320, 697 322, 695 324 C 692 326, 697 330, 702 330 L 715 332 Z" fill="url(#skinGradRight)" stroke="url(#goldLines)" strokeWidth="1.2" />
+                {/* Body outline */}
+                <path d="M 715 332 C 725 365, 745 405, 715 445 L 530 475 L 500 435 Z" fill="url(#skinGradRight)" stroke="url(#goldLines)" strokeWidth="1" />
+                
+                {/* Chest group (animated breathing chest) */}
+                <g className="animate-breathe-right">
+                  <path d="M 715 352 C 685 372, 665 397, 670 422" stroke="url(#goldLines)" strokeWidth="1.8" fill="none" />
+                </g>
+
+                {/* Right Arm resting */}
+                <path d="M 720 395 C 685 410, 660 385, 695 340" fill="none" stroke="url(#goldLines)" strokeWidth="1.2" />
+                {/* Hose Mouthpiece */}
+                <path d="M 688 348 L 695 362" stroke="url(#goldLines)" strokeWidth="2" fill="none" />
+              </g>
+            </svg>
+
+            {/* Volumetric Exhale Smoke Clouds at girls' mouths */}
+            <div className="absolute" style={{ left: '29.5%', top: '51.6%' }}>
+              <div className="smoke-exhale-left absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '2.5s' }} />
+              <div className="smoke-exhale-left absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '2.9s' }} />
+              <div className="smoke-exhale-left absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '3.3s' }} />
+            </div>
+
+            <div className="absolute" style={{ left: '69.5%', top: '51.6%' }}>
+              <div className="smoke-exhale-right absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '5.5s' }} />
+              <div className="smoke-exhale-right absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '5.9s' }} />
+              <div className="smoke-exhale-right absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '6.3s' }} />
+            </div>
+          </div>
         </div>
 
         {/* CSS Volumetric Haze Layers */}
@@ -138,53 +236,147 @@ export function MainLayout() {
         <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr]">PREMIUM 24/7</span>
       </div>
 
-      {/* Side Hookahs with Photo Bowls (Left and Right margins) */}
-      <div className="hidden xl:block fixed left-6 bottom-6 z-20 pointer-events-none opacity-30 select-none filter drop-shadow-[0_0_12px_rgba(212,175,55,0.22)]">
-        <div className="relative w-24 h-[260px] flex flex-col items-center">
-          <img 
-            src={bowlImage} 
-            alt="" 
-            className="w-14 h-auto object-contain absolute top-0"
-            style={{
-              mixBlendMode: 'screen',
-              maskImage: 'linear-gradient(to top, transparent 2%, black 25%)',
-              WebkitMaskImage: 'linear-gradient(to top, transparent 2%, black 25%)'
-            }}
-          />
-          <svg width="80" height="260" viewBox="0 0 80 260" fill="none" className="absolute top-[35px]" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 10 H65 C65 16 15 16 15 10 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.08)" />
-            <line x1="40" y1="12" x2="40" y2="120" stroke="#D4AF37" strokeWidth="2.5" />
-            <circle cx="40" cy="35" r="5" stroke="#D4AF37" strokeWidth="1.5" />
-            <circle cx="40" cy="65" r="5" stroke="#D4AF37" strokeWidth="1.5" />
-            <circle cx="40" cy="95" r="5" stroke="#D4AF37" strokeWidth="1.5" />
-            <path d="M30 120 H50 L47 132 H33 L30 120 Z" stroke="#D4AF37" strokeWidth="1.5" />
-            <path d="M34 132 C30 140 20 160 20 185 C20 200 60 200 60 185 C60 160 50 140 46 132 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.05)" />
-            <line x1="23" y1="180" x2="57" y2="180" stroke="#D4AF37" strokeWidth="1" strokeDasharray="3 3" />
+      {/* Side Hookahs with Premium Vector Bowls & Bubbling (Left and Right margins) */}
+      <div className="hidden xl:block fixed left-6 bottom-0 z-20 pointer-events-none opacity-25 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.18)]">
+        <div className="relative w-72 h-[750px] flex flex-col items-center">
+          <svg width="280" height="750" viewBox="0 0 280 750" fill="none" className="absolute bottom-0" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="goldStem" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8A6623" />
+                <stop offset="30%" stopColor="#D4AF37" />
+                <stop offset="70%" stopColor="#FFE485" />
+                <stop offset="100%" stopColor="#8A6623" />
+              </linearGradient>
+              <linearGradient id="clayBowl" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#4A3B32" />
+                <stop offset="50%" stopColor="#705A4F" />
+                <stop offset="100%" stopColor="#4A3B32" />
+              </linearGradient>
+              <linearGradient id="glassFlask" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(212,175,55,0.02)" />
+                <stop offset="50%" stopColor="rgba(212,175,55,0.12)" />
+                <stop offset="100%" stopColor="rgba(212,175,55,0.02)" />
+              </linearGradient>
+              <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="rgba(212,175,55,0.2)" />
+                <stop offset="100%" stopColor="rgba(138,102,35,0.05)" />
+              </linearGradient>
+            </defs>
+
+            {/* Clay Bowl Base & Flare */}
+            <path d="M 125 75 L 155 75 L 148 110 L 132 110 Z" fill="url(#clayBowl)" stroke="#3A2E26" strokeWidth="1" />
+            <path d="M 115 50 L 165 50 L 125 75 H 155 Z" fill="url(#clayBowl)" stroke="#3A2E26" strokeWidth="1" />
+            
+            {/* Gold HMD (Kaloud) with Glowing Coals */}
+            <path d="M 118 25 H 162 L 165 50 H 115 Z" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1" />
+            <rect x="126" y="32" width="6" height="12" rx="2" className="coal-glow-left" fill="#8B0000" />
+            <rect x="137" y="32" width="6" height="12" rx="2" className="coal-glow-left" fill="#8B0000" />
+            <rect x="148" y="32" width="6" height="12" rx="2" className="coal-glow-left" fill="#8B0000" />
+
+            {/* Ash Tray */}
+            <path d="M 60 110 H 220 C 220 125, 60 125, 60 110 Z" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
+            <path d="M 50 110 H 230 L 225 115 H 55 Z" fill="url(#goldStem)" />
+
+            {/* Shaft/Stem with Decorative Elements */}
+            <rect x="135" y="135" width="10" height="365" fill="url(#goldStem)" />
+            <circle cx="140" cy="180" r="14" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
+            <circle cx="140" cy="280" r="14" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
+            <circle cx="140" cy="380" r="14" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
+            <rect x="125" y="220" width="30" height="12" rx="3" fill="url(#goldStem)" stroke="#B8860B" />
+            <rect x="125" y="320" width="30" height="12" rx="3" fill="url(#goldStem)" stroke="#B8860B" />
+            <rect x="125" y="420" width="30" height="12" rx="3" fill="url(#goldStem)" stroke="#B8860B" />
+
+            {/* Hose Port & Valve */}
+            <path d="M 148 480 L 168 470 L 165 490 Z" fill="url(#goldStem)" stroke="#B8860B" />
+            <path d="M 132 480 L 112 470 L 105 490 Z" fill="url(#goldStem)" stroke="#B8860B" />
+            <circle cx="108" cy="480" r="6" fill="#D4AF37" />
+
+            {/* Glass Flask & Water Base */}
+            <path d="M 115 500 H 165 L 175 540 H 105 Z" fill="url(#glassFlask)" stroke="#D4AF37" strokeWidth="1" />
+            <rect x="136" y="540" width="8" height="130" fill="rgba(212,175,55,0.4)" />
+            <rect x="132" y="670" width="16" height="12" rx="2" fill="url(#goldStem)" />
+            
+            <path d="M 120 540 C 100 580, 50 630, 50 700 C 50 735, 230 735, 230 700 C 230 630, 180 580, 160 540 Z" fill="url(#glassFlask)" stroke="rgba(212,175,55,0.4)" strokeWidth="1.5" />
+            <path d="M 58 640 C 90 645, 190 645, 222 640 C 228 670, 228 700, 220 722 H 60 C 52 700, 52 670, 58 640 Z" fill="url(#waterGrad)" />
+            
+            {/* Bubbles */}
+            <circle cx="136" cy="690" r="3.5" className="bubble-left-1" fill="rgba(215,185,95,0.5)" />
+            <circle cx="144" cy="680" r="2.5" className="bubble-left-2" fill="rgba(215,185,95,0.6)" />
+            <circle cx="132" cy="670" r="3" className="bubble-left-3" fill="rgba(215,185,95,0.5)" />
+            <circle cx="140" cy="655" r="4.5" className="bubble-left-4" fill="rgba(215,185,95,0.7)" />
+            <circle cx="146" cy="645" r="2" className="bubble-left-5" fill="rgba(215,185,95,0.6)" />
           </svg>
         </div>
       </div>
-      
-      <div className="hidden xl:block fixed right-6 bottom-6 z-20 pointer-events-none opacity-30 select-none filter drop-shadow-[0_0_12px_rgba(212,175,55,0.22)] scale-x-[-1]">
-        <div className="relative w-24 h-[260px] flex flex-col items-center">
-          <img 
-            src={bowlImage} 
-            alt="" 
-            className="w-14 h-auto object-contain absolute top-0"
-            style={{
-              mixBlendMode: 'screen',
-              maskImage: 'linear-gradient(to top, transparent 2%, black 25%)',
-              WebkitMaskImage: 'linear-gradient(to top, transparent 2%, black 25%)'
-            }}
-          />
-          <svg width="80" height="260" viewBox="0 0 80 260" fill="none" className="absolute top-[35px]" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 10 H65 C65 16 15 16 15 10 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.08)" />
-            <line x1="40" y1="12" x2="40" y2="120" stroke="#D4AF37" strokeWidth="2.5" />
-            <circle cx="40" cy="35" r="5" stroke="#D4AF37" strokeWidth="1.5" />
-            <circle cx="40" cy="65" r="5" stroke="#D4AF37" strokeWidth="1.5" />
-            <circle cx="40" cy="95" r="5" stroke="#D4AF37" strokeWidth="1.5" />
-            <path d="M30 120 H50 L47 132 H33 L30 120 Z" stroke="#D4AF37" strokeWidth="1.5" />
-            <path d="M34 132 C30 140 20 160 20 185 C20 200 60 200 60 185 C60 160 50 140 46 132 Z" stroke="#D4AF37" strokeWidth="1.5" fill="rgba(212, 175, 55, 0.05)" />
-            <line x1="23" y1="180" x2="57" y2="180" stroke="#D4AF37" strokeWidth="1" strokeDasharray="3 3" />
+
+      <div className="hidden xl:block fixed right-6 bottom-0 z-20 pointer-events-none opacity-25 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.18)] scale-x-[-1]">
+        <div className="relative w-72 h-[750px] flex flex-col items-center">
+          <svg width="280" height="750" viewBox="0 0 280 750" fill="none" className="absolute bottom-0" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="goldStemRight" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8A6623" />
+                <stop offset="30%" stopColor="#D4AF37" />
+                <stop offset="70%" stopColor="#FFE485" />
+                <stop offset="100%" stopColor="#8A6623" />
+              </linearGradient>
+              <linearGradient id="clayBowlRight" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#4A3B32" />
+                <stop offset="50%" stopColor="#705A4F" />
+                <stop offset="100%" stopColor="#4A3B32" />
+              </linearGradient>
+              <linearGradient id="glassFlaskRight" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(212,175,55,0.02)" />
+                <stop offset="50%" stopColor="rgba(212,175,55,0.12)" />
+                <stop offset="100%" stopColor="rgba(212,175,55,0.02)" />
+              </linearGradient>
+              <linearGradient id="waterGradRight" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="rgba(212,175,55,0.2)" />
+                <stop offset="100%" stopColor="rgba(138,102,35,0.05)" />
+              </linearGradient>
+            </defs>
+
+            {/* Clay Bowl Base & Flare */}
+            <path d="M 125 75 L 155 75 L 148 110 L 132 110 Z" fill="url(#clayBowlRight)" stroke="#3A2E26" strokeWidth="1" />
+            <path d="M 115 50 L 165 50 L 125 75 H 155 Z" fill="url(#clayBowlRight)" stroke="#3A2E26" strokeWidth="1" />
+            
+            {/* Gold HMD (Kaloud) with Glowing Coals (Right side) */}
+            <path d="M 118 25 H 162 L 165 50 H 115 Z" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1" />
+            <rect x="126" y="32" width="6" height="12" rx="2" className="coal-glow-right" fill="#8B0000" />
+            <rect x="137" y="32" width="6" height="12" rx="2" className="coal-glow-right" fill="#8B0000" />
+            <rect x="148" y="32" width="6" height="12" rx="2" className="coal-glow-right" fill="#8B0000" />
+
+            {/* Ash Tray */}
+            <path d="M 60 110 H 220 C 220 125, 60 125, 60 110 Z" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
+            <path d="M 50 110 H 230 L 225 115 H 55 Z" fill="url(#goldStemRight)" />
+
+            {/* Shaft/Stem with Decorative Elements */}
+            <rect x="135" y="135" width="10" height="365" fill="url(#goldStemRight)" />
+            <circle cx="140" cy="180" r="14" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
+            <circle cx="140" cy="280" r="14" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
+            <circle cx="140" cy="380" r="14" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
+            <rect x="125" y="220" width="30" height="12" rx="3" fill="url(#goldStemRight)" stroke="#B8860B" />
+            <rect x="125" y="320" width="30" height="12" rx="3" fill="url(#goldStemRight)" stroke="#B8860B" />
+            <rect x="125" y="420" width="30" height="12" rx="3" fill="url(#goldStemRight)" stroke="#B8860B" />
+
+            {/* Hose Port & Valve */}
+            <path d="M 148 480 L 168 470 L 165 490 Z" fill="url(#goldStemRight)" stroke="#B8860B" />
+            <path d="M 132 480 L 112 470 L 105 490 Z" fill="url(#goldStemRight)" stroke="#B8860B" />
+            <circle cx="108" cy="480" r="6" fill="#D4AF37" />
+
+            {/* Glass Flask & Water Base */}
+            <path d="M 115 500 H 165 L 175 540 H 105 Z" fill="url(#glassFlaskRight)" stroke="#D4AF37" strokeWidth="1" />
+            <rect x="136" y="540" width="8" height="130" fill="rgba(212,175,55,0.4)" />
+            <rect x="132" y="670" width="16" height="12" rx="2" fill="url(#goldStemRight)" />
+            
+            <path d="M 120 540 C 100 580, 50 630, 50 700 C 50 735, 230 735, 230 700 C 230 630, 180 580, 160 540 Z" fill="url(#glassFlaskRight)" stroke="rgba(212,175,55,0.4)" strokeWidth="1.5" />
+            <path d="M 58 640 C 90 645, 190 645, 222 640 C 228 670, 228 700, 220 722 H 60 C 52 700, 52 670, 58 640 Z" fill="url(#waterGradRight)" />
+            
+            {/* Bubbles */}
+            <circle cx="136" cy="690" r="3.5" className="bubble-right-1" fill="rgba(215,185,95,0.5)" />
+            <circle cx="144" cy="680" r="2.5" className="bubble-right-2" fill="rgba(215,185,95,0.6)" />
+            <circle cx="132" cy="670" r="3" className="bubble-right-3" fill="rgba(215,185,95,0.5)" />
+            <circle cx="140" cy="655" r="4.5" className="bubble-right-4" fill="rgba(215,185,95,0.7)" />
+            <circle cx="146" cy="645" r="2" className="bubble-right-5" fill="rgba(215,185,95,0.6)" />
           </svg>
         </div>
       </div>
@@ -206,7 +398,7 @@ export function MainLayout() {
             strokeWidth="2.2"
             fill="none"
             strokeDasharray="25, 200"
-            className="animate-hose-flow"
+            className="animate-hose-flow-left"
             style={{ filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.75))' }}
           />
 
@@ -224,7 +416,7 @@ export function MainLayout() {
             strokeWidth="2.2"
             fill="none"
             strokeDasharray="25, 200"
-            className="animate-hose-flow"
+            className="animate-hose-flow-right"
             style={{ filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.75))' }}
           />
 
@@ -238,25 +430,8 @@ export function MainLayout() {
           </defs>
         </svg>
 
-        {/* Left Girl Smoke Puff Clouds */}
-        <div 
-          className="absolute" 
-          style={{ left: `${leftEnd.x}px`, top: `${leftEnd.y}px` }}
-        >
-          <div className="smoke-exhale-left absolute w-5 h-5 bg-white/20 rounded-full blur-[4px]" style={{ animationDelay: '2.5s' }} />
-          <div className="smoke-exhale-left absolute w-7 h-7 bg-white/15 rounded-full blur-[6px]" style={{ animationDelay: '2.9s' }} />
-          <div className="smoke-exhale-left absolute w-9 h-9 bg-white/10 rounded-full blur-[8px]" style={{ animationDelay: '3.3s' }} />
-        </div>
 
-        {/* Right Girl Smoke Puff Clouds */}
-        <div 
-          className="absolute" 
-          style={{ left: `${rightEnd.x}px`, top: `${rightEnd.y}px` }}
-        >
-          <div className="smoke-exhale-right absolute w-5 h-5 bg-white/20 rounded-full blur-[4px]" style={{ animationDelay: '2.5s' }} />
-          <div className="smoke-exhale-right absolute w-7 h-7 bg-white/15 rounded-full blur-[6px]" style={{ animationDelay: '2.9s' }} />
-          <div className="smoke-exhale-right absolute w-9 h-9 bg-white/10 rounded-full blur-[8px]" style={{ animationDelay: '3.3s' }} />
-        </div>
+
       </div>
       <LuxuryCursor />
       <ParticleEngine />
@@ -497,61 +672,138 @@ export function MainLayout() {
         }
 
         /* Hookah Inhale & Exhale Animations */
-        @keyframes hose-flow {
-          0% { opacity: 0; stroke-dashoffset: 0; }
+        @keyframes hose-flow-left-anim {
+          0% { stroke-dashoffset: 0; opacity: 0; }
           5% { opacity: 1; }
-          40% { opacity: 1; stroke-dashoffset: -400; }
-          45%, 100% { opacity: 0; stroke-dashoffset: -400; }
+          35% { stroke-dashoffset: -400; opacity: 1; }
+          40%, 100% { stroke-dashoffset: -400; opacity: 0; }
         }
-        .animate-hose-flow {
-          animation: hose-flow 6s linear infinite;
+        .animate-hose-flow-left {
+          animation: hose-flow-left-anim 6s linear infinite;
         }
 
-        @keyframes smoke-cloud-exhale-left {
-          0%, 40% {
-            transform: translate(0, 0) scale(0.2);
-            opacity: 0;
-          }
-          42% {
-            opacity: 0.65;
-            filter: blur(4px);
-          }
-          75% {
-            transform: translate(-50px, -65px) scale(1.6);
-            opacity: 0.35;
-            filter: blur(10px);
-          }
-          100% {
-            transform: translate(-90px, -115px) scale(2.6);
-            opacity: 0;
-            filter: blur(18px);
-          }
+        @keyframes hose-flow-right-anim {
+          0%, 50% { stroke-dashoffset: 0; opacity: 0; }
+          55% { opacity: 1; }
+          85% { stroke-dashoffset: -400; opacity: 1; }
+          90%, 100% { stroke-dashoffset: -400; opacity: 0; }
         }
-        @keyframes smoke-cloud-exhale-right {
-          0%, 40% {
+        .animate-hose-flow-right {
+          animation: hose-flow-right-anim 6s linear infinite;
+        }
+
+        /* --- Left/Right Hookah Coals Glow --- */
+        @keyframes coal-glow-left-anim {
+          0% { fill: #8B0000; filter: drop-shadow(0 0 0px transparent); }
+          20%, 40% { fill: #FF4500; filter: drop-shadow(0 0 8px #FF8C00); }
+          60%, 100% { fill: #8B0000; filter: drop-shadow(0 0 0px transparent); }
+        }
+        .coal-glow-left {
+          animation: coal-glow-left-anim 6s infinite ease-in-out;
+        }
+
+        @keyframes coal-glow-right-anim {
+          0%, 50% { fill: #8B0000; filter: drop-shadow(0 0 0px transparent); }
+          70%, 90% { fill: #FF4500; filter: drop-shadow(0 0 8px #FF8C00); }
+          95%, 100% { fill: #8B0000; filter: drop-shadow(0 0 0px transparent); }
+        }
+        .coal-glow-right {
+          animation: coal-glow-right-anim 6s infinite ease-in-out;
+        }
+
+        /* --- Left/Right Hookah Bubbles --- */
+        @keyframes bubble-rise-left-anim {
+          0% { transform: translateY(50px) scale(0.3); opacity: 0; }
+          10% { opacity: 0.8; }
+          35% { transform: translateY(0px) scale(1.1); opacity: 0.8; }
+          40%, 100% { transform: translateY(0px) scale(1.1); opacity: 0; }
+        }
+        .bubble-left-1 { animation: bubble-rise-left-anim 6s infinite ease-in; animation-delay: 0.1s; }
+        .bubble-left-2 { animation: bubble-rise-left-anim 6s infinite ease-in; animation-delay: 0.5s; }
+        .bubble-left-3 { animation: bubble-rise-left-anim 6s infinite ease-in; animation-delay: 0.9s; }
+        .bubble-left-4 { animation: bubble-rise-left-anim 6s infinite ease-in; animation-delay: 1.3s; }
+        .bubble-left-5 { animation: bubble-rise-left-anim 6s infinite ease-in; animation-delay: 1.7s; }
+
+        @keyframes bubble-rise-right-anim {
+          0%, 50% { transform: translateY(50px) scale(0.3); opacity: 0; }
+          60% { opacity: 0.8; }
+          85% { transform: translateY(0px) scale(1.1); opacity: 0.8; }
+          90%, 100% { transform: translateY(0px) scale(1.1); opacity: 0; }
+        }
+        .bubble-right-1 { animation: bubble-rise-right-anim 6s infinite ease-in; animation-delay: 0.1s; }
+        .bubble-right-2 { animation: bubble-rise-right-anim 6s infinite ease-in; animation-delay: 0.5s; }
+        .bubble-right-3 { animation: bubble-rise-right-anim 6s infinite ease-in; animation-delay: 0.9s; }
+        .bubble-right-4 { animation: bubble-rise-right-anim 6s infinite ease-in; animation-delay: 1.3s; }
+        .bubble-right-5 { animation: bubble-rise-right-anim 6s infinite ease-in; animation-delay: 1.7s; }
+
+        /* --- Left/Right Girl Chest Breathing --- */
+        @keyframes breathe-left-anim {
+          0%, 100% { transform: scale(1) translate(0, 0); }
+          25% { transform: scale(1.03) translate(2px, -1px); }
+          45%, 100% { transform: scale(1) translate(0, 0); }
+        }
+        .animate-breathe-left {
+          animation: breathe-left-anim 6s infinite ease-in-out;
+          transform-origin: 285px 445px;
+        }
+
+        @keyframes breathe-right-anim {
+          0%, 50% { transform: scale(1) translate(0, 0); }
+          75% { transform: scale(1.03) translate(-2px, -1px); }
+          95%, 100% { transform: scale(1) translate(0, 0); }
+        }
+        .animate-breathe-right {
+          animation: breathe-right-anim 6s infinite ease-in-out;
+          transform-origin: 715px 445px;
+        }
+
+        /* --- Left/Right Smoke Clouds --- */
+        @keyframes smoke-cloud-left {
+          0% {
             transform: translate(0, 0) scale(0.2);
             opacity: 0;
           }
-          42% {
-            opacity: 0.65;
+          5% {
+            opacity: 0.75;
             filter: blur(4px);
           }
-          75% {
-            transform: translate(50px, -65px) scale(1.6);
-            opacity: 0.35;
-            filter: blur(10px);
+          60% {
+            transform: translate(-70px, -100px) scale(2.2);
+            opacity: 0.45;
+            filter: blur(12px);
           }
           100% {
-            transform: translate(90px, -115px) scale(2.6);
+            transform: translate(-120px, -170px) scale(3.5);
             opacity: 0;
-            filter: blur(18px);
+            filter: blur(22px);
           }
         }
         .smoke-exhale-left {
-          animation: smoke-cloud-exhale-left 6s ease-out infinite;
+          animation: smoke-cloud-left 6s ease-out infinite;
+        }
+
+        @keyframes smoke-cloud-right {
+          0% {
+            transform: translate(0, 0) scale(0.2);
+            opacity: 0;
+          }
+          5% {
+            opacity: 0.75;
+            filter: blur(4px);
+          }
+          60% {
+            transform: translate(70px, -100px) scale(2.2);
+            opacity: 0.45;
+            filter: blur(12px);
+          }
+          100% {
+            transform: translate(120px, -170px) scale(3.5);
+            opacity: 0;
+            filter: blur(22px);
+          }
         }
         .smoke-exhale-right {
-          animation: smoke-cloud-exhale-right 6s ease-out infinite;
+          animation: smoke-cloud-right 6s ease-out infinite;
         }
       `}</style>
     </div>
