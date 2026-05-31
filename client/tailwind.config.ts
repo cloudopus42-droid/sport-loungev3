@@ -20,7 +20,7 @@ const config: Config = {
         },
         glass: {
           bg: 'rgba(255, 255, 255, 0.08)',
-          border: 'rgba(255, 255, 255, 0.22)',
+          border: 'rgba(255, 255, 255, 0.12)',
         },
       },
       fontFamily: {
