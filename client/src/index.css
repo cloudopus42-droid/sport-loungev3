@@ -381,18 +381,18 @@
   .glass-btn-gold {
     background: linear-gradient(
       135deg,
-      rgba(212, 175, 55, 0.35) 0%,
-      rgba(184, 134, 11, 0.2) 100%
+      #7c5c24 0%,
+      #4a3410 100%
     );
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(212, 175, 55, 0.55);
     position: relative;
     overflow: hidden;
     box-shadow: 
-      0 4px 16px 0 rgba(212, 175, 55, 0.22),
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
-    color: #ffffff !important;
+      0 4px 16px 0 rgba(0, 0, 0, 0.35),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+    color: #F4E4C4 !important;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -406,7 +406,7 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.25) 50%,
+      rgba(255, 255, 255, 0.15) 50%,
       transparent 100%
     );
     transform: skewX(-20deg);
@@ -422,13 +422,13 @@
   .glass-btn-gold:hover {
     background: linear-gradient(
       135deg,
-      rgba(212, 175, 55, 0.45) 0%,
-      rgba(184, 134, 11, 0.28) 100%
+      #926e2e 0%,
+      #5c4315 100%
     );
-    border-color: rgba(255, 255, 255, 0.38);
+    border-color: rgba(212, 175, 55, 0.85);
     box-shadow: 
-      0 6px 20px 0 rgba(212, 175, 55, 0.32),
-      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.55);
+      0 0 15px rgba(212, 175, 55, 0.35),
+      0 6px 20px 0 rgba(0, 0, 0, 0.45);
     transform: translateY(-1.5px);
   }
 
