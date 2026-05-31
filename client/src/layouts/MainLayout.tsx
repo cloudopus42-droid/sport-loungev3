@@ -124,8 +124,8 @@ export function MainLayout() {
               alt="Cyber Lounge Girls" 
               className="w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(212,175,55,0.25)] animate-breathe-image"
               style={{
-                WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 40%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0) 75%)',
-                maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 40%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0) 75%)',
+                WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0) 55%)',
+                maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0) 55%)',
               }}
             />
 
@@ -308,7 +308,7 @@ export function MainLayout() {
       </div>
 
       {/* Dynamic Animated Hoses and Smoke (Wide screens only) */}
-      <div className="hidden xl:block fixed inset-0 w-full h-full pointer-events-none z-10 select-none">
+      <div className="hidden xl:block fixed inset-0 w-full h-full pointer-events-none z-0 select-none">
         <svg className="w-full h-full">
           {/* Left Hose Background */}
           <path
