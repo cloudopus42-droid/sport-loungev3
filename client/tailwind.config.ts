@@ -19,8 +19,8 @@ const config: Config = {
           purple: '#8A6623', // Map old accent to bronze
         },
         glass: {
-          bg: 'rgba(18, 14, 10, 0.7)',
-          border: 'rgba(212, 175, 55, 0.15)',
+          bg: 'rgba(255, 255, 255, 0.08)',
+          border: 'rgba(255, 255, 255, 0.22)',
         },
       },
       fontFamily: {
@@ -39,7 +39,7 @@ const config: Config = {
         'gold-pill': '0 0 25px rgba(212, 175, 55, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
       },
       backdropBlur: {
-        glass: '20px',
+        glass: '32px',
       },
       animation: {
         fadeInUp: 'fadeInUp 0.5s ease-out forwards',
