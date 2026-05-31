@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { MapPin, Clock, Send, Flame, Sparkles, ChevronLeft, ChevronRight, Award, Compass } from 'lucide-react';
+import { MapPin, Clock, Send, Flame, Sparkles, ChevronLeft, ChevronRight, Award, Compass, Calendar } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { GlowButton } from '@/components/ui/GlowButton';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
@@ -98,7 +97,7 @@ export function HomePage() {
       className="space-y-12 pb-16 overflow-x-hidden"
     >
       {/* Dynamic Hero Section */}
-      <section className="relative overflow-hidden pt-2 sm:pt-4 min-h-[460px] flex items-center">
+      <section className="relative overflow-hidden pt-2 sm:pt-4 min-h-[480px] flex items-center">
         <div className="absolute inset-0 pointer-events-none z-[1]">
           {/* Subtle warm glow behind hookah */}
           <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-96 h-96 bg-accent-gold/10 rounded-full blur-[140px]" />
@@ -120,9 +119,9 @@ export function HomePage() {
               </span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-light text-white leading-none uppercase tracking-wide">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-light text-white leading-[1.05] uppercase tracking-[0.05em]">
               ИСТИННЫЙ <br />
-              <span className="gradient-text font-semibold">ВКУС И</span> <br />
+              <span className="gradient-text font-semibold">ВКУС</span> И <br />
               КРЕПОСТЬ
             </h1>
             
@@ -132,52 +131,68 @@ export function HomePage() {
             
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
               <NavLink to="/booking" className="w-full sm:w-auto">
-                <GlowButton variant="gold" size="lg" className="w-full sm:w-auto shadow-glow-gold-lg">
-                  <Flame className="w-5 h-5 mr-1 text-white" /> Заказать кальян
-                </GlowButton>
+                <motion.button
+                  className="px-8 py-3 rounded-full border border-accent-gold/60 text-[#F4E4C4] bg-gradient-to-r from-[#7c5c24] to-[#4a3410] hover:from-[#926e2e] hover:to-[#5c4315] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Flame className="w-4 h-4 text-accent-gold animate-pulse" /> Заказать кальян
+                </motion.button>
               </NavLink>
               <a 
                 href={CONTACT.telegramUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-glass-border hover:border-accent-gold/40 hover:text-accent-gold text-white/70 transition-all text-sm font-semibold w-full sm:w-auto"
+                className="px-8 py-3 rounded-full border border-white/10 hover:border-accent-gold/40 hover:text-accent-gold bg-[#14100c]/40 text-white/70 shadow-[0_4px_16px_rgba(0,0,0,0.25)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
               >
                 <Send className="w-4 h-4" /> Написать в Telegram
               </a>
             </div>
 
             {/* Bottom-left Address Cards inside Hero */}
-            <div className="flex flex-wrap gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-8 pt-4 select-none">
               <div 
                 onClick={handleAddressClick}
-                className="flex items-center gap-2.5 hover:text-accent-gold cursor-pointer transition-all text-xs text-white/45 bg-white/5 border border-glass-border/30 px-4 py-2 rounded-xl"
+                className="flex items-center gap-3.5 hover:text-accent-gold cursor-pointer transition-all group"
               >
-                <MapPin className="w-4 h-4 text-accent-gold" />
-                <span>г. Чебоксары, ул. Гагарина 40а</span>
+                <div className="w-8 h-8 rounded-full border border-white/10 hover:border-accent-gold/40 flex items-center justify-center bg-[#14100c]/85 text-white/50 group-hover:text-accent-gold transition-all">
+                  <MapPin className="w-4 h-4 text-accent-gold" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold mb-0.5">НАШ АДРЕС</div>
+                  <div className="text-xs text-white/50 font-light">г. Чебоксары, ул. Гагарина 40а</div>
+                </div>
               </div>
               
-              <div 
-                className="flex items-center gap-2.5 text-xs text-white/45 bg-white/5 border border-glass-border/30 px-4 py-2 rounded-xl"
-              >
-                <Clock className="w-4 h-4 text-accent-gold" />
-                <span>Круглосуточно 24/7</span>
+              <div className="flex items-center gap-3.5">
+                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#14100c]/85 text-white/50">
+                  <Clock className="w-4 h-4 text-accent-gold" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold mb-0.5">ВРЕМЯ РАБОТЫ</div>
+                  <div className="text-xs text-white/50 font-light">Круглосуточно 24/7</div>
+                </div>
               </div>
             </div>
           </motion.div>
 
           {/* Right Side: The Premium Hookah Image with Reflection & Glowing Shadow */}
           <motion.div 
-            className="lg:col-span-5 hidden lg:flex justify-center items-center relative"
+            className="lg:col-span-5 hidden lg:flex justify-center items-end relative h-[540px]"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.15 }}
           >
-            {/* Soft glowing ambient circle behind image */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.06)_0%,transparent_60%)] filter blur-3xl pointer-events-none" />
+            {/* Ambient lamp glow & cozy backdrop styling */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.08)_0%,transparent_60%)] filter blur-3xl pointer-events-none" />
+            <div className="absolute right-[12%] top-[10%] w-32 h-32 bg-[radial-gradient(circle,rgba(212,175,55,0.18)_0%,transparent_75%)] blur-[40px] pointer-events-none" />
+            <div className="absolute right-[28%] top-0 w-[1px] h-32 bg-gradient-to-b from-accent-gold/45 to-transparent" />
+            <div className="absolute right-[27.2%] top-28 w-2 h-2 rounded-full bg-accent-gold shadow-glow-gold animate-pulse" />
+            
             <img 
               src={premiumHookah} 
               alt="Sport Lounge Premium Hookah" 
-              className="max-h-[520px] w-auto object-contain filter drop-shadow-[0_10px_35px_rgba(212,175,55,0.25)] animate-breathe-image"
+              className="max-h-[500px] w-auto object-contain filter drop-shadow-[0_12px_40px_rgba(212,175,55,0.22)] z-10 animate-breathe-image"
             />
           </motion.div>
         </div>
@@ -185,82 +200,98 @@ export function HomePage() {
 
       {/* Grid Zone Layout matching reference image perfectly */}
       <section id="menu" className="relative pt-8">
-        <div className="text-center space-y-2 mb-10">
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">Наши зоны</span>
+        <div className="text-center space-y-2 mb-10 select-none">
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">
+            <Flame className="w-3.5 h-3.5 inline mr-1 text-accent-gold animate-pulse" /> НАШИ ЗОНЫ
+          </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
-            Выберите <span className="font-semibold italic">атмосферу</span>
+            Выберите <span className="gradient-text font-semibold italic">атмосферу</span>
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-          {PREMIUM_ZONES.map((zone, index) => (
-            <motion.div
-              key={zone.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.15, duration: 0.6 }}
-              className="relative group rounded-3xl overflow-hidden aspect-[4/5] shadow-lg border border-glass-border/30 cursor-pointer"
-            >
-              {/* Main Zone Image Background */}
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={zone.images[activeZoneSlide[zone.id]]}
-                  alt={zone.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                {/* Black gradient mask matching reference image */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/70 group-hover:via-black/25 transition-colors duration-300" />
-              </div>
+        <div className="flex items-center gap-6 relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+            {PREMIUM_ZONES.map((zone, index) => (
+              <motion.div
+                key={zone.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.15, duration: 0.6 }}
+                className="relative group rounded-3xl overflow-hidden aspect-[4/5] shadow-lg border border-glass-border/30 cursor-pointer"
+              >
+                {/* Main Zone Image Background */}
+                <div className="absolute inset-0 z-0">
+                  <img
+                    src={zone.images[activeZoneSlide[zone.id]]}
+                    alt={zone.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  {/* Black gradient mask matching reference image */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/70 group-hover:via-black/25 transition-colors duration-300" />
+                </div>
 
-              {/* Card content aligned top-left matching reference design */}
-              <div className="absolute top-6 left-6 right-6 z-10 flex flex-col justify-start items-start">
-                <h3 className="text-xl sm:text-2xl font-display font-bold text-[#F4E4C4] leading-none uppercase tracking-wide group-hover:text-accent-gold transition-colors duration-300">
-                  {zone.title}
-                </h3>
-                <p className="text-[10px] text-accent-gold/85 font-semibold mt-1 uppercase tracking-[0.2em]">
-                  {zone.subtitle}
-                </p>
-              </div>
+                {/* Card content aligned top-left matching reference design */}
+                <div className="absolute top-6 left-6 right-6 z-10 flex flex-col justify-start items-start">
+                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#F4E4C4] leading-none uppercase tracking-wide group-hover:text-accent-gold transition-colors duration-300">
+                    {zone.title}
+                  </h3>
+                  <p className="text-[10px] text-accent-gold/85 font-semibold mt-1 uppercase tracking-[0.2em]">
+                    {zone.subtitle}
+                  </p>
+                </div>
 
-              {/* Card description overlay displayed on hover */}
-              <div className="absolute bottom-16 left-6 right-6 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <p className="text-[11px] text-white/70 leading-relaxed font-light">
-                  {zone.description}
-                </p>
-              </div>
+                {/* Card description overlay displayed on hover */}
+                <div className="absolute bottom-16 left-6 right-6 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-[11px] text-white/70 leading-relaxed font-light">
+                    {zone.description}
+                  </p>
+                </div>
 
-              {/* Detail link bottom-left matching reference */}
-              <div className="absolute bottom-6 left-6 z-20 flex items-center gap-1.5 text-xs text-white/50 group-hover:text-accent-gold transition-colors font-medium">
-                <span>Подробнее</span>
-                <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
-              </div>
+                {/* Detail link bottom-left matching reference */}
+                <div className="absolute bottom-6 left-6 z-20 flex items-center gap-1.5 text-xs text-white/50 group-hover:text-accent-gold transition-colors font-medium">
+                  <span>Подробнее</span>
+                  <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
+                </div>
 
-              {/* Sub-slide navigation arrow toggles */}
-              <div className="absolute bottom-6 right-6 z-20 flex items-center gap-1">
-                <button
-                  onClick={(e) => handlePrevSlide(zone.id, e)}
-                  className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center bg-black/45 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={(e) => handleNextSlide(zone.id, e)}
-                  className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center bg-black/45 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                {/* Sub-slide navigation arrow toggles */}
+                <div className="absolute bottom-6 right-6 z-20 flex items-center gap-1">
+                  <button
+                    onClick={(e) => handlePrevSlide(zone.id, e)}
+                    className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center bg-black/45 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={(e) => handleNextSlide(zone.id, e)}
+                    className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center bg-black/45 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Vertical scroll/navigation chevrons on the right */}
+          <div className="hidden md:flex flex-col gap-3 justify-center items-center">
+            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#14100c]/85 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
+              <ChevronLeft className="w-4 h-4 rotate-90" />
+            </button>
+            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#14100c]/85 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
+              <ChevronRight className="w-4 h-4 rotate-90" />
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Why Guests Choose Us Section */}
       <section id="why-us" className="relative pt-8">
-        <div className="text-center space-y-2 mb-10">
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">Наши преимущества</span>
+        <div className="text-center space-y-2 mb-10 select-none">
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">
+            <Flame className="w-3.5 h-3.5 inline mr-1 text-accent-gold animate-pulse" /> НАШИ ПРЕИМУЩЕСТВА
+          </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
-            Почему гости <span className="font-semibold italic">выбирают нас</span>
+            Почему гости <span className="gradient-text font-semibold italic">выбирают нас</span>
           </h2>
         </div>
 
@@ -293,28 +324,40 @@ export function HomePage() {
 
       {/* Booking Footer CTA section with VIP Club promo card */}
       <section id="events" className="relative pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch select-none">
           {/* Main Booking Panel */}
           <div className="lg:col-span-8">
-            <GlassCard className="p-8 sm:p-10 h-full flex flex-col justify-between bg-gradient-to-br from-white/5 to-black/45 border-glass-border/30 relative overflow-hidden group">
+            <GlassCard className="p-8 sm:p-10 h-full flex flex-col justify-between border-glass-border/30 relative overflow-hidden group min-h-[320px]">
+              {/* Background Image of Cozy Lounge */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center opacity-15 mix-blend-luminosity z-0 transition-transform duration-700 group-hover:scale-105" 
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=800&auto=format&fit=crop')` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/45 to-black/10 z-0" />
               {/* Soft warm lamp background effect inside CTA */}
               <div className="absolute right-0 bottom-0 w-80 h-80 bg-accent-gold/5 rounded-full blur-[90px] pointer-events-none" />
               
-              <div className="space-y-4 max-w-xl">
-                <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold font-semibold">Бронирование</span>
+              <div className="space-y-4 max-w-xl z-10">
+                <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold font-semibold flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-pulse" /> БРОНИРОВАНИЕ
+                </span>
                 <h3 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider leading-none">
-                  Забронируйте <span className="font-semibold italic">столик</span>
+                  Забронируйте <span className="gradient-text font-semibold italic">столик</span>
                 </h3>
                 <p className="text-xs sm:text-sm text-white/50 leading-relaxed font-light">
                   Выберите удобное время и наслаждайтесь отдыхом в лучшей кальянной Чебоксар.
                 </p>
               </div>
 
-              <div className="pt-6">
+              <div className="pt-6 z-10">
                 <NavLink to="/booking">
-                  <GlowButton variant="gold" size="lg" className="w-full sm:w-auto">
-                    Забронировать столик
-                  </GlowButton>
+                  <motion.button
+                    className="px-8 py-3 rounded-full border border-accent-gold/60 text-[#F4E4C4] bg-gradient-to-r from-[#7c5c24] to-[#4a3410] hover:from-[#926e2e] hover:to-[#5c4315] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Calendar className="w-4 h-4 text-accent-gold" /> Забронировать столик
+                  </motion.button>
                 </NavLink>
               </div>
             </GlassCard>
@@ -322,20 +365,23 @@ export function HomePage() {
 
           {/* VIP Pass Panel */}
           <div className="lg:col-span-4">
-            <GlassCard className="p-8 h-full flex flex-col justify-between bg-gradient-to-br from-amber-950/20 via-stone-900/40 to-black border-accent-gold/25 relative overflow-hidden text-center group">
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-gold/40 rounded-tr-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent-gold/40 rounded-bl-3xl pointer-events-none" />
+            <GlassCard className="p-8 h-full flex flex-col justify-between bg-gradient-to-br from-[#231c0f]/80 via-[#120f0c]/90 to-black border-accent-gold/20 relative overflow-hidden text-center group min-h-[320px] z-10">
+              {/* Decorative corners matching reference VIP layout */}
+              <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-accent-gold/45 pointer-events-none" />
+              <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-accent-gold/45 pointer-events-none" />
+              <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-accent-gold/45 pointer-events-none" />
+              <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-accent-gold/45 pointer-events-none" />
               
-              <div className="space-y-4">
-                <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold font-bold">Закрытый Клуб</span>
-                <h4 className="text-4xl font-display font-bold text-accent-gold tracking-widest animate-pulse">VIP</h4>
-                <p className="text-xs text-white font-medium uppercase tracking-wider">VIP-комната</p>
+              <div className="space-y-4 z-10 mt-4">
+                <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold/80 font-bold block">Закрытый Клуб</span>
+                <h4 className="text-5xl font-display font-bold text-accent-gold tracking-widest animate-pulse">VIP</h4>
+                <p className="text-xs text-[#F4E4C4] font-medium uppercase tracking-wider mt-4">VIP-комната</p>
                 <p className="text-[11px] text-white/45 font-light leading-normal">
                   для особых гостей
                 </p>
               </div>
 
-              <div className="pt-6">
+              <div className="pt-6 z-10">
                 <NavLink 
                   to="/profile" 
                   className="inline-flex items-center gap-1.5 text-xs text-accent-gold hover:underline font-bold"
