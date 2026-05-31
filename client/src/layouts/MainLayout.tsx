@@ -12,8 +12,6 @@ import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
-import girlsImage from '../girls.png';
-import premiumHookah from '../premium_hookah.png';
 import { LuxuryMusicPlayer } from '@/components/ui/LuxuryMusicPlayer';
 
 const navItems = [
@@ -28,6 +26,17 @@ export function MainLayout() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
+
+  const handleNavClick = (anchor: string) => {
+    if (window.location.pathname !== '/') {
+      navigate('/' + anchor);
+    } else {
+      const el = document.querySelector(anchor);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   
   // Ambient Lounge Player state and audio references are now managed by LuxuryMusicPlayer component
@@ -85,34 +94,6 @@ export function MainLayout() {
         {/* 3D WebGL Smoke Render - Drift across entire background */}
         <ThreeSmoke />
 
-        {/* Centered Premium Custom Girls Background (GTA Style Artwork) */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.20] mix-blend-screen pointer-events-none z-0">
-          <div className="relative w-full max-w-4xl aspect-[3/2] px-4 flex items-center justify-center">
-            <img 
-              src={girlsImage} 
-              alt="Cyber Lounge Girls" 
-              className="w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(212,175,55,0.25)] animate-breathe-image"
-              style={{
-                WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0) 55%)',
-                maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0.75) 42%, rgba(0,0,0,0) 55%)',
-              }}
-            />
-
-            {/* Volumetric Exhale Smoke Clouds at girls' mouths */}
-            <div className="absolute" style={{ left: '41.5%', top: '47.8%' }}>
-              <div className="smoke-exhale-left absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '2.5s' }} />
-              <div className="smoke-exhale-left absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '2.9s' }} />
-              <div className="smoke-exhale-left absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '3.3s' }} />
-            </div>
-
-            <div className="absolute" style={{ left: '59.5%', top: '50%' }}>
-              <div className="smoke-exhale-right absolute w-6 h-6 bg-white/20 rounded-full blur-[5px]" style={{ animationDelay: '5.5s' }} />
-              <div className="smoke-exhale-right absolute w-9 h-9 bg-white/15 rounded-full blur-[7px]" style={{ animationDelay: '5.9s' }} />
-              <div className="smoke-exhale-right absolute w-12 h-12 bg-white/10 rounded-full blur-[9px]" style={{ animationDelay: '6.3s' }} />
-            </div>
-          </div>
-        </div>
-
         {/* CSS Volumetric Haze Layers */}
         <div className="absolute inset-0 opacity-[0.08] mix-blend-color-dodge">
           <div className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.12)_0%,transparent_60%)] animate-haze-float pointer-events-none" />
@@ -120,24 +101,19 @@ export function MainLayout() {
         </div>
       </div>
 
-      {/* Decorative luxury side margins for wide screens (fill empty space) */}
-      <div className="hidden xl:flex fixed left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-25 select-none">
-        <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr] rotate-180">SPORT LOUNGE</span>
+      {/* Decorative luxury side margins for wide screens */}
+      <div className="hidden xl:flex fixed left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-30 select-none">
+        <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr] rotate-180">PREMIUM LOUNGE</span>
         <div className="w-[1px] h-32 bg-gradient-to-b from-accent-gold/40 to-transparent" />
       </div>
       
-      <div className="hidden xl:flex fixed right-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-25 select-none">
-        <div className="w-[1px] h-32 bg-gradient-to-t from-accent-gold/40 to-transparent" />
-        <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr]">PREMIUM 24/7</span>
-      </div>
-
-      {/* Side Hookahs matching the premium user upload */}
-      <div className="hidden xl:block fixed left-4 bottom-0 z-20 pointer-events-none opacity-[0.24] select-none h-[75vh] w-64 filter drop-shadow-[0_0_25px_rgba(212,175,55,0.22)]">
-        <img src={premiumHookah} alt="Premium Hookah Left" className="h-full w-full object-contain" />
-      </div>
-
-      <div className="hidden xl:block fixed right-4 bottom-0 z-20 pointer-events-none opacity-[0.24] select-none h-[75vh] w-64 filter drop-shadow-[0_0_25px_rgba(212,175,55,0.22)] scale-x-[-1]">
-        <img src={premiumHookah} alt="Premium Hookah Right" className="h-full w-full object-contain" />
+      <div className="hidden xl:flex fixed right-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-40 select-none font-display text-xs">
+        <div className="flex flex-col items-center gap-4 text-white/40">
+          <span className="text-accent-gold border-b border-accent-gold pb-1 font-bold">01</span>
+          <span>02</span>
+          <span>03</span>
+        </div>
+        <div className="w-[1px] h-20 bg-gradient-to-t from-accent-gold/30 to-transparent" />
       </div>
       <ParticleEngine />
       <ConciergeChat />
@@ -149,37 +125,63 @@ export function MainLayout() {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-3.5 gap-4">
           
           {/* Logo / Admin label matching image */}
-          <NavLink to="/" className="flex items-center gap-2 flex-shrink-0">
-            <h1 className="text-xl sm:text-2xl font-display font-semibold text-white tracking-wide uppercase">
-              {isAdmin ? 'Admin' : 'SPORT LOUNGE'}
-            </h1>
+          <NavLink to="/" className="flex flex-col items-center flex-shrink-0 text-center select-none group">
+            <Flame className="w-4 h-4 text-accent-gold mb-0.5 group-hover:scale-110 transition-transform duration-300" />
+            <span className="text-xs font-display tracking-[0.25em] leading-none text-[#F4E4C4] font-light">SPORT</span>
+            <span className="text-[8px] font-display tracking-[0.3em] leading-none text-[#F4E4C4] font-semibold mt-0.5">LOUNGE</span>
           </NavLink>
 
           {/* Desktop Navigation Links - Centered */}
-          <nav className="hidden lg:flex items-center gap-6 flex-1 justify-center">
+          <nav className="hidden lg:flex items-center gap-7 flex-1 justify-center">
             <NavLink to="/" end className={({ isActive }) => clsx(
-              "text-xs sm:text-sm font-medium transition-all",
-              isActive ? "text-accent-gold" : "text-white/60 hover:text-white"
+              "text-xs font-medium transition-all relative py-1",
+              isActive ? "text-accent-gold font-semibold" : "text-white/60 hover:text-white"
             )}>
-              Главная
+              {({ isActive }) => (
+                <>
+                  Главная
+                  {isActive && (
+                    <motion.div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-accent-gold shadow-glow-gold" layoutId="activeHeaderDot" />
+                  )}
+                </>
+              )}
             </NavLink>
             <NavLink to="/booking" className={({ isActive }) => clsx(
-              "text-xs sm:text-sm font-medium transition-all",
-              isActive ? "text-accent-gold" : "text-white/60 hover:text-white"
+              "text-xs font-medium transition-all relative py-1",
+              isActive ? "text-accent-gold font-semibold" : "text-white/60 hover:text-white"
             )}>
-              Заказ кальяна
+              {({ isActive }) => (
+                <>
+                  Заказ кальяна
+                  {isActive && (
+                    <motion.div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-accent-gold shadow-glow-gold" layoutId="activeHeaderDot" />
+                  )}
+                </>
+              )}
             </NavLink>
-            <a href="#menu" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white transition-all">
+            <a 
+              href="#menu" 
+              onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); }}
+              className="text-xs font-medium text-white/60 hover:text-white transition-all py-1"
+            >
               Меню
             </a>
-            <a href="#events" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white transition-all">
+            <a 
+              href="#events" 
+              onClick={(e) => { e.preventDefault(); handleNavClick('#events'); }}
+              className="text-xs font-medium text-white/60 hover:text-white transition-all py-1"
+            >
               Мероприятия
             </a>
-            <a href="#contacts" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white transition-all">
+            <a 
+              href="#contacts" 
+              onClick={(e) => { e.preventDefault(); handleNavClick('#contacts'); }}
+              className="text-xs font-medium text-white/60 hover:text-white transition-all py-1"
+            >
               Контакты
             </a>
             {isAdmin && (
-              <NavLink to="/admin" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white flex items-center gap-1">
+              <NavLink to="/admin" className="text-xs font-medium text-white/60 hover:text-white flex items-center gap-1 py-1">
                 <Shield className="w-3.5 h-3.5 text-accent-gold" />
                 Панель
               </NavLink>
@@ -189,19 +191,31 @@ export function MainLayout() {
           {/* Action buttons (Right side) - Instagram, Telegram & Auth / Book order */}
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             {/* Social Links (Instagram / Telegram) matching reference */}
-            <div className="hidden sm:flex items-center gap-2">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-white/5 text-white/60 hover:text-white transition-colors" title="Instagram">
-                <Instagram className="w-4 h-4" />
+            <div className="hidden sm:flex items-center gap-2.5">
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-7 h-7 rounded-full border border-white/10 hover:border-accent-gold/40 flex items-center justify-center bg-[#14100c]/85 text-white/60 hover:text-accent-gold transition-all" 
+                title="Instagram"
+              >
+                <Instagram className="w-3.5 h-3.5" />
               </a>
-              <a href={CONTACT.telegramUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-white/5 text-white/60 hover:text-white transition-colors" title="Telegram">
-                <Send className="w-4 h-4" />
+              <a 
+                href={CONTACT.telegramUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-7 h-7 rounded-full border border-white/10 hover:border-accent-gold/40 flex items-center justify-center bg-[#14100c]/85 text-white/60 hover:text-accent-gold transition-all" 
+                title="Telegram"
+              >
+                <Send className="w-3.5 h-3.5" />
               </a>
             </div>
 
             {/* Authentication Buttons */}
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
-                <NavLink to="/profile" className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-white/10 transition-all text-xs font-medium text-white/80">
+                <NavLink to="/profile" className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-white/10 transition-all text-xs font-medium text-white/80">
                   {user?.avatar ? (
                     <img src={resolveImageUrl(user.avatar)} alt={user.name} className="w-4 h-4 rounded-full object-cover" />
                   ) : (
@@ -214,7 +228,7 @@ export function MainLayout() {
                 </button>
               </div>
             ) : (
-              <NavLink to="/login" className="px-4 py-1.5 text-xs font-semibold text-white/80 hover:text-white border border-glass-border rounded-full hover:bg-white/5 transition-all">
+              <NavLink to="/login" className="px-4 py-1.5 text-xs font-semibold text-white/70 hover:text-white border border-glass-border rounded-full hover:bg-white/5 transition-all">
                 Sign In
               </NavLink>
             )}
@@ -222,9 +236,9 @@ export function MainLayout() {
             {/* Book order button */}
             <NavLink to="/booking">
               <motion.button
-                className="px-4 py-1.5 text-xs rounded-full border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-black transition-all font-medium"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
+                className="px-5 py-1.5 text-xs rounded-full border border-accent-gold/60 text-[#F4E4C4] bg-gradient-to-r from-[#7c5c24] to-[#4a3410] hover:from-[#926e2e] hover:to-[#5c4315] shadow-[0_4px_12px_rgba(0,0,0,0.35)] hover:shadow-[0_0_12px_rgba(212,175,55,0.25)] transition-all font-medium"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 Заказать кальян
               </motion.button>
