@@ -5,7 +5,7 @@ import speedDialMusic from '@/zero-7-speed-dial.mp3';
 
 export function LuxuryMusicPlayer() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Enabled by default
   const [volume, setVolume] = useState(0.10); // Default 10%
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -18,6 +18,36 @@ export function LuxuryMusicPlayer() {
     audio.loop = true;
     audio.volume = volume;
     audioRef.current = audio;
+
+    const startPlaying = () => {
+      audio.play()
+        .then(() => {
+          setIsPlaying(true);
+          cleanup();
+        })
+        .catch((err) => {
+          console.log('Interaction playback failed', err);
+        });
+    };
+
+    const cleanup = () => {
+      document.removeEventListener('click', startPlaying);
+      document.removeEventListener('touchstart', startPlaying);
+      document.removeEventListener('keydown', startPlaying);
+    };
+
+    // Try autoplay immediately
+    audio.play()
+      .then(() => {
+        setIsPlaying(true);
+      })
+      .catch((err) => {
+        console.log('Autoplay blocked, registering user interaction listeners:', err);
+        // Fallback to interaction listeners
+        document.addEventListener('click', startPlaying);
+        document.addEventListener('touchstart', startPlaying);
+        document.addEventListener('keydown', startPlaying);
+      });
 
     const updateTime = () => {
       setCurrentTime(audio.currentTime);
@@ -34,6 +64,7 @@ export function LuxuryMusicPlayer() {
       audio.pause();
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
+      cleanup();
     };
   }, []);
 
@@ -53,13 +84,13 @@ export function LuxuryMusicPlayer() {
   const handleTogglePlay = () => {
     if (!audioRef.current) return;
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
+    if (audioRef.current.paused) {
       audioRef.current.play()
         .then(() => setIsPlaying(true))
         .catch((err) => console.log('Audio playback failed', err));
+    } else {
+      audioRef.current.pause();
+      setIsPlaying(false);
     }
   };
 
