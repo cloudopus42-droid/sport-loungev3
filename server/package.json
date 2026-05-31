@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Backend API for SPORT LOUNGE premium hookah lounge",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
