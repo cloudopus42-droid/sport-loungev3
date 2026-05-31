@@ -6,31 +6,34 @@ const VERCEL_TOKEN = 'vcp_1xwTy4tSeT6Hm9QmVOIUWRsYdP5P2wpVYyeu4YKJqCAuIo5IKf2g28
 const RENDER_API_KEY = 'rnd_eUEcmLjAq9rMWQ7pBQvdaTjQcqPX';
 const GITHUB_REPO = 'https://github.com/cloudopus42-droid/sport-loungev3';
 
-function curlRequest(method, endpoint, bodyObj = null) {
+async function renderRequest(method, endpoint, bodyObj = null) {
   const url = `https://api.render.com/v1${endpoint}`;
-  let cmd = `curl.exe -s -X ${method} "${url}" -H "Authorization: Bearer ${RENDER_API_KEY}" -H "Accept: application/json"`;
-  
-  let tempFilePath = null;
+  const headers = {
+    'Authorization': `Bearer ${RENDER_API_KEY}`,
+    'Accept': 'application/json'
+  };
+  const options = {
+    method,
+    headers
+  };
   if (bodyObj) {
-    tempFilePath = path.resolve(__dirname, `temp_${Math.random().toString(36).substring(7)}.json`);
-    fs.writeFileSync(tempFilePath, JSON.stringify(bodyObj, null, 2));
-    cmd += ` -H "Content-Type: application/json" -d @"${tempFilePath}"`;
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(bodyObj);
   }
   
   try {
-    const output = execSync(cmd, { encoding: 'utf-8' });
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Render API responded with ${res.status}: ${errText}`);
     }
-    if (!output.trim()) {
-      return {};
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await res.json();
     }
-    return JSON.parse(output);
+    return {};
   } catch (err) {
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
-    }
-    console.error(`Error executing curl command: ${cmd}`);
+    console.error(`Error requesting Render API ${method} ${endpoint}:`);
     console.error(err.message);
     throw err;
   }
@@ -41,7 +44,7 @@ async function main() {
 
   // 1. Fetch Render Owner ID
   console.log('1. Fetching owner list from Render...');
-  const owners = curlRequest('GET', '/owners?limit=20');
+  const owners = await renderRequest('GET', '/owners?limit=20');
 
   if (!owners || owners.length === 0) {
     throw new Error('No owners found on Render account!');
@@ -51,7 +54,7 @@ async function main() {
 
   // 2. Check if the Render service already exists
   console.log('2. Checking if service "sport-loungev3" already exists on Render...');
-  const services = curlRequest('GET', '/services?limit=50');
+  const services = await renderRequest('GET', '/services?limit=50');
 
   let service = services.find(s => s.service.name === 'sport-loungev3');
   let serviceId = '';
@@ -93,7 +96,7 @@ async function main() {
       ]
     };
 
-    const newService = curlRequest('POST', '/services', createBody);
+    const newService = await renderRequest('POST', '/services', createBody);
     serviceId = newService.id;
     renderUrl = newService.url;
     console.log(`✅ Web Service created successfully on Render! ID: ${serviceId}, URL: ${renderUrl}`);
@@ -136,7 +139,7 @@ async function main() {
   console.log(`5. Updating Render service ALLOWED_ORIGINS to include: ${vercelUrl}`);
   
   // First, get current env vars to retain them
-  const currentEnvVars = curlRequest('GET', `/services/${serviceId}/env-vars?limit=100`);
+  const currentEnvVars = await renderRequest('GET', `/services/${serviceId}/env-vars?limit=100`);
 
   const updatedEnvVars = currentEnvVars.map(ev => {
     if (ev.envVar.key === 'ALLOWED_ORIGINS') {
@@ -151,7 +154,7 @@ async function main() {
   }
 
   // Put updated env vars back to Render (this will auto-trigger a redeploy on Render)
-  curlRequest('PUT', `/services/${serviceId}/env-vars`, updatedEnvVars);
+  await renderRequest('PUT', `/services/${serviceId}/env-vars`, updatedEnvVars);
   console.log('✅ Render CORS whitelisting updated! (Redeploy automatically triggered)');
 
   console.log('\n🎉🎉🎉 DEPLOYMENT COMPLETED SUCCESSFULLY! 🎉🎉🎉');
