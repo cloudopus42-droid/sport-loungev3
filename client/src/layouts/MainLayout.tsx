@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Search, Bell } from 'lucide-react';
+import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Instagram, Send } from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
 import girlsImage from '../girls.png';
+import premiumHookah from '../premium_hookah.png';
 import { LuxuryMusicPlayer } from '@/components/ui/LuxuryMusicPlayer';
 
 const navItems = [
@@ -27,48 +28,6 @@ export function MainLayout() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const { width, height } = dimensions;
-
-  // Calculate centered girls container dimensions to find lips coordinate in screen-space (3:2 aspect ratio)
-  const containerWidth = Math.min(width, 896);
-  const containerHeight = containerWidth * (493 / 740);
-  const containerLeft = (width - containerWidth) / 2;
-  const containerTop = (height - containerHeight) / 2;
-
-  // Left girl's mouth is at 41.5% of container width, 47.8% of container height
-  const leftEnd = {
-    x: containerLeft + 0.415 * containerWidth,
-    y: containerTop + 0.478 * containerHeight
-  };
-
-  // Right girl's mouth is at 59.5% of container width, 50% of container height
-  const rightEnd = {
-    x: containerLeft + 0.595 * containerWidth,
-    y: containerTop + 0.50 * containerHeight
-  };
-
-  // Large Hookahs are positioned at left-6 (24px) and right-6 (24px).
-  // Port is relative at x=160 (going to the right) inside the 280px width hookah frame.
-  const leftStart = { x: 24 + 160, y: height - 270 };
-  const rightStart = { x: width - (24 + 160), y: height - 270 };
-
-  const leftPath = `M ${leftStart.x} ${leftStart.y} C ${leftStart.x + 220} ${leftStart.y + 220}, ${leftEnd.x - 220} ${leftEnd.y + 220}, ${leftEnd.x} ${leftEnd.y}`;
-  const rightPath = `M ${rightStart.x} ${rightStart.y} C ${rightStart.x - 220} ${rightStart.y + 220}, ${rightEnd.x + 220} ${rightEnd.y + 220}, ${rightEnd.x} ${rightEnd.y}`;
 
   
   // Ambient Lounge Player state and audio references are now managed by LuxuryMusicPlayer component
@@ -172,202 +131,13 @@ export function MainLayout() {
         <span className="text-[10px] uppercase tracking-[0.6em] text-accent-gold font-semibold [writing-mode:vertical-lr]">PREMIUM 24/7</span>
       </div>
 
-      {/* Side Hookahs with Premium Vector Bowls & Bubbling (Left and Right margins) */}
-      <div className="hidden xl:block fixed left-6 bottom-0 z-20 pointer-events-none opacity-25 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.18)]">
-        <div className="relative w-72 h-[750px] flex flex-col items-center">
-          <svg width="280" height="750" viewBox="0 0 280 750" fill="none" className="absolute bottom-0" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="goldStem" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#8A6623" />
-                <stop offset="30%" stopColor="#D4AF37" />
-                <stop offset="70%" stopColor="#FFE485" />
-                <stop offset="100%" stopColor="#8A6623" />
-              </linearGradient>
-              <linearGradient id="clayBowl" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#4A3B32" />
-                <stop offset="50%" stopColor="#705A4F" />
-                <stop offset="100%" stopColor="#4A3B32" />
-              </linearGradient>
-              <linearGradient id="glassFlask" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(212,175,55,0.02)" />
-                <stop offset="50%" stopColor="rgba(212,175,55,0.12)" />
-                <stop offset="100%" stopColor="rgba(212,175,55,0.02)" />
-              </linearGradient>
-              <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="rgba(212,175,55,0.2)" />
-                <stop offset="100%" stopColor="rgba(138,102,35,0.05)" />
-              </linearGradient>
-            </defs>
-
-            {/* Clay Bowl Base & Flare */}
-            <path d="M 125 75 L 155 75 L 148 110 L 132 110 Z" fill="url(#clayBowl)" stroke="#3A2E26" strokeWidth="1" />
-            <path d="M 115 50 L 165 50 L 125 75 H 155 Z" fill="url(#clayBowl)" stroke="#3A2E26" strokeWidth="1" />
-            
-            {/* Gold HMD (Kaloud) with Glowing Coals */}
-            <path d="M 118 25 H 162 L 165 50 H 115 Z" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1" />
-            <rect x="126" y="32" width="6" height="12" rx="2" className="coal-glow-left" fill="#8B0000" />
-            <rect x="137" y="32" width="6" height="12" rx="2" className="coal-glow-left" fill="#8B0000" />
-            <rect x="148" y="32" width="6" height="12" rx="2" className="coal-glow-left" fill="#8B0000" />
-
-            {/* Ash Tray */}
-            <path d="M 60 110 H 220 C 220 125, 60 125, 60 110 Z" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
-            <path d="M 50 110 H 230 L 225 115 H 55 Z" fill="url(#goldStem)" />
-
-            {/* Shaft/Stem with Decorative Elements */}
-            <rect x="135" y="135" width="10" height="365" fill="url(#goldStem)" />
-            <circle cx="140" cy="180" r="14" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
-            <circle cx="140" cy="280" r="14" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
-            <circle cx="140" cy="380" r="14" fill="url(#goldStem)" stroke="#B8860B" strokeWidth="1.5" />
-            <rect x="125" y="220" width="30" height="12" rx="3" fill="url(#goldStem)" stroke="#B8860B" />
-            <rect x="125" y="320" width="30" height="12" rx="3" fill="url(#goldStem)" stroke="#B8860B" />
-            <rect x="125" y="420" width="30" height="12" rx="3" fill="url(#goldStem)" stroke="#B8860B" />
-
-            {/* Hose Port & Valve */}
-            <path d="M 148 480 L 168 470 L 165 490 Z" fill="url(#goldStem)" stroke="#B8860B" />
-            <path d="M 132 480 L 112 470 L 105 490 Z" fill="url(#goldStem)" stroke="#B8860B" />
-            <circle cx="108" cy="480" r="6" fill="#D4AF37" />
-
-            {/* Glass Flask & Water Base */}
-            <path d="M 115 500 H 165 L 175 540 H 105 Z" fill="url(#glassFlask)" stroke="#D4AF37" strokeWidth="1" />
-            <rect x="136" y="540" width="8" height="130" fill="rgba(212,175,55,0.4)" />
-            <rect x="132" y="670" width="16" height="12" rx="2" fill="url(#goldStem)" />
-            
-            <path d="M 120 540 C 100 580, 50 630, 50 700 C 50 735, 230 735, 230 700 C 230 630, 180 580, 160 540 Z" fill="url(#glassFlask)" stroke="rgba(212,175,55,0.4)" strokeWidth="1.5" />
-            <path d="M 58 640 C 90 645, 190 645, 222 640 C 228 670, 228 700, 220 722 H 60 C 52 700, 52 670, 58 640 Z" fill="url(#waterGrad)" />
-            
-            {/* Bubbles */}
-            <circle cx="136" cy="690" r="3.5" className="bubble-left-1" fill="rgba(215,185,95,0.5)" />
-            <circle cx="144" cy="680" r="2.5" className="bubble-left-2" fill="rgba(215,185,95,0.6)" />
-            <circle cx="132" cy="670" r="3" className="bubble-left-3" fill="rgba(215,185,95,0.5)" />
-            <circle cx="140" cy="655" r="4.5" className="bubble-left-4" fill="rgba(215,185,95,0.7)" />
-            <circle cx="146" cy="645" r="2" className="bubble-left-5" fill="rgba(215,185,95,0.6)" />
-          </svg>
-        </div>
+      {/* Side Hookahs matching the premium user upload */}
+      <div className="hidden xl:block fixed left-4 bottom-0 z-20 pointer-events-none opacity-[0.24] select-none h-[75vh] w-64 filter drop-shadow-[0_0_25px_rgba(212,175,55,0.22)]">
+        <img src={premiumHookah} alt="Premium Hookah Left" className="h-full w-full object-contain" />
       </div>
 
-      <div className="hidden xl:block fixed right-6 bottom-0 z-20 pointer-events-none opacity-25 select-none filter drop-shadow-[0_0_15px_rgba(212,175,55,0.18)] scale-x-[-1]">
-        <div className="relative w-72 h-[750px] flex flex-col items-center">
-          <svg width="280" height="750" viewBox="0 0 280 750" fill="none" className="absolute bottom-0" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="goldStemRight" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#8A6623" />
-                <stop offset="30%" stopColor="#D4AF37" />
-                <stop offset="70%" stopColor="#FFE485" />
-                <stop offset="100%" stopColor="#8A6623" />
-              </linearGradient>
-              <linearGradient id="clayBowlRight" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#4A3B32" />
-                <stop offset="50%" stopColor="#705A4F" />
-                <stop offset="100%" stopColor="#4A3B32" />
-              </linearGradient>
-              <linearGradient id="glassFlaskRight" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(212,175,55,0.02)" />
-                <stop offset="50%" stopColor="rgba(212,175,55,0.12)" />
-                <stop offset="100%" stopColor="rgba(212,175,55,0.02)" />
-              </linearGradient>
-              <linearGradient id="waterGradRight" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="rgba(212,175,55,0.2)" />
-                <stop offset="100%" stopColor="rgba(138,102,35,0.05)" />
-              </linearGradient>
-            </defs>
-
-            {/* Clay Bowl Base & Flare */}
-            <path d="M 125 75 L 155 75 L 148 110 L 132 110 Z" fill="url(#clayBowlRight)" stroke="#3A2E26" strokeWidth="1" />
-            <path d="M 115 50 L 165 50 L 125 75 H 155 Z" fill="url(#clayBowlRight)" stroke="#3A2E26" strokeWidth="1" />
-            
-            {/* Gold HMD (Kaloud) with Glowing Coals (Right side) */}
-            <path d="M 118 25 H 162 L 165 50 H 115 Z" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1" />
-            <rect x="126" y="32" width="6" height="12" rx="2" className="coal-glow-right" fill="#8B0000" />
-            <rect x="137" y="32" width="6" height="12" rx="2" className="coal-glow-right" fill="#8B0000" />
-            <rect x="148" y="32" width="6" height="12" rx="2" className="coal-glow-right" fill="#8B0000" />
-
-            {/* Ash Tray */}
-            <path d="M 60 110 H 220 C 220 125, 60 125, 60 110 Z" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
-            <path d="M 50 110 H 230 L 225 115 H 55 Z" fill="url(#goldStemRight)" />
-
-            {/* Shaft/Stem with Decorative Elements */}
-            <rect x="135" y="135" width="10" height="365" fill="url(#goldStemRight)" />
-            <circle cx="140" cy="180" r="14" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
-            <circle cx="140" cy="280" r="14" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
-            <circle cx="140" cy="380" r="14" fill="url(#goldStemRight)" stroke="#B8860B" strokeWidth="1.5" />
-            <rect x="125" y="220" width="30" height="12" rx="3" fill="url(#goldStemRight)" stroke="#B8860B" />
-            <rect x="125" y="320" width="30" height="12" rx="3" fill="url(#goldStemRight)" stroke="#B8860B" />
-            <rect x="125" y="420" width="30" height="12" rx="3" fill="url(#goldStemRight)" stroke="#B8860B" />
-
-            {/* Hose Port & Valve */}
-            <path d="M 148 480 L 168 470 L 165 490 Z" fill="url(#goldStemRight)" stroke="#B8860B" />
-            <path d="M 132 480 L 112 470 L 105 490 Z" fill="url(#goldStemRight)" stroke="#B8860B" />
-            <circle cx="108" cy="480" r="6" fill="#D4AF37" />
-
-            {/* Glass Flask & Water Base */}
-            <path d="M 115 500 H 165 L 175 540 H 105 Z" fill="url(#glassFlaskRight)" stroke="#D4AF37" strokeWidth="1" />
-            <rect x="136" y="540" width="8" height="130" fill="rgba(212,175,55,0.4)" />
-            <rect x="132" y="670" width="16" height="12" rx="2" fill="url(#goldStemRight)" />
-            
-            <path d="M 120 540 C 100 580, 50 630, 50 700 C 50 735, 230 735, 230 700 C 230 630, 180 580, 160 540 Z" fill="url(#glassFlaskRight)" stroke="rgba(212,175,55,0.4)" strokeWidth="1.5" />
-            <path d="M 58 640 C 90 645, 190 645, 222 640 C 228 670, 228 700, 220 722 H 60 C 52 700, 52 670, 58 640 Z" fill="url(#waterGradRight)" />
-            
-            {/* Bubbles */}
-            <circle cx="136" cy="690" r="3.5" className="bubble-right-1" fill="rgba(215,185,95,0.5)" />
-            <circle cx="144" cy="680" r="2.5" className="bubble-right-2" fill="rgba(215,185,95,0.6)" />
-            <circle cx="132" cy="670" r="3" className="bubble-right-3" fill="rgba(215,185,95,0.5)" />
-            <circle cx="140" cy="655" r="4.5" className="bubble-right-4" fill="rgba(215,185,95,0.7)" />
-            <circle cx="146" cy="645" r="2" className="bubble-right-5" fill="rgba(215,185,95,0.6)" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Dynamic Animated Hoses and Smoke (Wide screens only) */}
-      <div className="hidden xl:block fixed inset-0 w-full h-full pointer-events-none z-0 select-none">
-        <svg className="w-full h-full">
-          {/* Left Hose Background */}
-          <path
-            d={leftPath}
-            stroke="rgba(212, 175, 55, 0.12)"
-            strokeWidth="3.5"
-            fill="none"
-          />
-          {/* Left Hose Active Inhale Flow */}
-          <path
-            d={leftPath}
-            stroke="url(#goldGradient)"
-            strokeWidth="2.2"
-            fill="none"
-            strokeDasharray="25, 200"
-            className="animate-hose-flow-left"
-            style={{ filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.75))' }}
-          />
-
-          {/* Right Hose Background */}
-          <path
-            d={rightPath}
-            stroke="rgba(212, 175, 55, 0.12)"
-            strokeWidth="3.5"
-            fill="none"
-          />
-          {/* Right Hose Active Inhale Flow */}
-          <path
-            d={rightPath}
-            stroke="url(#goldGradient)"
-            strokeWidth="2.2"
-            fill="none"
-            strokeDasharray="25, 200"
-            className="animate-hose-flow-right"
-            style={{ filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.75))' }}
-          />
-
-          {/* Defs for gold gradient flow */}
-          <defs>
-            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFE485" />
-              <stop offset="50%" stopColor="#D4AF37" />
-              <stop offset="100%" stopColor="#8A6623" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-
-
+      <div className="hidden xl:block fixed right-4 bottom-0 z-20 pointer-events-none opacity-[0.24] select-none h-[75vh] w-64 filter drop-shadow-[0_0_25px_rgba(212,175,55,0.22)] scale-x-[-1]">
+        <img src={premiumHookah} alt="Premium Hookah Right" className="h-full w-full object-contain" />
       </div>
       <ParticleEngine />
       <ConciergeChat />
@@ -375,72 +145,65 @@ export function MainLayout() {
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Top Luxury Header matching reference image */}
-      <header className="sticky top-0 z-40 bg-dark-bg/85 backdrop-blur-glass border-b border-glass-border">
+      <header className="sticky top-0 z-40 bg-dark-bg/85 backdrop-blur-glass border-b border-glass-border/30">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-3.5 gap-4">
           
           {/* Logo / Admin label matching image */}
           <NavLink to="/" className="flex items-center gap-2 flex-shrink-0">
-            <h1 className="text-xl sm:text-2xl font-display font-semibold text-white tracking-wide">
+            <h1 className="text-xl sm:text-2xl font-display font-semibold text-white tracking-wide uppercase">
               {isAdmin ? 'Admin' : 'SPORT LOUNGE'}
             </h1>
           </NavLink>
 
-          {/* Premium Search Bar in center (similar to reference image) */}
-          <div className="hidden md:flex items-center flex-1 max-w-sm relative">
-            <Search className="w-4 h-4 text-white/40 absolute left-3.5" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-1.5 text-sm text-white placeholder-white/35 bg-white/5 border border-glass-border rounded-full outline-none focus:border-accent-gold/40 focus:bg-white/10 transition-all"
-            />
-          </div>
+          {/* Desktop Navigation Links - Centered */}
+          <nav className="hidden lg:flex items-center gap-6 flex-1 justify-center">
+            <NavLink to="/" end className={({ isActive }) => clsx(
+              "text-xs sm:text-sm font-medium transition-all",
+              isActive ? "text-accent-gold" : "text-white/60 hover:text-white"
+            )}>
+              Главная
+            </NavLink>
+            <NavLink to="/booking" className={({ isActive }) => clsx(
+              "text-xs sm:text-sm font-medium transition-all",
+              isActive ? "text-accent-gold" : "text-white/60 hover:text-white"
+            )}>
+              Заказ кальяна
+            </NavLink>
+            <a href="#menu" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white transition-all">
+              Меню
+            </a>
+            <a href="#events" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white transition-all">
+              Мероприятия
+            </a>
+            <a href="#contacts" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white transition-all">
+              Контакты
+            </a>
+            {isAdmin && (
+              <NavLink to="/admin" className="text-xs sm:text-sm font-medium text-white/60 hover:text-white flex items-center gap-1">
+                <Shield className="w-3.5 h-3.5 text-accent-gold" />
+                Панель
+              </NavLink>
+            )}
+          </nav>
 
-          {/* Desktop Navigation Links / Action buttons (similar to reference image) */}
+          {/* Action buttons (Right side) - Instagram, Telegram & Auth / Book order */}
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-            
-            <nav className="hidden lg:flex items-center gap-2">
-              <NavLink to="/" end className={({ isActive }) => clsx(
-                "text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full transition-all",
-                isActive ? "text-accent-gold bg-white/5 border border-accent-gold/25" : "text-white/60 hover:text-white hover:bg-white/5"
-              )}>
-                Главная
-              </NavLink>
-              <NavLink to="/booking" className={({ isActive }) => clsx(
-                "text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full transition-all",
-                isActive ? "text-accent-gold bg-white/5 border border-accent-gold/25" : "text-white/60 hover:text-white hover:bg-white/5"
-              )}>
-                Заказ кальяна
-              </NavLink>
-              <NavLink to="/feed" className={({ isActive }) => clsx(
-                "text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full transition-all",
-                isActive ? "text-accent-gold bg-white/5 border border-accent-gold/25" : "text-white/60 hover:text-white hover:bg-white/5"
-              )}>
-                Лента
-              </NavLink>
-              {isAdmin && (
-                <NavLink to="/admin" className="text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/5 flex items-center gap-1">
-                  <Shield className="w-3.5 h-3.5 text-accent-gold" />
-                  Панель
-                </NavLink>
-              )}
-            </nav>
-
-
-
-            {/* Notification Bell with animated red badge */}
-            <div className="relative cursor-pointer p-2 rounded-full hover:bg-white/5 transition-colors">
-              <Bell className="w-4 h-4 text-white/70 hover:text-white" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 shadow-glow-red animate-pulse" />
+            {/* Social Links (Instagram / Telegram) matching reference */}
+            <div className="hidden sm:flex items-center gap-2">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-white/5 text-white/60 hover:text-white transition-colors" title="Instagram">
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a href={CONTACT.telegramUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-white/5 text-white/60 hover:text-white transition-colors" title="Telegram">
+                <Send className="w-4 h-4" />
+              </a>
             </div>
 
-            {/* Authentication Buttons matching reference image */}
+            {/* Authentication Buttons */}
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
-                <NavLink to="/profile" className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-white/10 transition-all text-xs font-semibold text-white/80">
+                <NavLink to="/profile" className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-white/10 transition-all text-xs font-medium text-white/80">
                   {user?.avatar ? (
-                    <img src={resolveImageUrl(user.avatar)} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
+                    <img src={resolveImageUrl(user.avatar)} alt={user.name} className="w-4 h-4 rounded-full object-cover" />
                   ) : (
                     <UserCircle className="w-4 h-4 text-accent-gold" />
                   )}
@@ -456,18 +219,16 @@ export function MainLayout() {
               </NavLink>
             )}
 
-            {/* Float Book Order Pill Button matching reference image perfectly */}
+            {/* Book order button */}
             <NavLink to="/booking">
               <motion.button
-                className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs rounded-full glass-btn-gold shadow-gold-pill hover:shadow-glow-gold-lg transition-all flex items-center gap-1.5"
+                className="px-4 py-1.5 text-xs rounded-full border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-black transition-all font-medium"
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
               >
-                <Flame className="w-3.5 h-3.5 text-white" />
-                <span>Заказать кальян</span>
+                Заказать кальян
               </motion.button>
             </NavLink>
-
           </div>
         </div>
 
