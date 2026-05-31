@@ -31,6 +31,7 @@ import showcaseRoutes from './routes/showcases';
 import seatRoutes from './routes/seats';
 import aiRoutes from './routes/ai';
 import membershipRoutes from './routes/memberships';
+import invoiceRoutes from './routes/invoices';
 import { startSupportBot } from './services/supportBot';
 
 // Custom lightweight memory-based API Rate Limiter
@@ -121,6 +122,7 @@ async function bootstrap(): Promise<void> {
   app.use('/api/seats', seatRoutes);
   app.use('/api/ai', aiRoutes);
   app.use('/api/memberships', membershipRoutes);
+  app.use('/api/invoices', invoiceRoutes);
 
   // 6. SPA fallback — serve client/dist/index.html for non-API routes
   const clientDistPath = path.resolve(__dirname, '../../client/dist');
