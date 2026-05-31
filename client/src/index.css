@@ -25,36 +25,40 @@
 }
 
 @layer components {
-  /* ──── Luxury Gold Glass Card ──── */
+  /* ──── Liquid Glass Card ──── */
   .glass-card {
     background: linear-gradient(
       135deg,
-      rgba(24, 18, 12, 0.75) 0%,
-      rgba(15, 11, 8, 0.8) 100%
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.03) 100%
     );
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(212, 175, 55, 0.15);
-    border-radius: 20px;
+    backdrop-filter: blur(40px) saturate(220%);
+    -webkit-backdrop-filter: blur(40px) saturate(220%);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 28px;
     position: relative;
     overflow: hidden;
+    box-shadow: 
+      0 12px 40px 0 rgba(0, 0, 0, 0.25),
+      inset 0 1px 2px 0 rgba(255, 255, 255, 0.45),
+      inset 0 0 18px 0 rgba(255, 255, 255, 0.04);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Gold liquid glass shimmer — top edge light refraction */
+  /* Liquid glass shimmer — top edge light refraction */
   .glass-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 1.5px;
+    height: 1px;
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.15) 20%,
-      rgba(212, 175, 55, 0.35) 50%,
-      rgba(255, 255, 255, 0.15) 80%,
+      rgba(255, 255, 255, 0.5) 30%,
+      rgba(255, 255, 255, 0.75) 50%,
+      rgba(255, 255, 255, 0.5) 70%,
       transparent 100%
     );
     pointer-events: none;
@@ -62,11 +66,11 @@
   }
 
   .glass-card:hover {
-    border-color: rgba(212, 175, 55, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
     box-shadow:
-      0 10px 30px rgba(212, 175, 55, 0.08),
-      0 0 1px rgba(212, 175, 55, 0.3),
-      inset 0 0 40px rgba(212, 175, 55, 0.03);
+      0 16px 48px rgba(0, 0, 0, 0.35),
+      inset 0 1px 3px rgba(255, 255, 255, 0.55),
+      inset 0 0 24px rgba(255, 255, 255, 0.06);
   }
 
   .glass-card-hover {
@@ -74,11 +78,11 @@
   }
 
   .glass-card-hover:hover {
-    border-color: rgba(212, 175, 55, 0.35);
+    border-color: rgba(255, 255, 255, 0.45);
     box-shadow:
-      0 12px 40px rgba(212, 175, 55, 0.15),
-      0 0 2px rgba(212, 175, 55, 0.5),
-      inset 0 0 40px rgba(212, 175, 55, 0.05);
+      0 20px 56px rgba(0, 0, 0, 0.4),
+      inset 0 1px 3px rgba(255, 255, 255, 0.65),
+      inset 0 0 32px rgba(255, 255, 255, 0.08);
     transform: translateY(-2px);
   }
 
