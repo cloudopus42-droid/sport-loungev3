@@ -71,7 +71,7 @@ export function ConciergeChat() {
       {/* 1. Floating Gold Action Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-black shadow-glow-gold hover:shadow-glow-gold-lg border border-accent-gold/20 outline-none transition-all flex-shrink-0 cursor-pointer"
+        className="w-14 h-14 rounded-full glass-btn-gold flex items-center justify-center text-white shadow-glow-gold hover:shadow-glow-gold-lg outline-none transition-all flex-shrink-0 cursor-pointer"
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -98,7 +98,7 @@ export function ConciergeChat() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 50 }}
             transition={{ type: 'spring', damping: 20, stiffness: 220 }}
-            className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-96 h-[480px] bg-dark-bg/95 border border-glass-border rounded-2xl overflow-hidden shadow-2xl flex flex-col backdrop-blur-glass z-50"
+            className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-96 h-[480px] glass-card overflow-hidden shadow-2xl flex flex-col z-50"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-accent-gold/10 to-transparent px-4 py-3.5 border-b border-glass-border flex items-center justify-between">
@@ -135,8 +135,8 @@ export function ConciergeChat() {
                     <div
                       className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed transition-all ${
                         isAI
-                          ? 'bg-glass-bg border border-glass-border text-white/90 shadow-sm'
-                          : 'bg-gradient-to-br from-amber-400 to-yellow-600 text-black font-semibold shadow-md shadow-amber-500/10'
+                          ? 'glass-card border border-white/10 text-white/90 shadow-sm'
+                          : 'glass-btn-gold font-semibold shadow-md border border-white/25'
                       }`}
                     >
                       {msg.content.split('\n').map((line, idx) => (
