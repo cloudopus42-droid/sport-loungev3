@@ -6,6 +6,7 @@ import { MainLayout } from '@/layouts/MainLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { HomePage } from '@/pages/HomePage';
 import { BookingPage } from '@/pages/BookingPage';
+import { MixologistPage } from '@/pages/MixologistPage';
 import { FeedPage } from '@/pages/FeedPage';
 import { InvitationsPage } from '@/pages/InvitationsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
@@ -21,6 +22,7 @@ import { AdminInvitationsPage } from '@/pages/admin/InvitationsPage';
 import { AdminBookingsPage } from '@/pages/admin/BookingsPage';
 import { AdminShowcasePage } from '@/pages/admin/ShowcasePage';
 import { AnalyticsPage } from '@/pages/admin/AnalyticsPage';
+import { OrdersAdmin } from '@/pages/admin/OrdersAdmin';
 
 export default function App() {
   return (
@@ -30,6 +32,7 @@ export default function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<HomePage />} />
             <Route path="booking" element={<BookingPage />} />
+            <Route path="mixologist" element={<MixologistPage />} />
             <Route path="feed" element={<FeedPage />} />
             <Route path="invitations" element={<InvitationsPage />} />
             <Route path="profile" element={<ProfilePage />} />
@@ -48,6 +51,7 @@ export default function App() {
             <Route path="mixes" element={<MixesPage />} />
             <Route path="promos" element={<PromosPage />} />
             <Route path="invitations" element={<AdminInvitationsPage />} />
+            <Route path="orders" element={<OrdersAdmin />} />
           </Route>
 
           <Route path="/404" element={<NotFound />} />

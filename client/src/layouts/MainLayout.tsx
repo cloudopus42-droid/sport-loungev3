@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Flame, UserCircle, Shield, LogOut, MapPin, MessageCircle, Instagram, Send, Download, Smartphone, Monitor, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,21 +14,21 @@ import { resolveImageUrl } from '@/lib/urls';
 import { ThreeSmoke } from '@/components/ThreeSmoke';
 import { LuxuryMusicPlayer } from '@/components/ui/LuxuryMusicPlayer';
 import { showToast } from '@/components/NotificationToast';
+import { GlowIcon } from '@/components/ui/GlowIcon';
 
 const navItems = [
-  { path: '/', icon: Home, label: 'Главная' },
-  { path: '/booking', icon: Flame, label: 'Миксолог' },
-  { path: '/feed', icon: MessageCircle, label: 'Лента' },
-  { path: '/profile', icon: UserCircle, label: 'Профиль' },
+  { path: '/', iconName: 'home' as const, label: 'Главная' },
+  { path: '/mixologist', iconName: 'flame' as const, label: 'Миксолог' },
+  { path: '/booking', iconName: 'calendar' as const, label: 'Заказ' },
+  { path: '/profile', iconName: 'user' as const, label: 'Профиль' },
 ];
 
 export function MainLayout() {
   const { socket } = useSocket();
-  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
-  const [showInstallModal, setShowInstallModal] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
 
   // Request browser push notification permission for guests/clients
   useEffect(() => {
@@ -37,15 +37,7 @@ export function MainLayout() {
     }
   }, []);
 
-  // Listen for native PWA installation prompt capability
-  useEffect(() => {
-    const handlePrompt = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handlePrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handlePrompt);
-  }, []);
+
 
   // Listen to real-time hookah ready notifications matching current user ID
   useEffect(() => {
@@ -53,6 +45,18 @@ export function MainLayout() {
 
     const handleHookahReady = (data: any) => {
       if (data.userId === user.id && data.hookahStatus === 'ready') {
+        // Avoid duplicate notification if already notified in another session/tab
+        try {
+          const saved = localStorage.getItem('notified_bookings');
+          const notifiedList: string[] = saved ? JSON.parse(saved) : [];
+          if (notifiedList.includes(data.id)) return;
+
+          notifiedList.push(data.id);
+          localStorage.setItem('notified_bookings', JSON.stringify(notifiedList));
+        } catch (err) {
+          console.warn('LocalStorage error in notification check:', err);
+        }
+
         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
         audio.volume = 0.55;
         audio.play().catch(() => {});
@@ -177,117 +181,84 @@ export function MainLayout() {
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Top Luxury Header matching reference image */}
-      <header className="sticky top-0 z-40 bg-dark-bg/85 backdrop-blur-glass border-b border-glass-border/30">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-3.5 gap-4">
+      <header className="sticky top-0 z-40 bg-[#050308]/90 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-4 gap-4">
           
-          {/* Logo / Admin label matching image */}
-          <NavLink to="/" className="flex flex-col items-center flex-shrink-0 text-center select-none group">
-            <Flame className="w-4 h-4 text-accent-gold mb-0.5 group-hover:scale-110 transition-transform duration-300" />
-            <span className="text-xs font-display tracking-[0.25em] leading-none text-[#F4E4C4] font-light">SPORT</span>
-            <span className="text-[8px] font-display tracking-[0.3em] leading-none text-[#F4E4C4] font-semibold mt-0.5">LOUNGE</span>
+          {/* Logo - bold clean wordmark */}
+          <NavLink to="/" className="flex items-center gap-1.5 flex-shrink-0 select-none group">
+            <span className="text-sm font-sans font-extrabold tracking-[0.2em] text-white">SPORT</span>
+            <span className="text-sm font-sans font-extrabold tracking-[0.2em] text-accent-gold">LOUNGE</span>
           </NavLink>
 
-          {/* Desktop Navigation Links - Centered */}
-          <nav className="hidden lg:flex items-center gap-7 flex-1 justify-center">
-            <NavLink to="/" end className={({ isActive }) => clsx(
-              "text-xs font-medium transition-all relative py-1",
-              isActive ? "text-accent-gold font-semibold" : "text-white/60 hover:text-white"
-            )}>
-              {({ isActive }) => (
-                <>
-                  Главная
-                  {isActive && (
-                    <motion.div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-accent-gold shadow-glow-gold" layoutId="activeHeaderDot" />
-                  )}
-                </>
-              )}
-            </NavLink>
+          {/* Desktop Navigation Links - Centered (exactly 5 items matching Sellix structure) */}
+          <nav className="hidden lg:flex items-center gap-8 flex-1 justify-center">
+            <a 
+              href="#menu" 
+              onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); }}
+              className="text-xs font-medium text-white/70 hover:text-white transition-all tracking-wide"
+            >
+              Меню
+            </a>
             <NavLink to="/booking" className={({ isActive }) => clsx(
-              "text-xs font-medium transition-all relative py-1",
-              isActive ? "text-accent-gold font-semibold" : "text-white/60 hover:text-white"
+              "text-xs font-medium transition-all tracking-wide",
+              isActive ? "text-accent-gold font-bold" : "text-white/70 hover:text-white"
             )}>
-              {({ isActive }) => (
-                <>
-                  Создать микс
-                  {isActive && (
-                    <motion.div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-accent-gold shadow-glow-gold" layoutId="activeHeaderDot" />
-                  )}
-                </>
-              )}
+              Цены
+            </NavLink>
+            <NavLink to="/mixologist" className={({ isActive }) => clsx(
+              "text-xs font-medium transition-all tracking-wide",
+              isActive ? "text-accent-gold font-bold" : "text-white/70 hover:text-white"
+            )}>
+              ИИ-Миксолог
             </NavLink>
             <a 
               href="#menu" 
               onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); }}
-              className="text-xs font-medium text-white/60 hover:text-white transition-all py-1"
+              className="text-xs font-medium text-white/70 hover:text-white transition-all tracking-wide"
             >
-              Меню
-            </a>
-            <a 
-              href="#events" 
-              onClick={(e) => { e.preventDefault(); handleNavClick('#events'); }}
-              className="text-xs font-medium text-white/60 hover:text-white transition-all py-1"
-            >
-              Мероприятия
+              Зоны
             </a>
             <a 
               href="#contacts" 
               onClick={(e) => { e.preventDefault(); handleNavClick('#contacts'); }}
-              className="text-xs font-medium text-white/60 hover:text-white transition-all py-1"
+              className="text-xs font-medium text-white/70 hover:text-white transition-all tracking-wide"
             >
               Контакты
             </a>
-            {isAdmin && (
-              <NavLink to="/admin" className="text-xs font-medium text-white/60 hover:text-white flex items-center gap-1 py-1">
-                <Shield className="w-3.5 h-3.5 text-accent-gold" />
-                Панель
-              </NavLink>
-            )}
           </nav>
 
           {/* Action buttons (Right side) - Instagram, Telegram & Auth / Book order */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-            {/* Social Links (Instagram / Telegram) matching reference */}
-            <div className="hidden sm:flex items-center gap-2.5">
+          <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0">
+            {/* Social Links (Instagram / Telegram) */}
+            <div className="hidden sm:flex items-center gap-3">
               <a 
-                href="https://instagram.com" 
+                href="https://www.instagram.com/sportloungehhs?igsh=bzRqeGM0a2ZsazM0" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="w-7 h-7 rounded-full border border-white/10 hover:border-accent-gold/40 flex items-center justify-center bg-[#14100c]/85 text-white/60 hover:text-accent-gold transition-all" 
+                className="w-7 h-7 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center bg-white/5 text-white/60 hover:text-white transition-all" 
                 title="Instagram"
               >
-                <Instagram className="w-3.5 h-3.5" />
+                <GlowIcon name="instagram" color="magenta" size={14} animateOnHover />
               </a>
               <a 
                 href={CONTACT.telegramUrl} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="w-7 h-7 rounded-full border border-white/10 hover:border-accent-gold/40 flex items-center justify-center bg-[#14100c]/85 text-white/60 hover:text-accent-gold transition-all" 
+                className="w-7 h-7 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center bg-white/5 text-white/60 hover:text-white transition-all" 
                 title="Telegram"
               >
-                <Send className="w-3.5 h-3.5" />
+                <GlowIcon name="send" color="cyan" size={14} animateOnHover />
               </a>
             </div>
 
-            {/* Install App Button */}
-            <motion.button
-              onClick={() => setShowInstallModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#F4E4C4] border border-accent-gold/40 hover:border-accent-gold/80 rounded-full bg-accent-gold/5 transition-all shadow-[0_2px_8px_rgba(212,175,55,0.05)]"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              title="Установить приложение"
-            >
-              <Download className="w-3.5 h-3.5 text-accent-gold" />
-              <span className="hidden sm:inline">Приложение</span>
-            </motion.button>
-
-            {/* Authentication Buttons */}
+            {/* Authentication text link */}
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
-                <NavLink to="/profile" className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-white/10 transition-all text-xs font-medium text-white/80">
+                <NavLink to="/profile" className="hidden sm:flex items-center gap-2 text-xs font-semibold text-white/70 hover:text-white transition-all">
                   {user?.avatar ? (
                     <img src={resolveImageUrl(user.avatar)} alt={user.name} className="w-4 h-4 rounded-full object-cover" />
                   ) : (
-                    <UserCircle className="w-4 h-4 text-accent-gold" />
+                    <GlowIcon name="user" color="purple" size={14} />
                   )}
                   <span>{user?.name || 'Профиль'}</span>
                 </NavLink>
@@ -296,39 +267,36 @@ export function MainLayout() {
                 </button>
               </div>
             ) : (
-              <NavLink to="/login" className="px-4 py-1.5 text-xs font-semibold text-white/70 hover:text-white border border-glass-border rounded-full hover:bg-white/5 transition-all">
+              <NavLink to="/login" className="text-xs font-semibold text-white/70 hover:text-white transition-all">
                 Sign In
               </NavLink>
             )}
 
-            {/* Book order button */}
+            {/* Make booking order button a premium white pill with dark text */}
             <NavLink to="/booking">
               <motion.button
-                className="px-5 py-1.5 text-xs rounded-full border border-accent-gold/60 text-[#F4E4C4] bg-gradient-to-r from-[#7c5c24] to-[#4a3410] hover:from-[#926e2e] hover:to-[#5c4315] shadow-[0_4px_12px_rgba(0,0,0,0.35)] hover:shadow-[0_0_12px_rgba(212,175,55,0.25)] transition-all font-medium"
+                className="px-5 py-2 text-xs rounded-full bg-white hover:bg-white/90 text-[#050308] border-none font-extrabold shadow-[0_4px_16px_rgba(168,85,247,0.25)] transition-all flex items-center gap-1"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                Создать микс
+                Сделать заказ
               </motion.button>
             </NavLink>
           </div>
         </div>
-
-        {/* Address bar under header */}
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 pb-2">
-          <div className="flex items-center gap-1.5 text-[10px] text-white/30">
-            <MapPin className="w-3 h-3 flex-shrink-0 text-accent-gold" />
-            <span>{CONTACT.address} • 24/7 Premium Lounge</span>
-          </div>
-        </div>
       </header>
 
-      {/* Background Golden Particles */}
+      {/* High-Tech Fintech Grid Lines in background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-[0.06]">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(168,85,247,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(168,85,247,0.08)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+      </div>
+
+      {/* Background Tech Purple Particles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {Array.from({ length: 14 }).map((_, i) => (
           <div
             key={i}
-            className="gold-particle"
+            className="purple-particle"
             style={{
               left: `${Math.random() * 100}%`,
               width: `${4 + Math.random() * 10}px`,
@@ -361,7 +329,7 @@ export function MainLayout() {
                       )}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <item.icon className="w-5 h-5" />
+                      <GlowIcon name={item.iconName} size={20} color={isActive ? 'purple' : 'white'} glow={isActive} />
                       <span className="text-[10px] font-medium">{item.label}</span>
                       {isActive && (
                         <motion.div
@@ -399,10 +367,10 @@ export function MainLayout() {
           80% { opacity: 0.3; }
           100% { transform: translateY(-10vh) translateX(60px) scale(1.1); opacity: 0; }
         }
-        .gold-particle {
+        .purple-particle {
           position: absolute;
           bottom: -20px;
-          background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(212,175,55,0) 70%);
+          background: radial-gradient(circle, rgba(168,85,247,0.4) 0%, rgba(168,85,247,0) 70%);
           border-radius: 50%;
           pointer-events: none;
           animation: float-particle 15s linear infinite;
@@ -556,135 +524,7 @@ export function MainLayout() {
         }
       `}</style>
 
-      {/* Premium App Download Modal */}
-      <AnimatePresence>
-        {showInstallModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-            <motion.div 
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowInstallModal(false)}
-            />
 
-            <motion.div
-              className="relative w-full max-w-md bg-gradient-to-b from-[#181512] to-black border border-accent-gold/25 rounded-3xl p-6 shadow-2xl z-10 overflow-hidden"
-              initial={{ opacity: 0, scale: 0.92, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 15 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {/* Corner accents */}
-              <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-accent-gold/30 rounded-tl-3xl pointer-events-none" />
-              <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-accent-gold/30 rounded-tr-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-accent-gold/30 rounded-bl-3xl pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-accent-gold/30 rounded-br-3xl pointer-events-none" />
-
-              <button 
-                onClick={() => setShowInstallModal(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-colors"
-              >
-                <X className="w-4.5 h-4.5" />
-              </button>
-
-              <div className="text-center space-y-4 pt-2">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-accent-gold font-bold block mb-1">Premium Mobile & Desktop Apps</span>
-                <h3 className="text-xl font-display font-light text-white uppercase tracking-wider">
-                  SPORT LOUNGE <span className="gradient-text font-semibold italic">Client App</span>
-                </h3>
-                <p className="text-xs text-white/45 max-w-xs mx-auto leading-relaxed font-light">
-                  Установите наше приложение на любое устройство, чтобы получать уведомления о готовности кальянов, бронировать места и заказывать миксы в один клик.
-                </p>
-
-                <div className="space-y-3.5 pt-2 text-left">
-                  {/* Apple iOS Platform Card */}
-                  <div className="p-4 rounded-2xl bg-white/5 border border-glass-border/30 space-y-2 relative overflow-hidden group hover:border-accent-gold/35 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <Smartphone className="w-5 h-5 text-accent-gold" />
-                        <span className="text-xs font-semibold text-white">Apple iOS (iPhone / iPad)</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full bg-accent-gold/10 border border-accent-gold/25 text-[8px] font-bold text-accent-gold uppercase tracking-wider">PWA App</span>
-                    </div>
-                    <div className="text-[11px] text-white/50 space-y-1 font-light pl-7 leading-relaxed">
-                      <p>1. Откройте сайт в стандартном браузере **Safari**.</p>
-                      <p>2. Нажмите кнопку **«Поделиться»** 📤 на нижней панели.</p>
-                      <p>3. Выберите пункт **«На экран „Домой“»** ➕.</p>
-                    </div>
-                  </div>
-
-                  {/* Android Platform Card */}
-                  <div className="p-4 rounded-2xl bg-white/5 border border-glass-border/30 space-y-2.5 relative overflow-hidden group hover:border-accent-gold/35 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <Smartphone className="w-5 h-5 text-accent-cyan" />
-                        <span className="text-xs font-semibold text-white">Google Android (Samsung, Xiaomi, etc)</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/25 text-[8px] font-bold text-accent-cyan uppercase tracking-wider">APK & PWA</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2.5 pl-7">
-                      <a 
-                        href="https://sport-loungev3.onrender.com/uploads/apps/sport-lounge.apk" 
-                        download
-                        className="py-2 bg-gradient-to-r from-accent-cyan/10 to-blue-500/10 border border-accent-cyan/30 hover:border-accent-cyan/60 text-accent-cyan text-[10px] font-bold rounded-xl transition-all text-center"
-                      >
-                        Скачать .APK
-                      </a>
-                      <button 
-                        onClick={() => {
-                          setShowInstallModal(false);
-                          if (deferredPrompt) {
-                            deferredPrompt.prompt();
-                          } else {
-                            showToast('Пожалуйста, нажмите на значок установки в адресной строке Chrome', 'info');
-                          }
-                        }}
-                        className="py-2 bg-white/5 border border-glass-border/40 hover:bg-white/10 hover:border-glass-border/80 text-white text-[10px] font-bold rounded-xl transition-all"
-                      >
-                        Установить PWA
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Windows Platform Card */}
-                  <div className="p-4 rounded-2xl bg-white/5 border border-glass-border/30 space-y-2.5 relative overflow-hidden group hover:border-accent-gold/35 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <Monitor className="w-5 h-5 text-[#FFE485]" />
-                        <span className="text-xs font-semibold text-white">Windows Desktop (ПК / Ноутбук)</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[8px] font-bold text-white/50 uppercase tracking-wider">EXE client</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2.5 pl-7">
-                      <a 
-                        href="https://sport-loungev3.onrender.com/uploads/apps/sport-lounge.exe" 
-                        download
-                        className="py-2 bg-gradient-to-r from-[#7c5c24]/20 to-[#4a3410]/20 border border-accent-gold/30 hover:border-accent-gold/60 text-accent-gold text-[10px] font-bold rounded-xl transition-all text-center"
-                      >
-                        Скачать .EXE (ПК)
-                      </a>
-                      <button 
-                        onClick={() => {
-                          setShowInstallModal(false);
-                          if (deferredPrompt) {
-                            deferredPrompt.prompt();
-                          } else {
-                            showToast('Пожалуйста, нажмите на значок установки в адресной строке браузера', 'info');
-                          }
-                        }}
-                        className="py-2 bg-white/5 border border-glass-border/40 hover:bg-white/10 hover:border-glass-border/80 text-white text-[10px] font-bold rounded-xl transition-all"
-                      >
-                        Установить PWA
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

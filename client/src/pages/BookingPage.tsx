@@ -1,626 +1,397 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QrCode, Send, Award, Flame, Gauge, MessageSquare, X, Share2 } from 'lucide-react';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { showToast } from '@/components/NotificationToast';
+import { 
+  Flame, Compass, Check, Star, ShieldAlert, Phone, FileText, 
+  Map, Activity, Box, Database, Zap, Settings, Command, ChevronRight
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
-import { HOOKAH_FLAVORS, FLAVOR_CATEGORIES } from '@/config/seats';
-import { ThreeDNA } from '@/components/ThreeDNA';
-
-const BOWL_TYPES = [
-  { id: 'clay', name: 'Глиняная чаша', price: 1200, emoji: '🏺', desc: 'Классическая тяга, чистая вкусопередача' },
-  { id: 'grapefruit', name: 'На грейпфруте', price: 1500, emoji: '🍊', desc: 'Придает мягкую цитрусовую кислинку' },
-  { id: 'pineapple', name: 'На ананасе', price: 1700, emoji: '🍍', desc: 'Увеличивает сладость и время курения' },
-  { id: 'pomelo', name: 'На помело', price: 1800, emoji: '🍈', desc: 'Максимальный объем чаши и мягкость пара' },
-];
+import type { Mix } from '@/types';
+import { showToast } from '@/components/NotificationToast';
 
 const LIQUID_BASES = [
-  { id: 'water', name: 'На воде', price: 0, emoji: '💧', desc: 'Классическая легкая фильтрация' },
-  { id: 'milk', name: 'На молоке', price: 150, emoji: '🥛', desc: 'Делает пар более плотным и нежным' },
-  { id: 'juice', name: 'На соке', price: 200, emoji: '🍹', desc: 'Усиливает фруктовые и ягодные оттенки' },
-  { id: 'wine', name: 'На вине / Коктейле', price: 450, emoji: '🍷', desc: 'Эксклюзивная алкогольная ароматика' },
+  { id: 'water', name: 'На воде', price: 0, desc: 'Классическая фильтрация' },
+  { id: 'milk', name: 'На молоке', price: 150, desc: 'Плотный пар' },
+  { id: 'juice', name: 'На соке', price: 200, desc: 'Фруктовые ноты' },
+  { id: 'wine', name: 'На вине', price: 450, desc: 'Особая ароматика' },
+];
+
+const TABLE_OPTIONS = [
+  'Стол 1', 'Стол 2', 'Стол 3', 'VIP Кабинет 1', 'Игровая Зона 1'
 ];
 
 export function BookingPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { socket } = useSocket();
 
-  const [hookahMix, setHookahMix] = useState<string[]>([]);
-  const [mixPercentages, setMixPercentages] = useState<Record<string, number>>({});
-  const [hookahStrength, setHookahStrength] = useState<'light' | 'medium' | 'strong'>('medium');
-  const [bowlType, setBowlType] = useState('clay');
-  const [liquidBase, setLiquidBase] = useState('water');
-  const [flavorCategory, setFlavorCategory] = useState('Все');
-  const [comment, setComment] = useState('');
-  const [phone, setPhone] = useState('');
-  
+  const [mixes, setMixes] = useState<Mix[]>([]);
   const [loading, setLoading] = useState(false);
-  const [ticketData, setTicketData] = useState<any | null>(null);
-  const [showTicket, setShowTicket] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const [activeOrder, setActiveOrder] = useState<any | null>(null);
+  
+  const [selectedMix, setSelectedMix] = useState<any | null>(null);
+  const [customMix, setCustomMix] = useState<any | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [liquidBase, setLiquidBase] = useState('water');
+  const [specialNotes, setSpecialNotes] = useState('');
+  const [seatLabel, setSeatLabel] = useState(TABLE_OPTIONS[0]);
+  const [phone, setPhone] = useState(user?.phone || '');
 
-  const triggerHaptic = (ms: number = 20) => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      try {
-        navigator.vibrate(ms);
-      } catch (err) {}
-    }
-  };
+  const [ratingValue, setRatingValue] = useState(5);
+  const [ratingComment, setRatingComment] = useState('');
+  const [hasRated, setHasRated] = useState(false);
+  const [masterCalled, setMasterCalled] = useState(false);
+
+  const [timeText, setTimeText] = useState('15:00');
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    setLoading(true);
+    api.get<Mix[]>('/api/mixes')
+      .then(res => setMixes(res.data || []))
+      .catch(() => showToast('Ошибка сети', 'error'))
+      .finally(() => setLoading(false));
+
+    const savedOrderId = localStorage.getItem('current_order_id');
+    if (savedOrderId && isAuthenticated) {
+      fetchOrderStatus(savedOrderId);
+    }
+
     try {
-      const saved = localStorage.getItem('prefilled_mix');
+      const saved = localStorage.getItem('my_saved_mix');
       if (saved) {
-        const mix = JSON.parse(saved);
-        if (mix.bowlType) setBowlType(mix.bowlType);
-        if (mix.liquidBase) setLiquidBase(mix.liquidBase);
-        if (mix.hookahStrength) setHookahStrength(mix.hookahStrength);
-        if (mix.hookahMix) setHookahMix(mix.hookahMix);
-        if (mix.mixPercentages) setMixPercentages(mix.mixPercentages);
-        if (mix.comment) setComment(mix.comment);
-        localStorage.removeItem('prefilled_mix');
-        showToast('Рецепт успешно загружен в конструктор!', 'success');
+        const parsed = JSON.parse(saved);
+        if (parsed.hookahMix && parsed.hookahMix.length > 0) setCustomMix(parsed);
       }
-    } catch (e) {
-      console.warn('Failed to load prefilled mix:', e);
-    }
-  }, []);
+    } catch (e) {}
+  }, [isAuthenticated]);
 
-  const handlePublishToFeed = async () => {
-    if (!ticketData) return;
-    setPublishing(true);
-    try {
-      const response = await fetch('/icon-512.png');
-      const blob = await response.blob();
-      const imageFile = new File([blob], 'recipe-hookah.png', { type: 'image/png' });
-
-      const fd = new FormData();
-      fd.append('title', `Рецепт ${ticketData.ticketId}`);
-      fd.append('description', `На чаше: ${ticketData.bowl}\nБаза: ${ticketData.base}\nКрепость: ${ticketData.strength}\nМикс: ${ticketData.mix}\n"${ticketData.comment}"`);
-      fd.append('image', imageFile);
-
-      await api.post('/api/posts', fd);
-      showToast('Ваш рецепт опубликован в ленту!', 'success');
-    } catch (err) {
-      console.error(err);
-      showToast('Не удалось опубликовать рецепт', 'error');
-    } finally {
-      setPublishing(false);
-    }
-  };
-
-  const selectedBowl = BOWL_TYPES.find(b => b.id === bowlType) || BOWL_TYPES[0];
-  const selectedBase = LIQUID_BASES.find(l => l.id === liquidBase) || LIQUID_BASES[0];
-  const totalPrice = selectedBowl.price + selectedBase.price;
-
-  const updateMixFlavors = (name: string) => {
-    triggerHaptic(15);
-    let nextMix = [...hookahMix];
-    const selected = nextMix.includes(name);
-    if (selected) {
-      nextMix = nextMix.filter(n => n !== name);
-    } else {
-      if (nextMix.length >= 4) {
-        showToast('Максимум 4 вкуса в миксе', 'error');
-        return;
-      }
-      nextMix.push(name);
-    }
-    
-    // Equal shares distribution initially
-    const count = nextMix.length;
-    const newPercentages: Record<string, number> = {};
-    if (count > 0) {
-      const share = Math.floor(100 / count);
-      nextMix.forEach((n, idx) => {
-        newPercentages[n] = idx === count - 1 ? 100 - share * (count - 1) : share;
-      });
-    }
-    
-    setHookahMix(nextMix);
-    setMixPercentages(newPercentages);
-  };
-
-  const handlePercentageChange = (name: string, val: number) => {
-    if (val % 5 === 0) {
-      triggerHaptic(10);
-    }
-    const nextPerc = { ...mixPercentages, [name]: val };
-    const keys = Object.keys(nextPerc).filter(k => k !== name);
-    if (keys.length === 0) return;
-    
-    const remaining = 100 - val;
-    const sumOthers = keys.reduce((s, k) => s + (mixPercentages[k] || 0), 0);
-    
-    keys.forEach(k => {
-      if (sumOthers > 0) {
-        nextPerc[k] = Math.round((mixPercentages[k] / sumOthers) * remaining);
-      } else {
-        nextPerc[k] = Math.round(remaining / keys.length);
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('order:updated', (data: any) => {
+      const savedId = localStorage.getItem('current_order_id');
+      if (data && data.id === savedId) {
+        setActiveOrder(data);
+        if (data.status === 'done') showToast('Ваш заказ готов!', 'success');
       }
     });
-    
-    // Normalization check to sum exactly to 100%
-    const total = Object.values(nextPerc).reduce((s, v) => s + v, 0);
-    if (total !== 100 && keys.length > 0) {
-      nextPerc[keys[0]] += (100 - total);
-    }
-    setMixPercentages(nextPerc);
-  };
+    return () => { socket.off('order:updated'); };
+  }, [socket]);
 
-  const getMixCharacteristics = () => {
-    let sweetness = 0;
-    let freshness = 0;
-    let sourness = 0;
-    let strength = hookahStrength === 'light' ? 30 : hookahStrength === 'medium' ? 60 : 90;
-    
-    hookahMix.forEach(name => {
-      const pct = (mixPercentages[name] || 0) / 100;
-      const fl = HOOKAH_FLAVORS.find(f => f.name === name);
-      if (!fl) return;
-      
-      if (fl.category === 'Фрукты') { sweetness += 70 * pct; sourness += 30 * pct; }
-      else if (fl.category === 'Ягоды') { sweetness += 50 * pct; sourness += 50 * pct; }
-      else if (fl.category === 'Десерт') { sweetness += 90 * pct; }
-      else if (fl.category === 'Свежие') { freshness += 90 * pct; }
-      else if (fl.category === 'Пряные') { sweetness += 30 * pct; strength += 20 * pct; }
-      else if (fl.category === 'Авторские') { sweetness += 50 * pct; freshness += 40 * pct; sourness += 30 * pct; }
-    });
-    
-    return {
-      sweetness: Math.min(100, Math.round(sweetness)),
-      freshness: Math.min(100, Math.round(freshness)),
-      sourness: Math.min(100, Math.round(sourness)),
-      strength: Math.min(100, Math.round(strength)),
-    };
-  };
-
-  const chars = getMixCharacteristics();
-
-  const handleGenerateTicket = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (hookahMix.length === 0) {
-      showToast('Выберите хотя бы один вкус для микса', 'error');
+  useEffect(() => {
+    if (!activeOrder) {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       return;
     }
+    const tick = () => {
+      const diff = new Date(activeOrder.promisedDeliveryTime).getTime() - Date.now();
+      if (activeOrder.status === 'done') {
+        setTimeText('COMPLETED');
+        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        return;
+      }
+      if (diff <= 0) setTimeText('DELAYED...');
+      else {
+        const m = Math.floor(diff / 1000 / 60);
+        const s = Math.floor((diff / 1000) % 60);
+        setTimeText(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+      }
+    };
+    tick();
+    timerIntervalRef.current = setInterval(tick, 1000);
+    const pollInterval = setInterval(() => fetchOrderStatus(activeOrder.id), 8000);
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      clearInterval(pollInterval);
+    };
+  }, [activeOrder]);
 
+  const fetchOrderStatus = (id: string) => {
+    api.get(`/api/orders/${id}/status`)
+      .then(res => setActiveOrder(res.data))
+      .catch(() => {
+        localStorage.removeItem('current_order_id');
+        setActiveOrder(null);
+      });
+  };
+
+  const handleMixSelect = (mix: Mix) => {
+    if (!isAuthenticated) { showToast('Авторизуйтесь', 'error'); return; }
+    setSelectedMix(mix);
+    setShowConfirmModal(true);
+  };
+
+  const handleOrderSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMix) return;
     setLoading(true);
     try {
-      const mixString = hookahMix.map(name => `${name} (${mixPercentages[name] || 0}%)`).join(', ');
-      const strengthLabel = hookahStrength === 'light' ? 'Лёгкий' : hookahStrength === 'medium' ? 'Средний' : 'Крепкий';
-      
-      const recipeData = {
-        strength: strengthLabel,
-        bowl: selectedBowl.name,
-        base: selectedBase.name,
-        mix: mixString,
-        price: totalPrice,
-        comment: comment || 'Без комментариев',
-        phone: phone || 'Не указан',
-        ticketId: `MIX-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`
-      };
-
-      // If authenticated, save the mix in the background
-      if (isAuthenticated) {
-        try {
-          await api.post('/api/bookings', {
-            seatId: recipeData.ticketId,
-            seatLabel: 'Микс-билет',
-            seatZone: 'hall',
-            date: new Date().toISOString().slice(0, 10),
-            time: new Date().toTimeString().slice(0, 5),
-            guestsCount: 1,
-            phone: phone || '79991234567',
-            hookahMix: `${selectedBowl.name} | ${selectedBase.name} | Mix: ${mixString}`,
-            hookahStrength,
-            hookahCount: 1,
-            comment: comment || undefined,
-          });
-        } catch (dbErr) {
-          console.warn('Could not save mix booking to server:', dbErr);
-        }
-      }
-
-      setTicketData(recipeData);
-      setShowTicket(true);
-      showToast('Билет микса успешно сгенерирован!', 'success');
+      const isCustom = selectedMix.isCustom;
+      const res = await api.post('/api/orders', {
+        mix_id: isCustom ? null : selectedMix.id,
+        liquid_id: liquidBase,
+        notes: specialNotes,
+        seat_id: seatLabel.replace(/\s+/g, '-').toLowerCase(),
+        seat_label: seatLabel,
+        seat_zone: 'hall',
+      });
+      setActiveOrder(res.data);
+      localStorage.setItem('current_order_id', res.data.id);
+      setShowConfirmModal(false);
+      showToast('Заказ принят!', 'success');
     } catch (err) {
-      showToast('Ошибка при генерации билета', 'error');
-    } finally {
-      setLoading(false);
-    }
+      showToast('Ошибка', 'error');
+    } finally { setLoading(false); }
   };
 
-  const getTelegramShareUrl = () => {
-    if (!ticketData) return '#';
-    const text = `💨 *НОВЫЙ КАЛЬЯННЫЙ МИКС (${ticketData.ticketId})*\n\n` +
-      `🏺 Чаша: *${ticketData.bowl}*\n` +
-      `💧 База: *${ticketData.base}*\n` +
-      `⚡ Крепость: *${ticketData.strength}*\n` +
-      `🍓 Микс вкусов: *${ticketData.mix}*\n` +
-      `💬 Пожелания: _${ticketData.comment}_\n` +
-      `💵 Стоимость: *${ticketData.price} ₽*`;
-    return `https://t.me/NHSC_founder?text=${encodeURIComponent(text)}`;
+  const handleCallMaster = async () => {
+    if (!activeOrder) return;
+    setLoading(true);
+    try {
+      await api.post(`/api/orders/${activeOrder.id}/request-master`);
+      setMasterCalled(true);
+      showToast('Мастер вызван', 'success');
+    } catch (err) {
+      showToast('Ошибка вызова', 'error');
+    } finally { setLoading(false); }
   };
+
+  // Helper mapping stages progress
+  const stages = [
+    { id: 'accepted', label: 'Accepted', desc: 'System Initialized' },
+    { id: 'preparing', label: 'Processing', desc: 'Material Selection' },
+    { id: 'roasting', label: 'Compiling', desc: 'Thermal Activation' },
+    { id: 'delivering', label: 'Deploying', desc: 'Transit to Zone' },
+    { id: 'done', label: 'Active', desc: 'Session Running' },
+  ];
 
   return (
-    <div className="px-4 py-6 space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center select-none">
-        <span className="text-[10px] uppercase tracking-[0.3em] text-accent-gold font-bold flex items-center justify-center gap-1.5 mb-1.5">
-          <Flame className="w-4 h-4 text-accent-gold animate-pulse" /> КОНСТРУКТОР КАЛЬЯНОВ
-        </span>
-        <h1 className="text-3xl font-display font-light text-white uppercase tracking-wider">
-          Миксолог <span className="gradient-text font-semibold italic">Pro v2</span>
-        </h1>
-        <p className="text-xs text-white/50 mt-1 font-light">
-          Создайте уникальный рецепт под собственные предпочтения и получите QR-код для мастера
-        </p>
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left column: Mixologist controls */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          {/* Flavor customizer */}
-          <GlassCard className="p-5 space-y-4">
-            <h3 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5 mb-0">
-              <Award className="w-4 h-4 text-accent-gold" /> Выберите вкусы табака (до 4 видов)
-            </h3>
-
-            {/* Category filter tabs */}
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-2 border-b border-glass-border/10">
-              {FLAVOR_CATEGORIES.map(cat => (
-                <button key={cat} type="button" onClick={() => setFlavorCategory(cat)}
-                  className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all border ${
-                    flavorCategory === cat
-                      ? 'bg-accent-gold text-black border-accent-gold/20 shadow-glow-gold'
-                      : 'text-white/50 hover:text-white hover:bg-white/5 border-transparent'
-                  }`}>{cat}</button>
-              ))}
-            </div>
-
-            {/* Flavor grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[190px] overflow-y-auto scrollbar-hide pr-1 border-b border-glass-border/10 pb-3">
-              {HOOKAH_FLAVORS
-                .filter(f => flavorCategory === 'Все' || f.category === flavorCategory)
-                .map(flavor => {
-                  const selected = hookahMix.includes(flavor.name);
-                  return (
-                    <button key={flavor.name} type="button"
-                      onClick={() => updateMixFlavors(flavor.name)}
-                      className={`px-3 py-2.5 rounded-xl text-xs text-left transition-all flex items-center gap-1.5 ${
-                        selected
-                          ? 'bg-accent-gold/15 border border-accent-gold/45 text-accent-gold shadow-[0_0_12px_rgba(212,175,55,0.15)]'
-                          : 'bg-glass-bg border border-glass-border/60 text-white/60 hover:border-accent-gold/30 hover:text-white/80'
-                      }`}>
-                      <span className="text-base">{flavor.emoji}</span>
-                      <span className="truncate font-semibold">{flavor.name}</span>
-                      {selected && <span className="ml-auto text-accent-gold font-bold text-[10px]">✓</span>}
-                    </button>
-                  );
-              })}
-            </div>
-
-            {/* dynamic Taste DNA Visualizer */}
-            {hookahMix.length > 0 && (
-              <motion.div 
-                className="space-y-4 bg-white/5 p-4 rounded-2xl border border-glass-border/30 animate-fade-in"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <ThreeDNA 
-                  mix={hookahMix}
-                  mixPercentages={mixPercentages}
-                  activeCategory={flavorCategory}
-                  onSelectCategory={setFlavorCategory}
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-glass-border/10 pt-4">
-                  {/* Characteristic meters */}
-                  <div className="space-y-2 select-none">
-                    <div className="text-[10px] uppercase tracking-wider text-accent-gold font-bold">Свойства микса</div>
-                    {[
-                      { label: '🍬 Сладость', value: chars.sweetness, color: 'from-yellow-300 to-amber-500' },
-                      { label: '❄️ Свежесть', value: chars.freshness, color: 'from-sky-400 to-blue-500' },
-                      { label: '🍋 Кислинка', value: chars.sourness, color: 'from-green-400 to-yellow-400' },
-                      { label: '⚡ Крепость', value: chars.strength, color: 'from-red-500 to-orange-600' },
-                    ].map(item => (
-                      <div key={item.label} className="space-y-0.5">
-                        <div className="flex justify-between text-[9px] text-white/50">
-                          <span>{item.label}</span>
-                          <span>{item.value}%</span>
-                        </div>
-                        <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full bg-gradient-to-r ${item.color} shadow-lg`} style={{ width: `${item.value}%` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Proportion sliders */}
-                  <div className="space-y-3 flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-glass-border/10 pt-3 sm:pt-0 sm:pl-4">
-                    <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold mb-1">Пропорции чаши</div>
-                    {hookahMix.map(name => (
-                      <div key={name} className="space-y-1">
-                        <div className="flex justify-between text-[11px] font-semibold text-white/80">
-                          <span className="truncate max-w-[120px]">{name}</span>
-                          <span className="text-accent-gold font-bold">{mixPercentages[name] || 0}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="10"
-                          max="90"
-                          value={mixPercentages[name] || 0}
-                          onChange={(e) => handlePercentageChange(name, Number(e.target.value))}
-                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-accent-gold"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </GlassCard>
-
-          {/* Selectors for Bowl & Liquid Base */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Bowl selector */}
-            <GlassCard className="p-5 space-y-3">
-              <h4 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5">
-                🏺 Выберите тип чаши
-              </h4>
-              <div className="space-y-2">
-                {BOWL_TYPES.map(b => (
-                  <div key={b.id} 
-                    onClick={() => { triggerHaptic(20); setBowlType(b.id); }}
-                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                      bowlType === b.id 
-                        ? 'bg-accent-gold/10 border-accent-gold text-white' 
-                        : 'bg-glass-bg border-glass-border/60 hover:border-accent-gold/30 text-white/70'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xl bg-black/45 w-9 h-9 rounded-xl flex items-center justify-center border border-white/5">{b.emoji}</span>
-                      <div>
-                        <div className="text-xs font-semibold">{b.name}</div>
-                        <div className="text-[10px] text-white/40 font-light mt-0.5 leading-tight">{b.desc}</div>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-accent-gold">
-                      {b.id === 'clay' ? 'Входит' : `+${b.price - 1200}₽`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-
-            {/* Liquid base selector */}
-            <GlassCard className="p-5 space-y-3">
-              <h4 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5">
-                💧 Выберите основу (жидкость)
-              </h4>
-              <div className="space-y-2">
-                {LIQUID_BASES.map(l => (
-                  <div key={l.id} 
-                    onClick={() => { triggerHaptic(20); setLiquidBase(l.id); }}
-                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                      liquidBase === l.id 
-                        ? 'bg-accent-gold/10 border-accent-gold text-white' 
-                        : 'bg-glass-bg border-glass-border/60 hover:border-accent-gold/30 text-white/70'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xl bg-black/45 w-9 h-9 rounded-xl flex items-center justify-center border border-white/5">{l.emoji}</span>
-                      <div>
-                        <div className="text-xs font-semibold">{l.name}</div>
-                        <div className="text-[10px] text-white/40 font-light mt-0.5 leading-tight">{l.desc}</div>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-accent-gold">
-                      {l.price === 0 ? 'Входит' : `+${l.price}₽`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          </div>
-        </div>
-
-        {/* Right column: Ticket details and generation */}
-        <div className="lg:col-span-4">
-          <GlassCard className="p-5 space-y-5">
-            <form onSubmit={handleGenerateTicket} className="space-y-4">
-              <h3 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5 border-b border-glass-border/10 pb-2 mb-0">
-                📝 Параметры билета
-              </h3>
-
-              {/* Strength dial */}
-              <div>
-                <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                  <Gauge className="w-3.5 h-3.5" /> Желаемая крепость
-                </label>
-                <select
-                  value={hookahStrength}
-                  onChange={(e) => { triggerHaptic(20); setHookahStrength(e.target.value as any); }}
-                  className="glass-input text-sm"
-                >
-                  <option value="light">Лёгкий (Light)</option>
-                  <option value="medium">Средний (Medium)</option>
-                  <option value="strong">Крепкий (Strong)</option>
-                </select>
-              </div>
-
-              {/* Optional Phone */}
-              <div>
-                <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                  📞 Телефон для связи
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+7 (999) 123-45-67"
-                  className="glass-input text-sm"
-                />
-                <p className="text-[9px] text-white/30 mt-0.5">Необязательно. Помогает сохранить билет в ваш профиль.</p>
-              </div>
-
-              {/* Comment */}
-              <div>
-                <label className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5 font-medium">
-                  <MessageSquare className="w-3.5 h-3.5" /> Пожелания / Комментарий
-                </label>
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Добавить льда, сделать послаще..."
-                  className="glass-input text-sm min-h-[70px] resize-none"
-                  rows={3}
-                />
-              </div>
-
-              {/* Real-time Receipt breakdown */}
-              <div className="bg-[#14100c]/85 rounded-2xl p-4 border border-glass-border/20 space-y-2 select-none">
-                <div className="text-[9px] uppercase tracking-wider text-accent-gold font-bold">Детализация стоимости</div>
-                <div className="flex justify-between text-xs text-white/60">
-                  <span>Тип чаши:</span>
-                  <span>{selectedBowl.price} ₽</span>
-                </div>
-                <div className="flex justify-between text-xs text-white/60">
-                  <span>Добавка основы:</span>
-                  <span>+{selectedBase.price} ₽</span>
-                </div>
-                <div className="h-px bg-glass-border/10 my-1" />
-                <div className="flex justify-between items-center text-sm font-bold text-white">
-                  <span>Итоговая цена:</span>
-                  <span className="text-base text-accent-gold">{totalPrice} ₽</span>
-                </div>
-              </div>
-
-              <motion.button
-                type="submit"
-                className="w-full py-3 rounded-full border border-accent-gold/60 text-[#F4E4C4] bg-gradient-to-r from-[#7c5c24] to-[#4a3410] hover:from-[#926e2e] hover:to-[#5c4315] shadow-[0_4px_16px_rgba(0,0,0,0.45)] flex items-center justify-center gap-2 text-sm font-bold tracking-wider uppercase transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={loading}
-              >
-                <QrCode className="w-4 h-4 text-accent-gold" /> {loading ? 'Генерация...' : 'Получить QR-код'}
-              </motion.button>
-
-              {!isAuthenticated && (
-                <p className="text-center text-[10px] text-white/30 mt-2 leading-snug">
-                  Вы можете заказать билет анонимно. Войдите в <a href="/login" className="text-accent-gold hover:underline font-semibold">аккаунт</a> для сохранения микса.
-                </p>
-              )}
-            </form>
-          </GlassCard>
-        </div>
+    <div className="relative min-h-[90vh] bg-[#030108] text-white overflow-hidden rounded-[2rem] border border-[#a855f7]/20 shadow-[0_0_80px_rgba(168,85,247,0.15)] flex flex-col md:flex-row mb-20 font-sans">
+      
+      {/* Abstract Map Background */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(168,85,247,0.3)" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          {/* Stylized World/Network Map Nodes */}
+          <g stroke="rgba(168,85,247,0.5)" strokeWidth="1" fill="none">
+            <circle cx="20%" cy="30%" r="4" fill="#a855f7" className="animate-pulse" />
+            <circle cx="45%" cy="60%" r="6" fill="#a855f7" className="animate-pulse" style={{animationDelay: '1s'}} />
+            <circle cx="70%" cy="40%" r="3" fill="#a855f7" className="animate-pulse" style={{animationDelay: '0.5s'}} />
+            <circle cx="80%" cy="80%" r="5" fill="#a855f7" className="animate-pulse" style={{animationDelay: '1.5s'}} />
+            <path d="M 20% 30% L 45% 60% L 70% 40% L 80% 80%" strokeDasharray="4,4" className="animate-[dash_20s_linear_infinite]" />
+          </g>
+        </svg>
       </div>
 
-      {/* Ticket QR Modal */}
-      <AnimatePresence>
-        {showTicket && ticketData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/85 backdrop-blur-md">
-            {/* Modal Glass Box */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="relative max-w-sm w-full bg-gradient-to-b from-[#1c1814] to-black rounded-3xl border border-accent-gold/25 p-6 shadow-2xl"
-            >
-              {/* Close trigger */}
-              <button 
-                onClick={() => setShowTicket(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-colors"
-              >
-                <X className="w-4.5 h-4.5" />
-              </button>
+      {/* Radial Glows */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#a855f7] opacity-[0.07] blur-[150px] rounded-full pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#4c1d95] opacity-[0.1] blur-[120px] rounded-full pointer-events-none z-0"></div>
 
-              {/* Digital Ticket Frame */}
-              <div className="text-center space-y-4 pt-2 relative">
-                {/* Decorative gold corner accents */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-accent-gold/45" />
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-accent-gold/45" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-accent-gold/45" />
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-accent-gold/45" />
+      {/* Sidebar Navigation */}
+      <aside className="w-full md:w-[280px] border-r border-[#a855f7]/10 bg-[#06020c]/60 backdrop-blur-2xl p-6 flex flex-col z-10 relative">
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#a855f7] to-[#4c1d95] flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+            <Command className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-bold tracking-widest text-sm uppercase">NEXUS Core</span>
+        </div>
 
-                <span className="text-[9px] uppercase tracking-[0.25em] text-accent-gold font-bold block mb-1">Sport Lounge Recipe Ticket</span>
-                <h3 className="text-lg font-display font-semibold text-[#F4E4C4] leading-none">{ticketData.ticketId}</h3>
-                
-                {/* QR Code fetched dynamically */}
-                <div className="w-48 h-48 mx-auto bg-white p-2.5 rounded-2xl flex items-center justify-center shadow-glow-gold/15 my-4">
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                      `Id:${ticketData.ticketId}\nBowl:${ticketData.bowl}\nBase:${ticketData.base}\nStrength:${ticketData.strength}\nMix:${ticketData.mix}\nComment:${ticketData.comment}`
-                    )}`} 
-                    alt="Mix QR Code" 
-                    className="w-full h-full object-contain"
-                  />
+        <nav className="space-y-2 flex-1">
+          {[
+            { icon: Activity, label: 'Dashboard', active: true },
+            { icon: Box, label: 'Products' },
+            { icon: Database, label: 'Analytics' },
+            { icon: Zap, label: 'Developers' },
+          ].map((item, i) => (
+            <button key={i} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${item.active ? 'bg-[#a855f7]/15 text-white border border-[#a855f7]/30 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
+              <item.icon className={`w-4 h-4 ${item.active ? 'text-[#a855f7]' : ''}`} />
+              <span className="text-xs font-semibold tracking-wide uppercase">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="mt-auto pt-6 border-t border-[#a855f7]/10">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/40 hover:text-white transition-all">
+            <Settings className="w-4 h-4" />
+            <span className="text-xs font-semibold tracking-wide uppercase">Settings</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Dashboard Content */}
+      <main className="flex-1 p-6 lg:p-10 z-10 relative flex flex-col h-full overflow-y-auto custom-scrollbar">
+        <header className="flex justify-between items-end mb-10">
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-light tracking-tight mb-2">Cross-Border <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#a855f7] to-[#d946ef]">Finance</span></h1>
+            <p className="text-white/40 text-sm tracking-wide">Manage your global transactions and infrastructure.</p>
+          </div>
+          <div className="hidden md:flex items-center gap-4">
+            <div className="px-4 py-2 rounded-full border border-[#a855f7]/20 bg-[#a855f7]/5 text-xs font-mono text-[#a855f7]">STATUS: ONLINE</div>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+          {/* Left Column: Mixes (Products) */}
+          <div className="lg:col-span-7 space-y-4">
+            <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">Available Modules</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {mixes.map((mix, idx) => (
+                <motion.div
+                  key={mix.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="group relative p-5 rounded-2xl bg-[#0a0514]/80 border border-[#a855f7]/20 hover:border-[#a855f7]/50 transition-all cursor-pointer backdrop-blur-md overflow-hidden"
+                  onClick={() => handleMixSelect(mix)}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#a855f7]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="w-10 h-10 rounded-full bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20">
+                        <Database className="w-4 h-4 text-[#a855f7]" />
+                      </div>
+                      <span className="text-xs font-mono text-white/30 group-hover:text-[#a855f7]/80 transition-colors">{mix.strength}/10</span>
+                    </div>
+                    <h4 className="font-bold text-sm tracking-wide mb-1">{mix.name}</h4>
+                    <p className="text-xs text-white/40 line-clamp-2 leading-relaxed">{mix.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Active Order (System Status) */}
+          <div className="lg:col-span-5 h-full">
+            <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">System Telemetry</h3>
+            
+            <div className="p-6 rounded-3xl bg-gradient-to-b from-[#0a0514] to-[#06020c] border border-[#a855f7]/20 relative overflow-hidden h-full min-h-[400px]">
+              {/* Decorative circuit lines */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMjAgTDIwIDIwIEwyMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDE2OCwgODUsIDI0NywgMC4yKSIvPjwvc3ZnPg==')] opacity-50"></div>
+
+              {!activeOrder ? (
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
+                  <Activity className="w-12 h-12 text-[#a855f7]" />
+                  <p className="text-xs uppercase tracking-widest font-bold">No Active Operations</p>
+                  <p className="text-[10px] text-white/40 max-w-[200px]">Select a module from the left to deploy a new instance.</p>
                 </div>
+              ) : (
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <p className="text-[10px] text-[#a855f7] uppercase tracking-widest font-bold mb-1">Time to deployment</p>
+                      <h2 className="text-4xl font-mono font-light tracking-tighter">{timeText}</h2>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Target Node</p>
+                      <p className="text-sm font-bold uppercase">{activeOrder.seatLabel}</p>
+                    </div>
+                  </div>
 
-                <div className="text-left space-y-2 bg-[#120f0c] p-4 rounded-2xl border border-glass-border/30 text-xs">
-                  <div className="flex justify-between text-white/45">
-                    <span>Тип чаши:</span>
-                    <span className="text-white font-medium">{ticketData.bowl}</span>
+                  <div className="flex-1 relative pl-2 space-y-6">
+                    <div className="absolute left-[20px] top-4 bottom-4 w-px bg-gradient-to-b from-[#a855f7] to-transparent"></div>
+                    
+                    {stages.map((stage, idx) => {
+                      const stagesList = stages.map(s => s.id);
+                      const currentIdx = stagesList.indexOf(activeOrder.status);
+                      const targetIdx = idx;
+                      const isCompleted = currentIdx > targetIdx;
+                      const isActive = currentIdx === targetIdx;
+                      
+                      return (
+                        <div key={stage.id} className={`flex items-start gap-4 relative transition-all duration-500 ${isCompleted || isActive ? 'opacity-100' : 'opacity-30'}`}>
+                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center bg-[#0a0514] z-10 ${isActive ? 'border-[#a855f7] shadow-[0_0_15px_rgba(168,85,247,0.5)]' : isCompleted ? 'border-[#a855f7] text-[#a855f7]' : 'border-white/20 text-white/20'}`}>
+                            {isCompleted ? <Check className="w-3 h-3" /> : <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-[#a855f7] animate-pulse' : 'bg-transparent'}`}></div>}
+                          </div>
+                          <div className="pt-1.5">
+                            <h5 className={`text-xs uppercase tracking-widest font-bold ${isActive ? 'text-[#a855f7]' : 'text-white'}`}>{stage.label}</h5>
+                            <p className="text-[10px] text-white/40 mt-1 font-mono">{stage.desc}</p>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                  <div className="flex justify-between text-white/45">
-                    <span>Основа:</span>
-                    <span className="text-white font-medium">{ticketData.base}</span>
-                  </div>
-                  <div className="flex justify-between text-white/45">
-                    <span>Крепость:</span>
-                    <span className="text-white font-medium">{ticketData.strength}</span>
-                  </div>
-                  <div className="h-px bg-glass-border/10 my-1.5" />
-                  <div className="text-white/45 space-y-0.5">
-                    <span>Вкусовой микс:</span>
-                    <p className="text-accent-gold font-semibold leading-relaxed">{ticketData.mix}</p>
-                  </div>
-                  <div className="h-px bg-glass-border/10 my-1.5" />
-                  <div className="text-white/45 space-y-0.5">
-                    <span>Пожелания:</span>
-                    <p className="text-white/70 italic leading-snug">"{ticketData.comment}"</p>
-                  </div>
-                  <div className="h-px bg-glass-border/10 my-1.5" />
-                  <div className="flex justify-between items-center text-sm font-bold text-white pt-1">
-                    <span>Итого к оплате:</span>
-                    <span className="text-accent-gold">{ticketData.price} ₽</span>
-                  </div>
-                </div>
 
-                <p className="text-[10px] text-white/35 leading-tight max-w-xs mx-auto">
-                  Сфотографируйте билет или покажите QR-код вашему кальянному мастеру. Мастер приготовит микс в точности с вашим рецептом.
-                </p>
-
-                {/* Sharing actions */}
-                <div className="pt-2 space-y-2">
-                  <a 
-                    href={getTelegramShareUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 rounded-full bg-[#229ED9] hover:bg-[#1e8cb3] text-white flex items-center justify-center gap-2 text-xs font-semibold shadow-md transition-all"
+                  <button 
+                    onClick={handleCallMaster}
+                    disabled={masterCalled}
+                    className="mt-6 w-full py-3 rounded-xl border border-[#a855f7]/30 bg-[#a855f7]/10 hover:bg-[#a855f7]/20 text-xs font-bold uppercase tracking-widest transition-all"
                   >
-                    <Send className="w-3.5 h-3.5" /> Отправить мастеру в Telegram
-                  </a>
-
-                  {isAuthenticated && (
-                    <button 
-                      onClick={handlePublishToFeed}
-                      disabled={publishing}
-                      className="w-full py-2.5 rounded-full border border-accent-gold/40 text-accent-gold hover:text-[#F4E4C4] hover:bg-accent-gold/15 flex items-center justify-center gap-2 text-xs font-semibold shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Share2 className="w-3.5 h-3.5" /> {publishing ? 'Публикация...' : 'Опубликовать в ленту'}
-                    </button>
-                  )}
+                    {masterCalled ? 'Support Ticket Opened' : 'Request Manual Override'}
+                  </button>
                 </div>
-              </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {showConfirmModal && selectedMix && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-[#0a0514] border border-[#a855f7]/30 rounded-3xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-[#a855f7] to-transparent opacity-50"></div>
+              
+              <h3 className="text-lg font-light tracking-wide mb-6">Deploy Instance: <span className="font-bold text-[#a855f7]">{selectedMix.name}</span></h3>
+              
+              <form onSubmit={handleOrderSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Target Node (Table)</label>
+                  <select value={seatLabel} onChange={e => setSeatLabel(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-[#a855f7] focus:outline-none transition-colors">
+                    {TABLE_OPTIONS.map(opt => <option key={opt} value={opt} className="bg-[#0a0514]">{opt}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Base Framework</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LIQUID_BASES.map(base => (
+                      <button
+                        key={base.id} type="button" onClick={() => setLiquidBase(base.id)}
+                        className={`text-left p-3 rounded-xl border transition-all ${liquidBase === base.id ? 'border-[#a855f7] bg-[#a855f7]/10' : 'border-white/10 hover:border-white/30'}`}
+                      >
+                        <div className="text-xs font-bold">{base.name}</div>
+                        <div className="text-[9px] text-white/40 mt-1">{base.price > 0 ? `+${base.price} ₽` : 'Included'}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Configuration Flags</label>
+                  <textarea value={specialNotes} onChange={e => setSpecialNotes(e.target.value)} placeholder="Enter custom parameters..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs h-20 resize-none focus:border-[#a855f7] focus:outline-none transition-colors" />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowConfirmModal(false)} className="flex-1 py-3 rounded-xl border border-white/10 hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all">Cancel</button>
+                  <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#a855f7] to-[#8b5cf6] text-xs font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-all">
+                    {loading ? 'Processing...' : 'Deploy'}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.4); }
+        @keyframes dash { to { stroke-dashoffset: -100; } }
+      `}</style>
     </div>
   );
 }

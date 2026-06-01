@@ -16,18 +16,18 @@
   }
 
   ::selection {
-    @apply bg-accent-amber/30 text-white;
+    @apply bg-purple-500/30 text-white;
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { @apply bg-dark-bg; }
-  ::-webkit-scrollbar-thumb { @apply bg-accent-gold/20 rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-accent-gold/40; }
+  ::-webkit-scrollbar-thumb { @apply bg-[#a855f7]/25 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-[#d946ef]/45; }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(212, 175, 55, 0.2) #080604;
+    scrollbar-color: rgba(168, 85, 247, 0.25) #0c0816;
   }
 }
 
@@ -195,21 +195,21 @@
       inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
   }
 
-  /* ──── Liquid Glass Card Gold ──── */
+  /* ──── Liquid Glass Card Gold (Tech Purple) ──── */
   .glass-card-gold {
     background: linear-gradient(
       135deg,
-      rgba(35, 28, 15, var(--glass-opacity)) 0%,
-      rgba(20, 16, 10, calc(var(--glass-opacity) * 0.74)) 100%
+      rgba(15, 10, 25, var(--glass-opacity)) 0%,
+      rgba(8, 5, 15, calc(var(--glass-opacity) * 0.74)) 100%
     );
     backdrop-filter: blur(var(--glass-blur)) saturate(220%);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(220%);
-    border: 0.5px solid rgba(212, 175, 55, 0.32);
+    border: 0.5px solid rgba(168, 85, 247, 0.32);
     border-radius: 28px;
     position: relative;
     overflow: hidden;
     box-shadow: 
-      0 12px 32px 0 rgba(212, 175, 55, 0.1),
+      0 12px 32px 0 rgba(168, 85, 247, 0.1),
       inset 0 0 0 0.5px rgba(255, 255, 255, 0.24),
       inset 0 0 16px 0 rgba(255, 255, 255, 0.02);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -225,9 +225,9 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(212, 175, 55, 0.4) 30%,
-      rgba(255, 228, 133, 0.6) 50%,
-      rgba(212, 175, 55, 0.4) 70%,
+      rgba(168, 85, 247, 0.4) 30%,
+      rgba(217, 70, 239, 0.6) 50%,
+      rgba(168, 85, 247, 0.4) 70%,
       transparent 100%
     );
     pointer-events: none;
@@ -244,9 +244,9 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(212, 175, 55, 0.08) 30%,
-      rgba(255, 228, 133, 0.18) 50%,
-      rgba(212, 175, 55, 0.08) 70%,
+      rgba(168, 85, 247, 0.08) 30%,
+      rgba(217, 70, 239, 0.18) 50%,
+      rgba(168, 85, 247, 0.08) 70%,
       transparent 100%
     );
     transform: skewX(-20deg);
@@ -260,9 +260,9 @@
   }
 
   .glass-card-gold:hover {
-    border-color: rgba(212, 175, 55, 0.5);
+    border-color: rgba(168, 85, 247, 0.5);
     box-shadow: 
-      0 20px 48px 0 rgba(212, 175, 55, 0.25),
+      0 20px 48px 0 rgba(168, 85, 247, 0.25),
       inset 0 0 0 0.5px rgba(255, 255, 255, 0.3),
       inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
   }
@@ -377,22 +377,22 @@
     transform: translateY(-1.5px);
   }
 
-  /* ──── Liquid Glass Button Gold ──── */
+  /* ──── Liquid Glass Button Gold (Purple Glow) ──── */
   .glass-btn-gold {
     background: linear-gradient(
       135deg,
-      #7c5c24 0%,
-      #4a3410 100%
+      #5b21b6 0%,
+      #311082 100%
     );
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(212, 175, 55, 0.55);
+    border: 1px solid rgba(168, 85, 247, 0.55);
     position: relative;
     overflow: hidden;
     box-shadow: 
       0 4px 16px 0 rgba(0, 0, 0, 0.35),
       inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
-    color: #F4E4C4 !important;
+    color: #F3E8FF !important;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -422,25 +422,25 @@
   .glass-btn-gold:hover {
     background: linear-gradient(
       135deg,
-      #926e2e 0%,
-      #5c4315 100%
+      #7c3aed 0%,
+      #4c1d95 100%
     );
-    border-color: rgba(212, 175, 55, 0.85);
+    border-color: rgba(168, 85, 247, 0.85);
     box-shadow: 
-      0 0 15px rgba(212, 175, 55, 0.35),
+      0 0 15px rgba(168, 85, 247, 0.35),
       0 6px 20px 0 rgba(0, 0, 0, 0.45);
     transform: translateY(-1.5px);
   }
 
-  /* ──── Majestic Gold Glass Button ──── */
+  /* ──── Majestic Purple Glow Button ──── */
   .glow-btn {
     position: relative;
     overflow: hidden;
     @apply px-6 py-3 rounded-xl font-semibold text-white;
-    background: linear-gradient(135deg, #FFD700 0%, #D4AF37 50%, #8A6623 100%);
+    background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #4c1d95 100%);
     box-shadow:
-      0 4px 20px rgba(212, 175, 55, 0.35),
-      0 0 1px rgba(212, 175, 55, 0.6),
+      0 4px 20px rgba(168, 85, 247, 0.35),
+      0 0 1px rgba(168, 85, 247, 0.6),
       inset 0 1px 0 rgba(255, 255, 255, 0.25);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -467,8 +467,8 @@
 
   .glow-btn:hover {
     box-shadow:
-      0 8px 32px rgba(212, 175, 55, 0.55),
-      0 0 2px rgba(212, 175, 55, 0.8),
+      0 8px 32px rgba(168, 85, 247, 0.55),
+      0 0 2px rgba(168, 85, 247, 0.8),
       inset 0 1px 0 rgba(255, 255, 255, 0.35);
     transform: translateY(-1px) scale(1.02);
   }
@@ -486,43 +486,43 @@
     box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25);
   }
 
-  /* ──── Luxury Gold Input ──── */
+  /* ──── Luxury Purple Input ──── */
   .glass-input {
     @apply w-full px-4 py-3 text-white placeholder-white/30;
-    background: rgba(20, 16, 12, 0.6);
+    background: rgba(15, 10, 25, 0.6);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.15);
     border-radius: 14px;
     outline: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-input:focus {
-    border-color: rgba(212, 175, 55, 0.45);
+    border-color: rgba(168, 85, 247, 0.45);
     box-shadow:
-      0 0 16px rgba(212, 175, 55, 0.15),
-      inset 0 0 20px rgba(212, 175, 55, 0.05);
+      0 0 16px rgba(168, 85, 247, 0.15),
+      inset 0 0 20px rgba(168, 85, 247, 0.05);
   }
 
   .glass-input option {
     @apply bg-dark-bg text-white;
   }
 
-  /* ──── Luxury Gold Gradient Text ──── */
+  /* ──── Luxury Neon Gradient Text ──── */
   .gradient-text {
-    background: linear-gradient(135deg, #FFE485 0%, #D4AF37 50%, #8A6623 100%);
+    background: linear-gradient(135deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .neon-border {
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.12);
   }
 
-  /* ──── Premium Ambient Gold Glow ──── */
+  /* ──── Premium Ambient Purple Glow ──── */
   .ambient-glow {
     position: relative;
   }
@@ -537,7 +537,7 @@
     height: 200%;
     background: radial-gradient(
       circle,
-      rgba(212, 175, 55, 0.05) 0%,
+      rgba(168, 85, 247, 0.05) 0%,
       transparent 70%
     );
     pointer-events: none;
@@ -556,8 +556,24 @@
   }
 
   .font-display {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Space Grotesk', 'Outfit', 'Inter', sans-serif;
   }
+}
+
+@keyframes float-particle {
+  0% { transform: translateY(110vh) translateX(0) scale(0.6); opacity: 0; }
+  40% { opacity: 0.5; }
+  80% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) translateX(60px) scale(1.1); opacity: 0; }
+}
+
+.purple-particle {
+  position: absolute;
+  bottom: -20px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float-particle 15s linear infinite;
 }
 
 /* Floating glassmorphic spheres for luxury mesh gradient bg */
@@ -584,7 +600,7 @@
   max-width: 600px;
   max-height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(138, 92, 245, 0.03) 75%, transparent 100%);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(138, 92, 245, 0.03) 75%, transparent 100%);
   filter: blur(50px);
   bottom: 15%;
   right: -15%;
@@ -626,3 +642,94 @@
   50% { transform: translate(-60px, 100px) scale(1.2); }
   100% { transform: translate(80px, -40px) scale(0.95); }
 }
+
+/* ──── VINTAGE MAFIA ROOM STYLING ──── */
+.mafia-panel {
+  background: linear-gradient(135deg, #180f0a 0%, #0e0805 100%);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.6),
+    inset 0 0 25px rgba(139, 90, 43, 0.08);
+  border-radius: 24px;
+  position: relative;
+}
+
+.mafia-card {
+  background: linear-gradient(180deg, #1c120a 0%, #120b06 100%);
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    inset 0 0 15px rgba(0, 0, 0, 0.6);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mafia-card:hover {
+  border-color: rgba(212, 175, 55, 0.35);
+  box-shadow: 
+    0 12px 32px rgba(212, 175, 55, 0.08),
+    inset 0 0 20px rgba(139, 90, 43, 0.12);
+  transform: translateY(-2px);
+}
+
+.parchment-scroll {
+  background: linear-gradient(180deg, #f5ecd8 0%, #e6d3af 100%);
+  color: #2b180a;
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.45),
+    inset 0 0 15px rgba(139, 90, 43, 0.25);
+  border: 1px solid #c8a261;
+}
+
+.gold-antique-btn {
+  background: linear-gradient(180deg, #d4af37 0%, #aa841c 100%);
+  color: #1a0f07;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border: 1px solid #e5c158;
+  box-shadow: 
+    0 4px 15px rgba(170, 132, 28, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.gold-antique-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #e5c158 0%, #c19b2a 100%);
+  box-shadow: 
+    0 6px 20px rgba(212, 175, 55, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.burgundy-antique-btn {
+  background: linear-gradient(180deg, #5c1818 0%, #3a0d0d 100%);
+  color: #f7e6e6;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.burgundy-antique-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #702020 0%, #4a1212 100%);
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 6px 20px rgba(112, 32, 32, 0.3);
+}
+
+.mafia-input {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 12px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.mafia-input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+  outline: none;
+}
+

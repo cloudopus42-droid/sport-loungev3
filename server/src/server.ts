@@ -32,7 +32,9 @@ import seatRoutes from './routes/seats';
 import aiRoutes from './routes/ai';
 import membershipRoutes from './routes/memberships';
 import invoiceRoutes from './routes/invoices';
+import orderRoutes from './routes/orders';
 import { startSupportBot } from './services/supportBot';
+import { startOrderScheduler } from './services/orderScheduler';
 
 // Custom lightweight memory-based API Rate Limiter
 const rateLimits: Record<string, { count: number; resetTime: number }> = {};
@@ -123,6 +125,7 @@ async function bootstrap(): Promise<void> {
   app.use('/api/ai', aiRoutes);
   app.use('/api/memberships', membershipRoutes);
   app.use('/api/invoices', invoiceRoutes);
+  app.use('/api/orders', orderRoutes);
 
   // 6. SPA fallback — serve client/dist/index.html for non-API routes
   const clientDistPath = path.resolve(__dirname, '../../client/dist');
@@ -169,6 +172,13 @@ async function bootstrap(): Promise<void> {
       }
     } else {
       console.log('🤖 [Support Bot] Disabled in development (set SUPPORT_BOT_ENABLED=true to run locally)');
+    }
+
+    // Start background orders delay tracker
+    try {
+      startOrderScheduler();
+    } catch (err: any) {
+      console.error('❌ Failed to start order scheduler:', err.message);
     }
 
     // Auto-pinger to prevent Render.com from sleeping

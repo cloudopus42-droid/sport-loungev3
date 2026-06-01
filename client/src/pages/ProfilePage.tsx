@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Mail, Calendar, Edit3, Check, X, Clock, Flame, Phone, 
   Camera, Palette, Crown, Sparkles, Trophy, Award, 
-  MessageSquare, Star, Heart, ShieldCheck
+  MessageSquare, Star, Heart, ShieldCheck, FileText
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
@@ -13,6 +13,19 @@ import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import type { Booking, User as UserType } from '@/types';
 import { resolveImageUrl } from '@/lib/urls';
+
+const TABLE_OPTIONS = [
+  'Стол 1', 'Стол 2', 'Стол 3', 'Стол 4', 'Стол 5',
+  'Стол 6', 'Стол 7', 'Стол 8', 'VIP Кабинет 1', 'VIP Кабинет 2',
+  'Игровая Зона PC-1', 'Игровая Зона PC-2', 'PlayStation Зона 1', 'PlayStation Зона 2'
+];
+
+const LIQUID_BASES = [
+  { id: 'water', name: 'На воде', price: 0, emoji: '💧', desc: 'Классическая легкая фильтрация' },
+  { id: 'milk', name: 'На молоке', price: 150, emoji: '🥛', desc: 'Пар более плотный и нежный' },
+  { id: 'juice', name: 'На соке', price: 200, emoji: '🍹', desc: 'Фруктовые и ягодные оттенки' },
+  { id: 'wine', name: 'На вине / Коктейле', price: 450, emoji: '🍷', desc: 'Алкогольная ароматика' },
+];
 
 const statusLabels: Record<string, { text: string; color: 'green' | 'yellow' | 'gray' }> = {
   pending: { text: 'Ожидает', color: 'yellow' },
@@ -109,57 +122,72 @@ export function ProfilePage() {
   const [hookahStatuses, setHookahStatuses] = useState<Record<string, any>>({});
   const [activeTab, setActiveTab] = useState<'visits' | 'mixes'>('visits');
 
+  // Repeat order modal states
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
+  const [repeatBooking, setRepeatBooking] = useState<any | null>(null);
+  const [repeatSeatLabel, setRepeatSeatLabel] = useState(TABLE_OPTIONS[0]);
+  const [repeatLiquidBase, setRepeatLiquidBase] = useState('water');
+  const [repeatSpecialNotes, setRepeatSpecialNotes] = useState('');
+  const [repeatPhone, setRepeatPhone] = useState(user?.phone || '');
+  const [submittingRepeat, setSubmittingRepeat] = useState(false);
+
+  // User preferences states
+  const [preferences, setPreferences] = useState<{ topFlavors: string[]; topMixes: string[] } | null>(null);
+  const [loadingPrefs, setLoadingPrefs] = useState(true);
+
   const handleRepeatMix = (booking: any) => {
+    const parts = (booking.hookahMix || '').split(' | ');
+    let liquidBase = 'water';
+    if (parts.length >= 2) {
+      const baseName = parts[1];
+      if (baseName.includes('молок')) liquidBase = 'milk';
+      else if (baseName.includes('сок')) liquidBase = 'juice';
+      else if (baseName.includes('вин') || baseName.includes('Коктейл')) liquidBase = 'wine';
+    }
+
+    setRepeatBooking(booking);
+    setRepeatLiquidBase(liquidBase);
+    setRepeatPhone(user?.phone || booking.phone || '');
+    setRepeatSpecialNotes(booking.comment || '');
+    setShowRepeatModal(true);
+  };
+
+  const handleSubmitRepeatOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!repeatBooking) return;
+
+    if (!repeatPhone || repeatPhone.trim().length < 5) {
+      showToast('Укажите корректный номер телефона!', 'error');
+      return;
+    }
+
+    setSubmittingRepeat(true);
     try {
-      const parts = (booking.hookahMix || '').split(' | ');
-      let bowlType = 'clay';
-      let liquidBase = 'water';
-      let hookahMix: string[] = [];
-      let mixPercentages: Record<string, number> = {};
+      const notesString = repeatBooking.hookahMix 
+        ? `${repeatBooking.hookahMix}${repeatSpecialNotes ? ` | Пожелания: ${repeatSpecialNotes}` : ''}`
+        : repeatSpecialNotes;
 
-      if (parts.length >= 3) {
-        const bowlName = parts[0];
-        const baseName = parts[1];
-        const mixPart = parts[2].replace('Mix: ', '');
+      const res = await api.post('/api/orders', {
+        mix_id: null,
+        liquid_id: repeatLiquidBase,
+        notes: notesString,
+        seat_id: repeatSeatLabel.replace(/\s+/g, '-').toLowerCase(),
+        seat_label: repeatSeatLabel,
+        seat_zone: repeatSeatLabel.includes('VIP') ? 'vip' : repeatSeatLabel.includes('PC') ? 'pro' : 'hall',
+      });
 
-        if (bowlName.includes('грейпфрут')) bowlType = 'grapefruit';
-        else if (bowlName.includes('ананас')) bowlType = 'pineapple';
-        else if (bowlName.includes('помело')) bowlType = 'pomelo';
-        else bowlType = 'clay';
-
-        if (baseName.includes('молок')) liquidBase = 'milk';
-        else if (baseName.includes('сок')) liquidBase = 'juice';
-        else if (baseName.includes('вин') || baseName.includes('Коктейл')) liquidBase = 'wine';
-        else liquidBase = 'water';
-
-        const flavorStrings = mixPart.split(', ');
-        flavorStrings.forEach((fStr: string) => {
-          const match = fStr.match(/(.+?)\s*\((\d+)%\)/);
-          if (match) {
-            const name = match[1].trim();
-            const pct = parseInt(match[2]);
-            hookahMix.push(name);
-            mixPercentages[name] = pct;
-          }
-        });
-      }
-
-      const prefilledMix = {
-        bowlType,
-        liquidBase,
-        hookahStrength: booking.hookahStrength || 'medium',
-        hookahMix,
-        mixPercentages,
-        comment: booking.comment || ''
-      };
-
-      localStorage.setItem('prefilled_mix', JSON.stringify(prefilledMix));
-      showToast('Рецепт загружен! Перенаправление...', 'success');
+      showToast('Заказ принят! Мастера уже собирают его 💨', 'success');
+      setShowRepeatModal(false);
+      
+      localStorage.setItem('current_order_id', res.data.id);
       setTimeout(() => {
         window.location.href = '/booking';
       }, 1000);
-    } catch (err) {
-      showToast('Не удалось скопировать рецепт', 'error');
+
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Ошибка при оформлении заказа', 'error');
+    } finally {
+      setSubmittingRepeat(false);
     }
   };
 
@@ -289,13 +317,31 @@ export function ProfilePage() {
     setLoadingVIP(false);
   };
 
+  const fetchPreferences = async () => {
+    try {
+      const { data } = await api.get('/api/users/me/preferences');
+      setPreferences(data);
+    } catch (err) {
+      console.error('Failed to load user preferences:', err);
+    }
+    setLoadingPrefs(false);
+  };
+
   useEffect(() => {
     fetchBookings();
     fetchVIPClubData();
+    fetchPreferences();
   }, []);
 
-  // Keep track of notified booking ready alerts
-  const [notifiedReady, setNotifiedReady] = useState<string[]>([]);
+  // Keep track of notified booking ready alerts (synchronized with localStorage)
+  const [notifiedReady, setNotifiedReady] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('notified_bookings');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     const fetchStatuses = async () => {
@@ -307,7 +353,13 @@ export function ProfilePage() {
           results[b._id] = data; 
           
           if (data.hookahStatus === 'ready' && !notifiedReady.includes(b._id)) {
-            setNotifiedReady(prev => [...prev, b._id]);
+            const updated = [...notifiedReady, b._id];
+            setNotifiedReady(updated);
+            try {
+              localStorage.setItem('notified_bookings', JSON.stringify(updated));
+            } catch (err) {
+              console.error('Failed to sync notified_bookings:', err);
+            }
             
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
             audio.volume = 0.55;
@@ -773,6 +825,60 @@ export function ProfilePage() {
         </motion.div>
       )}
 
+      {/* Favorite Hookah Preferences */}
+      {!loadingPrefs && preferences && (preferences.topFlavors.length > 0 || preferences.topMixes.length > 0) && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.08 }}
+          className="space-y-3"
+        >
+          <h3 className="text-base sm:text-lg font-display font-semibold text-white flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-accent-gold" /> Картотека ваших вкусов
+          </h3>
+          <GlassCard className="p-4 sm:p-5 border border-accent-gold/20 bg-black/45 space-y-4">
+            {preferences.topFlavors.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase tracking-wider text-white/50 block font-bold">Любимые табачные ноты:</span>
+                <div className="flex flex-wrap gap-2">
+                  {preferences.topFlavors.map((flavor, index) => (
+                    <span 
+                      key={index} 
+                      className="px-3 py-1 rounded-full text-xs font-semibold text-accent-gold bg-accent-gold/10 border border-accent-gold/30 flex items-center gap-1 shadow-[0_0_8px_rgba(212,175,55,0.1)] transition-transform hover:scale-105"
+                    >
+                      <span>💨</span>
+                      <span>{flavor}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {preferences.topMixes.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-white/5">
+                <span className="text-[10px] uppercase tracking-wider text-white/50 block font-bold">Популярные у вас миксы:</span>
+                <div className="space-y-2.5">
+                  {preferences.topMixes.map((mixName, index) => (
+                    <div key={index} className="flex flex-col space-y-1">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-white/80 font-medium">{mixName}</span>
+                        <span className="text-[10px] font-mono text-accent-gold font-bold">Любимый выбор #{index + 1}</span>
+                      </div>
+                      <div className="relative w-full h-1.5 bg-stone-900 rounded-full overflow-hidden border border-white/5">
+                        <div 
+                          className="h-full rounded-full bg-gradient-to-r from-amber-600 to-accent-gold shadow-[0_0_8px_rgba(212,175,55,0.4)]" 
+                          style={{ width: `${85 - index * 20}%` }} 
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </GlassCard>
+        </motion.div>
+      )}
+
       {/* Achievements system */}
       {!loadingVIP && achievements.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
@@ -1229,6 +1335,142 @@ export function ProfilePage() {
                   Закрыть пропуск
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CONFIRM REPEAT ORDER MODAL */}
+      <AnimatePresence>
+        {showRepeatModal && repeatBooking && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/90 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative max-w-md w-full mafia-panel p-6 shadow-2xl space-y-6"
+            >
+              {/* Header */}
+              <div className="text-center space-y-1 relative pb-3 border-b border-[#d4af37]/20">
+                <span className="text-[9px] uppercase tracking-widest text-[#d4af37] font-bold block mb-1">
+                  ПОВТОРЕНИЕ РИТУАЛА
+                </span>
+                <h3 className="text-lg font-display font-light text-white uppercase tracking-wider">
+                  Повторить заказ кальяна
+                </h3>
+              </div>
+
+              {/* Mix details summary */}
+              <div className="bg-black/35 p-3 rounded-xl border border-glass-border/10 text-xs text-white/70 space-y-1.5">
+                <div className="text-[10px] text-accent-gold font-bold uppercase tracking-wider">Повторяемый микс:</div>
+                <div className="font-light leading-relaxed">{repeatBooking.hookahMix}</div>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmitRepeatOrder} className="space-y-4">
+                
+                {/* Table Choice */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider">
+                    🛋️ Куда подать кальян?
+                  </label>
+                  <select
+                    value={repeatSeatLabel}
+                    onChange={(e) => setRepeatSeatLabel(e.target.value)}
+                    className="w-full px-3 py-2 text-xs mafia-input font-bold"
+                    required
+                  >
+                    {TABLE_OPTIONS.map(opt => (
+                      <option key={opt} value={opt} className="bg-[#120b06] text-white font-bold">{opt}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Liquid Base choice */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider">
+                    💧 Жидкость в колбе:
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LIQUID_BASES.map((base) => (
+                      <button
+                        key={base.id}
+                        type="button"
+                        onClick={() => setRepeatLiquidBase(base.id)}
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          repeatLiquidBase === base.id
+                            ? 'border-[#d4af37] bg-amber-950/25'
+                            : 'border-white/5 bg-black/35 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm">{base.emoji}</span>
+                          <span className="text-[11px] font-bold text-white">{base.name}</span>
+                        </div>
+                        <p className="text-[9px] text-white/40 mt-0.5 leading-none">
+                          {base.price > 0 ? `+${base.price} ₽` : 'Бесплатно'}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-[#d4af37]" /> Номер телефона:
+                  </label>
+                  <input
+                    type="tel"
+                    value={repeatPhone}
+                    onChange={(e) => setRepeatPhone(e.target.value)}
+                    placeholder="+7 (999) 123-45-67"
+                    className="w-full px-3 py-2.5 text-xs mafia-input font-mono"
+                    required
+                  />
+                </div>
+
+                {/* Comment / notes */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider flex items-center gap-1">
+                    <FileText className="w-3 h-3 text-[#d4af37]" /> Дополнительные пожелания:
+                  </label>
+                  <textarea
+                    value={repeatSpecialNotes}
+                    onChange={(e) => setRepeatSpecialNotes(e.target.value)}
+                    placeholder="Например: Побольше льда / Сделайте покрепче..."
+                    className="w-full px-3 py-2 text-xs mafia-input min-h-[60px] resize-none"
+                    rows={2}
+                  />
+                </div>
+
+                {/* Totals */}
+                <div className="bg-black/30 p-3 rounded-xl border border-white/5 flex justify-between items-center text-xs">
+                  <span className="text-white/40 uppercase tracking-widest">Итого к оплате:</span>
+                  <span className="text-base font-bold text-[#d4af37] font-mono">
+                    {1200 + (LIQUID_BASES.find(b => b.id === repeatLiquidBase)?.price || 0)} ₽
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowRepeatModal(false)}
+                    className="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingRepeat}
+                    className="flex-1 py-2.5 text-xs font-bold rounded-xl gold-antique-btn"
+                  >
+                    {submittingRepeat ? 'Отправка...' : 'Отправить заказ'}
+                  </button>
+                </div>
+
+              </form>
             </motion.div>
           </div>
         )}

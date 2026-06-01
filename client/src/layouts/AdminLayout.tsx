@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Crown,
+  Flame,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,6 +30,7 @@ const sidebarItems = [
   { path: '/admin/mixes', icon: Blend, label: 'Миксы', end: false },
   { path: '/admin/promos', icon: Tags, label: 'Акции', end: false },
   { path: '/admin/invitations', icon: Mail, label: 'Приглашения', end: false },
+  { path: '/admin/orders', icon: Flame, label: 'Очередь кальянов', end: false },
 ];
 
 export function AdminLayout() {

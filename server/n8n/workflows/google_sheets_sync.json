@@ -1,0 +1,79 @@
+{
+  "name": "Google Sheets Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "booking-accounting",
+        "options": {}
+      },
+      "id": "1d8e8b0a-3c3d-490f-b00c-3c3de1e5a2f5",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1-xG4PqLO_SecretGoogleSheetIdForHookahOrders",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Лист1",
+          "mode": "name"
+        },
+        "options": {},
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID заказа": "={{ $json.body.id }}",
+            "Дата": "={{ $json.body.date }}",
+            "Время": "={{ $json.body.time }}",
+            "Гость": "={{ $json.body.user ? $json.body.user.name : 'Аноним' }}",
+            "Телефон": "={{ $json.body.phone }}",
+            "Кальянный Микс": "={{ $json.body.hookahMix }}",
+            "Крепость": "={{ $json.body.hookahStrength }}",
+            "Кол-во": "={{ $json.body.hookahCount }}",
+            "Комментарий": "={{ $json.body.comment || '' }}",
+            "Статус": "={{ $json.body.status }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        }
+      },
+      "id": "2d8e8b0b-3c3d-490f-b00c-3c3de1e5a2f5",
+      "name": "Google Sheets Append",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        350,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "staticData": null,
+  "meta": null,
+  "pinData": {}
+}

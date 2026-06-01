@@ -6,21 +6,21 @@ const config: Config = {
     extend: {
       colors: {
         dark: {
-          bg: '#080604', // Rich obsidian gold-black
-          surface: '#120f0c', // Dark warm gold-tinted surface
-          border: 'rgba(212, 175, 55, 0.15)',
+          bg: '#050308', // High-tech deep obsidian purple-black
+          surface: '#0c0816', // Dark violet-tinted surface
+          border: 'rgba(168, 85, 247, 0.16)',
         },
         accent: {
-          gold: '#D4AF37', // Luxury gold
-          amber: '#FFB800', // Glowing amber
-          bronze: '#8A6623', // Muted bronze
-          cyan: '#D4AF37', // Map old accent to gold
-          blue: '#FFB800', // Map old accent to amber
-          purple: '#8A6623', // Map old accent to bronze
+          gold: '#a855f7', // Electric purple
+          amber: '#d946ef', // Neon pink/magenta
+          bronze: '#6366f1', // Indigo
+          cyan: '#06b6d4', // Cyan
+          blue: '#3b82f6', // Electric blue
+          purple: '#a855f7', // Purple
         },
         glass: {
-          bg: 'rgba(255, 255, 255, 0.08)',
-          border: 'rgba(255, 255, 255, 0.12)',
+          bg: 'rgba(255, 255, 255, 0.04)',
+          border: 'rgba(168, 85, 247, 0.12)',
         },
       },
       fontFamily: {
@@ -28,15 +28,15 @@ const config: Config = {
         display: ['Cinzel', 'Space Grotesk', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'glow-cyan': '0 0 20px rgba(212, 175, 55, 0.35)',
-        'glow-blue': '0 0 20px rgba(255, 184, 0, 0.35)',
-        'glow-lg': '0 0 40px rgba(212, 175, 55, 0.5)',
-        'glow-purple': '0 0 20px rgba(138, 102, 35, 0.35)',
+        'glow-cyan': '0 0 20px rgba(6, 182, 212, 0.35)',
+        'glow-blue': '0 0 20px rgba(59, 130, 246, 0.35)',
+        'glow-lg': '0 0 40px rgba(168, 85, 247, 0.5)',
+        'glow-purple': '0 0 20px rgba(168, 85, 247, 0.35)',
         'glow-red': '0 0 20px rgba(239, 68, 68, 0.35)',
         'glow-green': '0 0 20px rgba(34, 197, 94, 0.35)',
-        'glow-gold': '0 0 25px rgba(212, 175, 55, 0.45)',
-        'glow-gold-lg': '0 0 50px rgba(212, 175, 55, 0.65)',
-        'gold-pill': '0 0 25px rgba(212, 175, 55, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
+        'glow-gold': '0 0 25px rgba(168, 85, 247, 0.45)',
+        'glow-gold-lg': '0 0 50px rgba(168, 85, 247, 0.65)',
+        'gold-pill': '0 0 25px rgba(168, 85, 247, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
       },
       backdropBlur: {
         glass: '32px',

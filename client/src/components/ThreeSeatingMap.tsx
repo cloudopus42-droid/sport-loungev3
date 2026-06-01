@@ -55,22 +55,22 @@ const ZONES_LIST: ZonePlate[] = [
     id: 'room', 
     label: 'PS + ПК', 
     left: '1%', top: '81%', width: '20%', height: '17%', 
-    color: '#fbbf24',
-    icon: <Gamepad2 className="w-5 h-5 text-[#fbbf24]" /> 
+    color: '#d946ef',
+    icon: <Gamepad2 className="w-5 h-5 text-[#d946ef]" /> 
   },
   { 
     id: 'pro', 
     label: 'PRO 600Hz', 
     left: '22%', top: '71%', width: '28%', height: '13%', 
-    color: '#ef4444',
-    icon: <Zap className="w-5 h-5 text-[#ef4444]" /> 
+    color: '#6366f1',
+    icon: <Zap className="w-5 h-5 text-[#6366f1]" /> 
   },
   { 
     id: 'oled', 
     label: 'OLED 4K', 
     left: '22%', top: '85%', width: '28%', height: '13%', 
-    color: '#10b981',
-    icon: <Sparkles className="w-5 h-5 text-[#10b981]" /> 
+    color: '#06b6d4',
+    icon: <Sparkles className="w-5 h-5 text-[#06b6d4]" /> 
   }
 ];
 
@@ -191,7 +191,7 @@ export function ThreeSeatingMap({ selectedSeat, setSelectedSeat, isSeatBooked }:
                   animate={{
                     borderColor: isOverview
                       ? isHovered
-                        ? '#EAB308'
+                        ? '#a855f7'
                         : zone.color + '40'
                       : 'rgba(255,255,255,0.02)',
                     boxShadow: isOverview && isHovered
@@ -260,20 +260,20 @@ export function ThreeSeatingMap({ selectedSeat, setSelectedSeat, isSeatBooked }:
                   booked
                     ? 'bg-[#1e0a0a]/80 border-red-500/25 text-red-500/30 cursor-not-allowed'
                     : selected
-                    ? 'bg-[#2a1d00] border-[#EAB308] text-[#EAB308] shadow-[0_0_20px_rgba(234,179,8,0.3)] z-30 scale-105'
+                    ? 'bg-[#180a2b] border-[#a855f7] text-[#d946ef] shadow-[0_0_20px_rgba(168,85,247,0.3)] z-30 scale-105'
                     : 'bg-[#100e17]/95 text-white/60 hover:text-white'
                 }`}
                 animate={{
                   borderColor: booked
                     ? 'rgba(239, 68, 68, 0.2)'
                     : selected
-                    ? '#EAB308'
+                    ? '#a855f7'
                     : displayMode === 'overview'
                     ? zoneConfig.text + '30'
                     : zoneConfig.text + '70',
                   scale: selected ? 1.06 : hoveredSeat?.id === seat.id && !booked ? 1.04 : 1,
                   boxShadow: selected
-                    ? '0 0 15px rgba(234,179,8,0.25)'
+                    ? '0 0 15px rgba(168,85,247,0.25)'
                     : hoveredSeat?.id === seat.id && !booked
                     ? `0 0 12px ${zoneConfig.text}25`
                     : 'none',
@@ -309,7 +309,7 @@ export function ThreeSeatingMap({ selectedSeat, setSelectedSeat, isSeatBooked }:
                   
                   {/* Selected checkmark */}
                   {selected && (
-                    <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-[#EAB308] flex items-center justify-center text-black">
+                    <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-[#a855f7] flex items-center justify-center text-white">
                       <Check className="w-1.5 h-1.5 stroke-[4]" />
                     </div>
                   )}
