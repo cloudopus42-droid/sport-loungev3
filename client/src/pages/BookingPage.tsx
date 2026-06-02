@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Flame, Compass, Check, Star, ShieldAlert, Phone, FileText, 
-  Map, Activity, Box, Database, Zap, Settings, Command, ChevronRight
+  Check, 
+  Activity, Box, Database, Zap, Settings, Command
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
-import type { Mix } from '@/types';
 import { showToast } from '@/components/NotificationToast';
+
+type Mix = any;
 
 const LIQUID_BASES = [
   { id: 'water', name: 'На воде', price: 0, desc: 'Классическая фильтрация' },
@@ -22,7 +23,7 @@ const TABLE_OPTIONS = [
 ];
 
 export function BookingPage() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { socket } = useSocket();
 
   const [mixes, setMixes] = useState<Mix[]>([]);
@@ -30,20 +31,15 @@ export function BookingPage() {
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
   
   const [selectedMix, setSelectedMix] = useState<any | null>(null);
-  const [customMix, setCustomMix] = useState<any | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [liquidBase, setLiquidBase] = useState('water');
   const [specialNotes, setSpecialNotes] = useState('');
   const [seatLabel, setSeatLabel] = useState(TABLE_OPTIONS[0]);
-  const [phone, setPhone] = useState(user?.phone || '');
 
-  const [ratingValue, setRatingValue] = useState(5);
-  const [ratingComment, setRatingComment] = useState('');
-  const [hasRated, setHasRated] = useState(false);
   const [masterCalled, setMasterCalled] = useState(false);
 
   const [timeText, setTimeText] = useState('15:00');
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<any>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -60,8 +56,7 @@ export function BookingPage() {
     try {
       const saved = localStorage.getItem('my_saved_mix');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.hookahMix && parsed.hookahMix.length > 0) setCustomMix(parsed);
+        // Do something if needed
       }
     } catch (e) {}
   }, [isAuthenticated]);

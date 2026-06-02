@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
+import { SEO } from '@/components/SEO';
 import { useAuth } from '@/hooks/useAuth';
 import { InvitationBanner } from '@/components/InvitationBanner';
 import { CONTACT } from '@/config/seats';
@@ -130,7 +131,7 @@ export function MainLayout() {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <div className="min-h-screen pb-16 lg:pb-0 bg-[#080605] text-white relative">
+    <SEO />
       {/* Volumetric ambient gold fog & depth haze layers */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[#070504]">
         {/* Dynamic moving radial gold & neon light spots for Liquid Glass refraction */}
