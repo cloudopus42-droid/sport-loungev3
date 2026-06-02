@@ -13,17 +13,19 @@ export function LoginCallbackPage() {
     if (processed.current) return;
     processed.current = true;
 
-    const processCallback = async () => {
+    let isMounted = true;
+    let subscription: { unsubscribe: () => void } | null = null;
+    let timeoutId: any = null;
+
+    const handleSession = async (session: any) => {
+      if (!isMounted) return;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (subscription) {
+        subscription.unsubscribe();
+        subscription = null;
+      }
+
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        if (!session) {
-          toast.error('Сессия не найдена. Попробуйте войти снова.');
-          navigate('/login');
-          return;
-        }
-
         await handleGoogleCallback(session.access_token);
         toast.success('Успешный вход через Google!');
         navigate('/profile');
@@ -34,7 +36,54 @@ export function LoginCallbackPage() {
       }
     };
 
+    const processCallback = async () => {
+      try {
+        // Try getting session immediately
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        if (session) {
+          await handleSession(session);
+          return;
+        }
+
+        // If no session immediately, listen to changes (OAuth flow might be processing hash)
+        const { data } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+          if (event === 'SIGNED_IN' && currentSession) {
+            await handleSession(currentSession);
+          }
+        });
+        subscription = data.subscription;
+
+        // Set a timeout to prevent infinite spinner
+        timeoutId = setTimeout(() => {
+          if (isMounted) {
+            if (subscription) {
+              subscription.unsubscribe();
+              subscription = null;
+            }
+            toast.error('Сессия не найдена или истекло время ожидания.');
+            navigate('/login');
+          }
+        }, 6000);
+
+      } catch (err: any) {
+        console.error('Ошибка входа через Google:', err);
+        toast.error('Не удалось войти через Google: ' + (err.message || 'Ошибка'));
+        navigate('/login');
+      }
+    };
+
     processCallback();
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (subscription) {
+        // @ts-ignore
+        subscription.unsubscribe();
+      }
+    };
   }, [handleGoogleCallback, navigate]);
 
   return (
@@ -45,3 +94,4 @@ export function LoginCallbackPage() {
     </div>
   );
 }
+
