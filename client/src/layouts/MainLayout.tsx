@@ -85,7 +85,9 @@ export function MainLayout() {
   }, [socket, user]);
 
   const handleNavClick = (anchor: string) => {
-    if (window.location.pathname !== '/') {
+    const basePath = import.meta.env.BASE_URL;
+    const isHomePage = window.location.pathname === basePath || window.location.pathname === basePath.slice(0, -1) || window.location.pathname === '/';
+    if (!isHomePage) {
       navigate('/' + anchor);
     } else {
       const el = document.querySelector(anchor);
@@ -212,7 +214,7 @@ export function MainLayout() {
               "text-xs font-medium transition-all tracking-wide",
               isActive ? "text-accent-gold font-bold" : "text-white/70 hover:text-white"
             )}>
-              Цены
+              Сделать заказ
             </NavLink>
             <NavLink to="/mixologist" className={({ isActive }) => clsx(
               "text-xs font-medium transition-all tracking-wide",

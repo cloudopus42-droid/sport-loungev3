@@ -1,7 +1,7 @@
 import { config } from '../config/env';
 
-const BOT_TOKEN = '7767469525:AAEVMgecmpKHdrMC8NqzCy37_Q41ld_2QcU';
-const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const ORDER_BOT_TOKEN = '8569759144:AAEpmyJthuhgJ2qCAFt_jz63TN1lwlnYHIs'; // SPORT LOUNGE BOT (@hookahversebot) - Заказы
+const MANAGER_BOT_TOKEN = '8749256757:AAFdnrV4xMzsH_nsC6zBZu2bBfmD4vUTSyA'; // Menedher_bot (@llsportsmanager_bot) - Вызовы мастера
 
 const zoneLabels: Record<string, string> = {
   hall: '🖥 Общий зал',
@@ -17,9 +17,10 @@ function escapeMarkdown(text: string): string {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
 }
 
-async function sendTelegramMessage(chatId: string, text: string): Promise<boolean> {
+async function sendTelegramMessage(token: string, chatId: string, text: string): Promise<boolean> {
+  const telegramApi = `https://api.telegram.org/bot${token}`;
   try {
-    const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
+    const res = await fetch(`${telegramApi}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -32,19 +33,19 @@ async function sendTelegramMessage(chatId: string, text: string): Promise<boolea
 
     const data = await res.json() as any;
     if (data && data.ok) {
-      console.log(' Telegram order alert sent successfully.');
+      console.log(' Telegram alert sent successfully.');
       return true;
     }
     throw new Error(data?.description || 'API returned ok: false');
   } catch (err: any) {
     console.warn(`⚠️ Direct sendTelegramMessage failed: ${err.message}. Trying CodeTabs proxy fallback...`);
     try {
-      const targetUrl = `${TELEGRAM_API}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=MarkdownV2`;
+      const targetUrl = `${telegramApi}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=MarkdownV2`;
       const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
       const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(7000) });
       const data = await res.json() as any;
       if (data && data.ok) {
-        console.log('🎉 Telegram order alert sent via proxy.');
+        console.log('🎉 Telegram alert sent via proxy.');
         return true;
       }
     } catch (proxyErr: any) {
@@ -74,7 +75,7 @@ export async function sendOrderNotification(order: any, userName: string, phone:
     `📱 *Телефон:* ${escapeMarkdown(phone)}`,
   ].filter(Boolean).join('\n');
 
-  return sendTelegramMessage(chatId, message);
+  return sendTelegramMessage(ORDER_BOT_TOKEN, chatId, message);
 }
 
 export async function sendMasterCallNotification(seatLabel: string, seatZone: string, phone: string) {
@@ -91,7 +92,7 @@ export async function sendMasterCallNotification(seatLabel: string, seatZone: st
     '🏃‍♂️ *Пожалуйста, подойдите к гостю незамедлительно\\!*'
   ].join('\n');
 
-  return sendTelegramMessage(chatId, message);
+  return sendTelegramMessage(MANAGER_BOT_TOKEN, chatId, message);
 }
 
 export async function sendDelayNotification(order: any, delayMinutes: number) {
@@ -108,5 +109,5 @@ export async function sendDelayNotification(order: any, delayMinutes: number) {
     '💨 *Поторопитесь приготовить кальян\\!*'
   ].join('\n');
 
-  return sendTelegramMessage(chatId, message);
+  return sendTelegramMessage(ORDER_BOT_TOKEN, chatId, message);
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Crown, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { GlowButton } from '@/components/ui/GlowButton';
@@ -14,6 +14,8 @@ export function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +26,7 @@ export function LoginPage() {
       await login(email, password);
       const savedUser = localStorage.getItem('user');
       const role = savedUser ? JSON.parse(savedUser).role : null;
-      navigate(role === 'admin' ? '/admin' : '/', { replace: true });
+      navigate(role === 'admin' ? '/admin' : redirectUrl, { replace: true });
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string; message?: string } } };
       setError(axiosErr.response?.data?.error || axiosErr.response?.data?.message || 'Ошибка авторизации');

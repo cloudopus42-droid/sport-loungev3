@@ -30,3 +30,6 @@ yarn-error.log*
 # Uploads directory
 server/uploads/*
 !server/uploads/.gitkeep
+
+# Secret tokens
+github-token.txt

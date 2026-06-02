@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Flame, X, Share2, Send, Bookmark, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Award, Flame, Share2, Bookmark, Info } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { showToast } from '@/components/NotificationToast';
@@ -25,6 +26,7 @@ const LIQUID_BASES = [
 
 export function MixologistPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Mix States
   const [hookahMix, setHookahMix] = useState<string[]>([]);
@@ -34,12 +36,8 @@ export function MixologistPage() {
   const [liquidBase, setLiquidBase] = useState('water');
   const [flavorCategory, setFlavorCategory] = useState('Все');
   const [comment, setComment] = useState('');
-  const [phone, setPhone] = useState(user?.phone || '');
 
   // Submission States
-  const [loading, setLoading] = useState(false);
-  const [ticketData, setTicketData] = useState<any | null>(null);
-  const [showTicket, setShowTicket] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
   const triggerHaptic = (ms: number = 20) => {
@@ -152,67 +150,10 @@ export function MixologistPage() {
     };
     try {
       localStorage.setItem('my_saved_mix', JSON.stringify(mixData));
-      showToast('Микс сохранен! Вы можете импортировать его на странице бронирования.', 'success');
+      localStorage.setItem('prefilled_mix', JSON.stringify(mixData));
+      showToast('Микс сохранен в ваш профиль!', 'success');
     } catch (e) {
       showToast('Не удалось сохранить рецепт', 'error');
-    }
-  };
-
-  // Generate QR/Ticket by calling backend public-mix endpoint
-  const handleGenerateTicket = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (hookahMix.length === 0) {
-      showToast('Сначала настройте кальянный микс', 'error');
-      return;
-    }
-    if (!phone || phone.trim().length < 5) {
-      showToast('Укажите контактный телефон для создания билета', 'error');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const mixString = hookahMix.map(name => `${name} (${mixPercentages[name] || 0}%)`).join(', ');
-      const strengthLabel = hookahStrength === 'light' ? 'Лёгкий' : hookahStrength === 'medium' ? 'Средний' : 'Крепкий';
-      const ticketId = `MIX-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
-
-      await api.post('/api/bookings/public-mix', {
-        bowl: selectedBowl.name,
-        base: selectedBase.name,
-        strength: strengthLabel,
-        mix: mixString,
-        price: totalPrice,
-        phone: phone,
-        comment: comment || 'Без комментариев',
-        ticketId,
-        userName: user?.name || 'Гость системы',
-      });
-
-      setTicketData({
-        ticketId,
-        bowl: selectedBowl.name,
-        base: selectedBase.name,
-        strength: strengthLabel,
-        mix: mixString,
-        price: totalPrice,
-        comment: comment || 'Без комментариев'
-      });
-      setShowTicket(true);
-      showToast('Билет-рецепт успешно создан! Предъявите его кальянщику.', 'success');
-
-      // Save to quick import pref too
-      localStorage.setItem('prefilled_mix', JSON.stringify({
-        bowlType,
-        liquidBase,
-        hookahStrength,
-        hookahMix,
-        mixPercentages,
-        comment
-      }));
-    } catch (err: any) {
-      showToast(err.response?.data?.error || 'Ошибка при генерации билета', 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -441,15 +382,15 @@ export function MixologistPage() {
             </div>
           </GlassCard>
 
-          {/* Ticket generation form */}
+          {/* Instructions card */}
           <GlassCard className="p-5 space-y-4">
-            <h3 className="text-xs text-white/50 uppercase tracking-wider font-semibold border-b border-glass-border/10 pb-2 mb-0">
-              🎫 Сгенерировать Билет
+            <h3 className="text-xs text-white/50 uppercase tracking-wider font-semibold border-b border-glass-border/10 pb-2 mb-0 flex items-center gap-1.5">
+              <Info className="w-4 h-4 text-accent-gold" /> Как сделать заказ?
             </h3>
             
-            <form onSubmit={handleGenerateTicket} className="space-y-3">
-              <div>
-                <label className="text-[10px] text-white/40 block mb-1 font-medium">Желаемая крепость</label>
+            <div className="space-y-4 text-xs leading-relaxed text-white/70">
+              <div className="space-y-2">
+                <label className="text-[10px] text-white/40 block font-medium">1. Желаемая крепость</label>
                 <select
                   value={hookahStrength}
                   onChange={(e) => setHookahStrength(e.target.value as any)}
@@ -462,132 +403,46 @@ export function MixologistPage() {
               </div>
 
               <div>
-                <label className="text-[10px] text-white/40 block mb-1 font-medium">Мобильный телефон</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+7 (999) 123-45-67"
-                  className="glass-input text-xs !py-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] text-white/40 block mb-1 font-medium">Комментарий к заказу (пожелания)</label>
+                <label className="text-[10px] text-white/40 block mb-1 font-medium">2. Примечание к миксу</label>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Мягкая забивка, холоднее..."
+                  placeholder="Например: покислее, без мяты..."
                   className="glass-input text-xs !py-2 min-h-[50px] resize-none"
                   rows={2}
                 />
               </div>
 
+              <div className="p-3.5 rounded-xl border border-white/5 bg-white/[0.02] space-y-2">
+                <p>
+                  1. Нажмите кнопку <strong className="text-accent-gold">«В профиль»</strong> выше, чтобы сохранить этот рецепт в вашей системе.
+                </p>
+                <p>
+                  2. Нажмите кнопку <strong className="text-white">«Оформить заказ»</strong> ниже, чтобы перейти на страницу бронирования стола.
+                </p>
+                <p>
+                  3. Ваш кастомный микс появится в самом верху меню кальянов!
+                </p>
+              </div>
+
               <div className="flex justify-between items-center text-xs font-bold text-white pt-1">
-                <span>Итого к оплате в клубе:</span>
+                <span>Предварительная стоимость:</span>
                 <span className="text-sm text-accent-gold">{totalPrice} ₽</span>
               </div>
 
-              <GlowButton type="submit" className="w-full text-xs font-bold py-2.5 uppercase" loading={loading}>
-                Получить рецепт-билет
+              <GlowButton 
+                onClick={() => {
+                  handleSaveToLocal();
+                  navigate('/booking');
+                }}
+                className="w-full text-xs font-bold py-2.5 uppercase"
+              >
+                Оформить заказ
               </GlowButton>
-            </form>
+            </div>
           </GlassCard>
         </div>
       </div>
-
-      {/* Ticket Modal */}
-      <AnimatePresence>
-        {showTicket && ticketData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/85 backdrop-blur-md">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-sm w-full bg-gradient-to-b from-[#1c1814] to-black rounded-3xl border border-accent-gold/25 p-6 shadow-2xl"
-            >
-              <button 
-                onClick={() => setShowTicket(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-colors"
-              >
-                <X className="w-4.5 h-4.5" />
-              </button>
-
-              <div className="text-center space-y-4 pt-2 relative">
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-accent-gold/45" />
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-accent-gold/45" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-accent-gold/45" />
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-accent-gold/45" />
-
-                <Flame className="w-6 h-6 text-accent-gold mx-auto animate-pulse" />
-                <span className="text-[10px] uppercase tracking-[0.25em] text-accent-gold font-bold block mb-1">Рецепт-Билет заказа</span>
-                
-                <h3 className="text-lg font-display font-light text-white uppercase tracking-wider">
-                  SPORT LOUNGE <br />
-                  <span className="gradient-text font-semibold font-mono text-sm">{ticketData.ticketId}</span>
-                </h3>
-
-                {/* QR Code Graphic Mock */}
-                <div className="my-4 w-40 h-40 bg-white p-2.5 rounded-2xl mx-auto shadow-inner border border-accent-gold/25 flex items-center justify-center relative overflow-hidden group">
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(JSON.stringify(ticketData))}`}
-                    alt="QR Code"
-                    className="w-full h-full object-contain"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-accent-gold/5 via-transparent to-transparent pointer-events-none" />
-                </div>
-
-                <div className="space-y-1.5 text-left bg-white/5 p-4 rounded-xl border border-glass-border/30 text-xs">
-                  <div className="flex justify-between text-white/50">
-                    <span>Сборка:</span>
-                    <span className="text-white font-bold">{ticketData.mix}</span>
-                  </div>
-                  <div className="flex justify-between text-white/50">
-                    <span>Чаша:</span>
-                    <span className="text-white font-semibold">{ticketData.bowl}</span>
-                  </div>
-                  <div className="flex justify-between text-white/50">
-                    <span>База колбы:</span>
-                    <span className="text-white font-semibold">{ticketData.base}</span>
-                  </div>
-                  <div className="flex justify-between text-white/50">
-                    <span>Крепость:</span>
-                    <span className="text-accent-gold font-semibold">{ticketData.strength}</span>
-                  </div>
-                  <div className="h-px bg-glass-border/10 my-1" />
-                  <div className="flex justify-between items-center text-sm font-bold text-white pt-1">
-                    <span>Итого к оплате:</span>
-                    <span className="text-accent-gold text-base">{ticketData.price} ₽</span>
-                  </div>
-                </div>
-
-                <p className="text-[9px] text-white/40 max-w-xs mx-auto leading-relaxed pl-1.5 flex gap-1 items-start text-left">
-                  <Info className="w-3.5 h-3.5 text-accent-gold flex-shrink-0 mt-0.5" />
-                  <span>Покажите QR-код кальянному мастеру. Заказ будет внесен в систему и подготовлен сразу же!</span>
-                </p>
-
-                <div className="flex gap-2 pt-2 select-none">
-                  <a 
-                    href={`https://t.me/NHSC_founder?text=${encodeURIComponent(`💨 *НОВЫЙ РЕЦЕПТ-БИЛЕТ SPORT LOUNGE*\n\n🎫 Билет: *${ticketData.ticketId}*\n🏺 Чаша: *${ticketData.bowl}*\n💧 База: *${ticketData.base}*\n⚡ Крепость: *${ticketData.strength}*\n🍓 Смесь: *${ticketData.mix}*\n💳 Сумма: *${ticketData.price} руб*`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 py-2 bg-gradient-to-r from-accent-gold/10 to-amber-500/10 border border-accent-gold/30 hover:border-accent-gold/60 text-accent-gold text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                  >
-                    <Send className="w-3.5 h-3.5" /> В Telegram
-                  </a>
-                  <button 
-                    onClick={() => setShowTicket(false)}
-                    className="flex-1 py-2 bg-white/5 border border-glass-border/40 hover:bg-white/10 hover:border-glass-border/80 text-white text-xs font-bold rounded-xl transition-all"
-                  >
-                    Закрыть
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

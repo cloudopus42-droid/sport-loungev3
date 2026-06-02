@@ -58,8 +58,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (window.location.pathname.startsWith('/admin')) {
-        window.location.href = '/login';
+      const base = import.meta.env.BASE_URL;
+      if (window.location.pathname.includes('/admin')) {
+        window.location.href = `${base}login`;
       }
     }
     return Promise.reject(error);

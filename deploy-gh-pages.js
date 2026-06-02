@@ -2,7 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const GITHUB_TOKEN = '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';
+const GITHUB_TOKEN = fs.existsSync(path.join(__dirname, 'github-token.txt'))
+  ? fs.readFileSync(path.join(__dirname, 'github-token.txt'), 'utf8').trim()
+  : '';
 const GITHUB_REPO = 'cloudopus42-droid/sport-loungev3';
 
 async function githubRequest(method, endpoint, body = null) {
@@ -14,8 +16,8 @@ async function githubRequest(method, endpoint, body = null) {
   };
   if (body) headers['Content-Type'] = 'application/json';
 
-  const fetch = (await import('node-fetch')).default || global.fetch;
-  const res = await fetch(url, {
+  const fetchFn = global.fetch || fetch;
+  const res = await fetchFn(url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : null

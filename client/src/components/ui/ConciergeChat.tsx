@@ -183,7 +183,7 @@ export function ConciergeChat() {
                 </form>
               ) : (
                 <a
-                  href="/login"
+                  href={`${import.meta.env.BASE_URL}login`}
                   className="w-full py-2.5 bg-white/5 border border-glass-border hover:border-accent-gold/40 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-white/70 hover:text-white transition-all"
                 >
                   <LogIn className="w-4 h-4 text-accent-gold" /> Войдите для общения с сомелье

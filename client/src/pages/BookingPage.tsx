@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Check, 
-  Activity, Box, Database, Zap, Settings, Command
+  Flame, 
+  Clock, 
+  Sparkles,
+  AlertCircle
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,10 +27,10 @@ const bookingFormSchema = z.object({
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
 const LIQUID_BASES = [
-  { id: 'water', name: 'На воде', price: 0, desc: 'Классическая фильтрация' },
-  { id: 'milk', name: 'На молоке', price: 150, desc: 'Плотный пар' },
-  { id: 'juice', name: 'На соке', price: 200, desc: 'Фруктовые ноты' },
-  { id: 'wine', name: 'На вине', price: 450, desc: 'Особая ароматика' },
+  { id: 'water', name: 'На воде', price: 0, desc: 'Классическая чистая фильтрация' },
+  { id: 'milk', name: 'На молоке', price: 150, desc: 'Плотный сливочный пар' },
+  { id: 'juice', name: 'На соке', price: 200, desc: 'Свежие фруктовые ноты' },
+  { id: 'wine', name: 'На вине', price: 450, desc: 'Изысканная винная ароматика' },
 ];
 
 const TABLE_OPTIONS = [
@@ -34,6 +38,7 @@ const TABLE_OPTIONS = [
 ];
 
 export function BookingPage() {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { socket } = useSocket();
 
@@ -54,30 +59,51 @@ export function BookingPage() {
   });
 
   const currentLiquidBase = watch('liquidBase');
-
   const [masterCalled, setMasterCalled] = useState(false);
-
   const [timeText, setTimeText] = useState('15:00');
   const timerIntervalRef = useRef<any>(null);
 
   useEffect(() => {
     setLoading(true);
+    
+    // Load local custom mix first if available
+    let localCustomMix: any = null;
+    try {
+      const saved = localStorage.getItem('my_saved_mix') || localStorage.getItem('prefilled_mix');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.hookahMix && parsed.hookahMix.length > 0) {
+          localCustomMix = {
+            id: 'custom-saved-mix',
+            name: 'Мой рецепт (ИИ-Миксолог)',
+            description: `Сборка: ${parsed.hookahMix.map((n: string) => `${n} (${parsed.mixPercentages[n]}%)`).join(', ')}. Чаша: ${parsed.bowlType || 'глина'}.`,
+            strength: parsed.hookahStrength === 'light' ? 3 : parsed.hookahStrength === 'medium' ? 6 : 9,
+            isCustom: true,
+            raw: parsed
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved custom mix:', e);
+    }
+
+    setMixes(localCustomMix ? [localCustomMix] : []);
+
     api.get<Mix[]>('/api/mixes')
-      .then(res => setMixes(res.data || []))
-      .catch(() => showToast('Ошибка сети', 'error'))
+      .then(res => {
+        const serverList = res.data || [];
+        const combined = localCustomMix ? [localCustomMix, ...serverList] : serverList;
+        setMixes(combined);
+      })
+      .catch(() => {
+        showToast('Сеть недоступна, показано локальное меню', 'error');
+      })
       .finally(() => setLoading(false));
 
     const savedOrderId = localStorage.getItem('current_order_id');
     if (savedOrderId && isAuthenticated) {
       fetchOrderStatus(savedOrderId);
     }
-
-    try {
-      const saved = localStorage.getItem('my_saved_mix');
-      if (saved) {
-        // Do something if needed
-      }
-    } catch (e) {}
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -86,7 +112,9 @@ export function BookingPage() {
       const savedId = localStorage.getItem('current_order_id');
       if (data && data.id === savedId) {
         setActiveOrder(data);
-        if (data.status === 'done') showToast('Ваш заказ готов!', 'success');
+        if (data.status === 'done') {
+          showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
+        }
       }
     });
     return () => { socket.off('order:updated'); };
@@ -100,12 +128,13 @@ export function BookingPage() {
     const tick = () => {
       const diff = new Date(activeOrder.promisedDeliveryTime).getTime() - Date.now();
       if (activeOrder.status === 'done') {
-        setTimeText('COMPLETED');
+        setTimeText('ГОТОВ');
         if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
         return;
       }
-      if (diff <= 0) setTimeText('DELAYED...');
-      else {
+      if (diff <= 0) {
+        setTimeText('СКОРО БУДЕТ');
+      } else {
         const m = Math.floor(diff / 1000 / 60);
         const s = Math.floor((diff / 1000) % 60);
         setTimeText(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
@@ -130,8 +159,22 @@ export function BookingPage() {
   };
 
   const handleMixSelect = (mix: Mix) => {
-    if (!isAuthenticated) { showToast('Авторизуйтесь', 'error'); return; }
+    if (!isAuthenticated) { 
+      showToast('Пожалуйста, авторизуйтесь для оформления заказа', 'error'); 
+      navigate('/login?redirect=/booking');
+      return; 
+    }
     setSelectedMix(mix);
+    
+    // Auto-prefill if it's the custom mix
+    if (mix.isCustom && mix.raw) {
+      setValue('liquidBase', mix.raw.liquidBase || 'water');
+      setValue('specialNotes', mix.raw.comment || '');
+    } else {
+      setValue('liquidBase', 'water');
+      setValue('specialNotes', '');
+    }
+    
     setShowConfirmModal(true);
   };
 
@@ -140,10 +183,18 @@ export function BookingPage() {
     setLoading(true);
     try {
       const isCustom = selectedMix.isCustom;
+      let finalNotes = data.specialNotes || '';
+      
+      if (isCustom && selectedMix.raw) {
+        const raw = selectedMix.raw;
+        const mixDetails = raw.hookahMix.map((n: string) => `${n} (${raw.mixPercentages[n]}%)`).join(', ');
+        finalNotes = `[ИИ-Микс: ${mixDetails}. Чаша: ${raw.bowlType || 'глина'}] ${finalNotes}`;
+      }
+
       const res = await api.post('/api/orders', {
         mix_id: isCustom ? null : selectedMix.id,
         liquid_id: data.liquidBase,
-        notes: data.specialNotes || '',
+        notes: finalNotes,
         seat_id: data.seatLabel.replace(/\s+/g, '-').toLowerCase(),
         seat_label: data.seatLabel,
         seat_zone: 'hall',
@@ -152,9 +203,9 @@ export function BookingPage() {
       localStorage.setItem('current_order_id', res.data.id);
       setShowConfirmModal(false);
       reset();
-      showToast('Заказ принят!', 'success');
+      showToast('Заказ успешно принят!', 'success');
     } catch (err) {
-      showToast('Ошибка', 'error');
+      showToast('Не удалось оформить заказ', 'error');
     } finally { setLoading(false); }
   };
 
@@ -164,151 +215,146 @@ export function BookingPage() {
     try {
       await api.post(`/api/orders/${activeOrder.id}/request-master`);
       setMasterCalled(true);
-      showToast('Мастер вызван', 'success');
+      showToast('Кальянный мастер вызван к вашему столу', 'success');
     } catch (err) {
-      showToast('Ошибка вызова', 'error');
+      showToast('Ошибка вызова мастера', 'error');
     } finally { setLoading(false); }
   };
 
-  // Helper mapping stages progress
   const stages = [
-    { id: 'accepted', label: 'Accepted', desc: 'System Initialized' },
-    { id: 'preparing', label: 'Processing', desc: 'Material Selection' },
-    { id: 'roasting', label: 'Compiling', desc: 'Thermal Activation' },
-    { id: 'delivering', label: 'Deploying', desc: 'Transit to Zone' },
-    { id: 'done', label: 'Active', desc: 'Session Running' },
+    { id: 'accepted', label: 'Принят', desc: 'Заказ зарегистрирован' },
+    { id: 'preparing', label: 'Подготовка', desc: 'Сборка микса и забивка чаши' },
+    { id: 'roasting', label: 'Прогрев', desc: 'Разогрев углей' },
+    { id: 'delivering', label: 'Подача', desc: 'Вынос кальяна к столу' },
+    { id: 'done', label: 'Подан', desc: 'Кальян готов, приятного покура!' },
   ];
 
   return (
-    <div className="relative min-h-[90vh] bg-[#030108] text-white overflow-hidden rounded-[2rem] border border-[#a855f7]/20 shadow-[0_0_80px_rgba(168,85,247,0.15)] flex flex-col md:flex-row mb-20 font-sans">
+    <div className="relative min-h-[85vh] bg-[#07050a]/90 text-white overflow-hidden rounded-[2rem] border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.1)] flex flex-col mb-20 font-sans backdrop-blur-xl">
       
-      {/* Abstract Map Background */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+      {/* Background Decorative Elements */}
+      <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(168,85,247,0.3)" strokeWidth="0.5"/>
+            <pattern id="luxGrid" width="60" height="60" patternUnits="userSpaceOnUse">
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth="0.5"/>
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-          {/* Stylized World/Network Map Nodes */}
-          <g stroke="rgba(168,85,247,0.5)" strokeWidth="1" fill="none">
-            <circle cx="20%" cy="30%" r="4" fill="#a855f7" className="animate-pulse" />
-            <circle cx="45%" cy="60%" r="6" fill="#a855f7" className="animate-pulse" style={{animationDelay: '1s'}} />
-            <circle cx="70%" cy="40%" r="3" fill="#a855f7" className="animate-pulse" style={{animationDelay: '0.5s'}} />
-            <circle cx="80%" cy="80%" r="5" fill="#a855f7" className="animate-pulse" style={{animationDelay: '1.5s'}} />
-            <path d="M 20% 30% L 45% 60% L 70% 40% L 80% 80%" strokeDasharray="4,4" className="animate-[dash_20s_linear_infinite]" />
-          </g>
+          <rect width="100%" height="100%" fill="url(#luxGrid)" />
         </svg>
       </div>
 
-      {/* Radial Glows */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#a855f7] opacity-[0.07] blur-[150px] rounded-full pointer-events-none z-0"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#4c1d95] opacity-[0.1] blur-[120px] rounded-full pointer-events-none z-0"></div>
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#d4af37] opacity-[0.05] blur-[130px] rounded-full pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#a855f7] opacity-[0.05] blur-[120px] rounded-full pointer-events-none z-0"></div>
 
-      {/* Sidebar Navigation */}
-      <aside className="w-full md:w-[280px] border-r border-[#a855f7]/10 bg-[#06020c]/60 backdrop-blur-2xl p-6 flex flex-col z-10 relative">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#a855f7] to-[#4c1d95] flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-            <Command className="w-4 h-4 text-white" />
+      {/* Main Content Area */}
+      <main className="flex-1 p-6 lg:p-12 z-10 relative flex flex-col h-full">
+        
+        {/* Header */}
+        <header className="mb-10 text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/5 text-[10px] font-semibold text-accent-gold uppercase tracking-[0.2em] mb-4">
+            <Sparkles className="w-3 h-3" /> Premium Hookah Service
           </div>
-          <span className="font-bold tracking-widest text-sm uppercase">NEXUS Core</span>
-        </div>
-
-        <nav className="space-y-2 flex-1">
-          {[
-            { icon: Activity, label: 'Dashboard', active: true },
-            { icon: Box, label: 'Products' },
-            { icon: Database, label: 'Analytics' },
-            { icon: Zap, label: 'Developers' },
-          ].map((item, i) => (
-            <button key={i} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${item.active ? 'bg-[#a855f7]/15 text-white border border-[#a855f7]/30 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
-              <item.icon className={`w-4 h-4 ${item.active ? 'text-[#a855f7]' : ''}`} />
-              <span className="text-xs font-semibold tracking-wide uppercase">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="mt-auto pt-6 border-t border-[#a855f7]/10">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/40 hover:text-white transition-all">
-            <Settings className="w-4 h-4" />
-            <span className="text-xs font-semibold tracking-wide uppercase">Settings</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Dashboard Content */}
-      <main className="flex-1 p-6 lg:p-10 z-10 relative flex flex-col h-full overflow-y-auto custom-scrollbar">
-        <header className="flex justify-between items-end mb-10">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-light tracking-tight mb-2">Cross-Border <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#a855f7] to-[#d946ef]">Finance</span></h1>
-            <p className="text-white/40 text-sm tracking-wide">Manage your global transactions and infrastructure.</p>
-          </div>
-          <div className="hidden md:flex items-center gap-4">
-            <div className="px-4 py-2 rounded-full border border-[#a855f7]/20 bg-[#a855f7]/5 text-xs font-mono text-[#a855f7]">STATUS: ONLINE</div>
-          </div>
+          <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-2">
+            Заказ <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#f3e5ab]">Кальяна</span>
+          </h1>
+          <p className="text-white/50 text-sm max-w-xl">
+            Выберите один из наших фирменных миксов от профессиональных миксологов или соберите свой с помощью ИИ.
+          </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-          {/* Left Column: Mixes (Products) */}
-          <div className="lg:col-span-7 space-y-4">
-            <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">Available Modules</h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {mixes.map((mix, idx) => (
-                <motion.div
-                  key={mix.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="group relative p-5 rounded-2xl bg-[#0a0514]/80 border border-[#a855f7]/20 hover:border-[#a855f7]/50 transition-all cursor-pointer backdrop-blur-md overflow-hidden"
-                  onClick={() => handleMixSelect(mix)}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#a855f7]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="w-10 h-10 rounded-full bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20">
-                        <Database className="w-4 h-4 text-[#a855f7]" />
-                      </div>
-                      <span className="text-xs font-mono text-white/30 group-hover:text-[#a855f7]/80 transition-colors">{mix.strength}/10</span>
-                    </div>
-                    <h4 className="font-bold text-sm tracking-wide mb-1">{mix.name}</h4>
-                    <p className="text-xs text-white/40 line-clamp-2 leading-relaxed">{mix.description}</p>
-                  </div>
-                </motion.div>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Left Column: Mixes List */}
+          <section className="lg:col-span-7 space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">Доступные Миксы</h2>
+              <span className="text-xs text-white/40">{mixes.length} вариантов</span>
             </div>
-          </div>
-
-          {/* Right Column: Active Order (System Status) */}
-          <div className="lg:col-span-5 h-full">
-            <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">System Telemetry</h3>
             
-            <div className="p-6 rounded-3xl bg-gradient-to-b from-[#0a0514] to-[#06020c] border border-[#a855f7]/20 relative overflow-hidden h-full min-h-[400px]">
-              {/* Decorative circuit lines */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMjAgTDIwIDIwIEwyMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDE2OCwgODUsIDI0NywgMC4yKSIvPjwvc3ZnPg==')] opacity-50"></div>
+            {loading && mixes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <div className="w-8 h-8 rounded-full border-2 border-accent-gold border-t-transparent animate-spin"></div>
+                <p className="text-xs text-white/40">Загрузка меню...</p>
+              </div>
+            ) : mixes.length === 0 ? (
+              <div className="text-center py-20 border border-white/5 rounded-2xl bg-white/[0.02]">
+                <AlertCircle className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                <p className="text-sm text-white/40">Нет доступных миксов. Попробуйте обновить страницу.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {mixes.map((mix, idx) => (
+                  <motion.div
+                    key={mix.id}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ y: -3, scale: 1.01 }}
+                    className="group relative p-5 rounded-2xl bg-[#120e1a]/40 border border-[#d4af37]/10 hover:border-[#d4af37]/40 transition-all cursor-pointer backdrop-blur-md overflow-hidden"
+                    onClick={() => handleMixSelect(mix)}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="w-9 h-9 rounded-full bg-[#d4af37]/10 flex items-center justify-center border border-[#d4af37]/20">
+                            <Flame className="w-4 h-4 text-[#d4af37]" />
+                          </div>
+                          <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-accent-gold/80 border border-white/5">
+                            Крепость: {mix.strength}/10
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-sm tracking-wide text-white group-hover:text-accent-gold transition-colors mb-1">{mix.name}</h3>
+                        <p className="text-xs text-white/40 line-clamp-2 leading-relaxed mb-4">{mix.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-accent-gold/80 group-hover:text-white transition-colors">Выбрать →</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Right Column: Active Order / Status Tracker */}
+          <section className="lg:col-span-5">
+            <div className="flex items-center border-b border-white/10 pb-3 mb-6">
+              <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">Статус заказа</h2>
+            </div>
+            
+            <div className="p-6 rounded-3xl bg-[#120e1a]/60 border border-[#d4af37]/15 relative overflow-hidden backdrop-blur-md">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.08),transparent_70%)] pointer-events-none"></div>
 
               {!activeOrder ? (
-                <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
-                  <Activity className="w-12 h-12 text-[#a855f7]" />
-                  <p className="text-xs uppercase tracking-widest font-bold">No Active Operations</p>
-                  <p className="text-[10px] text-white/40 max-w-[200px]">Select a module from the left to deploy a new instance.</p>
+                <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-white/[0.02] border border-white/5 flex items-center justify-center text-white/20">
+                    <Clock className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white/70">Нет активного заказа</h3>
+                  <p className="text-xs text-white/40 max-w-[240px] mx-auto leading-relaxed">
+                    Выберите понравившийся микс из списка слева, настройте базу и стол, чтобы сделать заказ.
+                  </p>
                 </div>
               ) : (
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="flex justify-between items-start mb-8">
+                <div className="relative z-10 flex flex-col">
+                  {/* Timer & Table info */}
+                  <div className="flex justify-between items-start border-b border-white/5 pb-4 mb-6">
                     <div>
-                      <p className="text-[10px] text-[#a855f7] uppercase tracking-widest font-bold mb-1">Time to deployment</p>
-                      <h2 className="text-4xl font-mono font-light tracking-tighter">{timeText}</h2>
+                      <p className="text-[9px] text-accent-gold uppercase tracking-wider font-semibold mb-1">Приблизительное время подачи</p>
+                      <h4 className="text-3xl font-mono font-bold tracking-tight text-white">{timeText}</h4>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Target Node</p>
-                      <p className="text-sm font-bold uppercase">{activeOrder.seatLabel}</p>
+                      <p className="text-[9px] text-white/40 uppercase tracking-wider font-semibold mb-1">Ваш Стол</p>
+                      <p className="text-xs font-bold text-accent-gold uppercase bg-[#d4af37]/10 px-2.5 py-1 rounded-lg border border-[#d4af37]/20">{activeOrder.seatLabel}</p>
                     </div>
                   </div>
 
-                  <div className="flex-1 relative pl-2 space-y-6">
-                    <div className="absolute left-[20px] top-4 bottom-4 w-px bg-gradient-to-b from-[#a855f7] to-transparent"></div>
+                  {/* Stepper progress */}
+                  <div className="relative pl-3 space-y-6">
+                    {/* Vertical line connector */}
+                    <div className="absolute left-[20px] top-4 bottom-4 w-[1px] bg-gradient-to-b from-[#d4af37] to-white/10"></div>
                     
                     {stages.map((stage, idx) => {
                       const stagesList = stages.map(s => s.id);
@@ -318,83 +364,107 @@ export function BookingPage() {
                       const isActive = currentIdx === targetIdx;
                       
                       return (
-                        <div key={stage.id} className={`flex items-start gap-4 relative transition-all duration-500 ${isCompleted || isActive ? 'opacity-100' : 'opacity-30'}`}>
-                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center bg-[#0a0514] z-10 ${isActive ? 'border-[#a855f7] shadow-[0_0_15px_rgba(168,85,247,0.5)]' : isCompleted ? 'border-[#a855f7] text-[#a855f7]' : 'border-white/20 text-white/20'}`}>
-                            {isCompleted ? <Check className="w-3 h-3" /> : <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-[#a855f7] animate-pulse' : 'bg-transparent'}`}></div>}
+                        <div key={stage.id} className={`flex items-start gap-4 relative transition-all duration-300 ${isCompleted || isActive ? 'opacity-100' : 'opacity-25'}`}>
+                          <div className={`w-8 h-8 rounded-full border flex items-center justify-center bg-[#07050a] z-10 ${isActive ? 'border-[#d4af37] text-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.4)]' : isCompleted ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/20'}`}>
+                            {isCompleted ? <Check className="w-3 h-3 stroke-[3]" /> : <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#d4af37] animate-pulse' : 'bg-transparent'}`}></div>}
                           </div>
                           <div className="pt-1.5">
-                            <h5 className={`text-xs uppercase tracking-widest font-bold ${isActive ? 'text-[#a855f7]' : 'text-white'}`}>{stage.label}</h5>
-                            <p className="text-[10px] text-white/40 mt-1 font-mono">{stage.desc}</p>
+                            <h5 className={`text-xs uppercase tracking-wider font-extrabold ${isActive ? 'text-accent-gold' : 'text-white'}`}>{stage.label}</h5>
+                            <p className="text-[10px] text-white/40 mt-0.5 leading-relaxed">{stage.desc}</p>
                           </div>
                         </div>
-                      )
+                      );
                     })}
                   </div>
 
+                  {/* Call Master button */}
                   <button 
                     onClick={handleCallMaster}
                     disabled={masterCalled}
-                    className="mt-6 w-full py-3 rounded-xl border border-[#a855f7]/30 bg-[#a855f7]/10 hover:bg-[#a855f7]/20 text-xs font-bold uppercase tracking-widest transition-all"
+                    className="mt-8 w-full py-3.5 rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/5 hover:bg-[#d4af37]/15 disabled:bg-white/5 disabled:border-white/10 text-[10px] font-bold text-accent-gold disabled:text-white/30 uppercase tracking-[0.15em] transition-all duration-300"
                   >
-                    {masterCalled ? 'Support Ticket Opened' : 'Request Manual Override'}
+                    {masterCalled ? 'Вызов отправлен' : 'Позвать кальянного мастера'}
                   </button>
                 </div>
               )}
             </div>
-          </div>
+          </section>
+
         </div>
       </main>
 
-      {/* Confirmation Modal */}
+      {/* Booking Confirmation Modal */}
       <AnimatePresence>
         {showConfirmModal && selectedMix && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-[#0a0514] border border-[#a855f7]/30 rounded-3xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden"
+              className="w-full max-w-md bg-[#0e0c12] border border-[#d4af37]/30 rounded-3xl p-6 shadow-[0_0_60px_rgba(212,175,55,0.15)] relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-[#a855f7] to-transparent opacity-50"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-50"></div>
               
-              <h3 className="text-lg font-light tracking-wide mb-6">Deploy Instance: <span className="font-bold text-[#a855f7]">{selectedMix.name}</span></h3>
+              <h3 className="text-lg font-bold text-white mb-1">Детали заказа</h3>
+              <p className="text-xs text-white/40 mb-6">Вы выбрали микс: <span className="text-accent-gold font-bold">{selectedMix.name}</span></p>
               
               <form onSubmit={handleSubmit(onOrderSubmit)} className="space-y-5">
+                
+                {/* Table Choice */}
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Target Node (Table)</label>
-                  <select {...register('seatLabel')} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-[#a855f7] focus:outline-none transition-colors">
-                    {TABLE_OPTIONS.map(opt => <option key={opt} value={opt} className="bg-[#0a0514]">{opt}</option>)}
+                  <label className="text-[10px] uppercase tracking-wider font-extrabold text-white/50 flex items-center gap-1">Выберите стол</label>
+                  <select {...register('seatLabel')} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:border-[#d4af37] focus:outline-none transition-colors">
+                    {TABLE_OPTIONS.map(opt => <option key={opt} value={opt} className="bg-[#0e0c12]">{opt}</option>)}
                   </select>
-                  {errors.seatLabel && <p className="text-red-500 text-[10px]">{errors.seatLabel.message}</p>}
+                  {errors.seatLabel && <p className="text-red-400 text-[10px] mt-1">{errors.seatLabel.message}</p>}
                 </div>
 
+                {/* Base choice */}
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Base Framework</label>
+                  <label className="text-[10px] uppercase tracking-wider font-extrabold text-white/50 flex items-center gap-1">База для колбы</label>
                   <input type="hidden" {...register('liquidBase')} />
                   <div className="grid grid-cols-2 gap-2">
                     {LIQUID_BASES.map(base => (
                       <button
-                        key={base.id} type="button" onClick={() => setValue('liquidBase', base.id, { shouldValidate: true })}
-                        className={`text-left p-3 rounded-xl border transition-all ${currentLiquidBase === base.id ? 'border-[#a855f7] bg-[#a855f7]/10' : 'border-white/10 hover:border-white/30'}`}
+                        key={base.id} 
+                        type="button" 
+                        onClick={() => setValue('liquidBase', base.id, { shouldValidate: true })}
+                        className={`text-left p-3 rounded-xl border transition-all ${currentLiquidBase === base.id ? 'border-[#d4af37] bg-[#d4af37]/5' : 'border-white/5 hover:border-white/20 bg-white/[0.01]'}`}
                       >
-                        <div className="text-xs font-bold">{base.name}</div>
-                        <div className="text-[9px] text-white/40 mt-1">{base.price > 0 ? `+${base.price} ₽` : 'Included'}</div>
+                        <div className="text-xs font-bold text-white">{base.name}</div>
+                        <div className="text-[9px] text-[#d4af37] mt-1">{base.price > 0 ? `+${base.price} ₽` : 'Включено'}</div>
                       </button>
                     ))}
                   </div>
-                  {errors.liquidBase && <p className="text-red-500 text-[10px]">{errors.liquidBase.message}</p>}
+                  {errors.liquidBase && <p className="text-red-400 text-[10px] mt-1">{errors.liquidBase.message}</p>}
                 </div>
 
+                {/* Custom note */}
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Configuration Flags</label>
-                  <textarea {...register('specialNotes')} placeholder="Enter custom parameters..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs h-20 resize-none focus:border-[#a855f7] focus:outline-none transition-colors" />
-                  {errors.specialNotes && <p className="text-red-500 text-[10px]">{errors.specialNotes.message}</p>}
+                  <label className="text-[10px] uppercase tracking-wider font-extrabold text-white/50 flex items-center gap-1">Пожелания к покуру</label>
+                  <textarea 
+                    {...register('specialNotes')} 
+                    placeholder="Например: покислее, полегче, чаша на грейпфруте..." 
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white h-20 resize-none focus:border-[#d4af37] focus:outline-none transition-colors placeholder:text-white/25" 
+                  />
+                  {errors.specialNotes && <p className="text-red-400 text-[10px] mt-1">{errors.specialNotes.message}</p>}
                 </div>
 
+                {/* Form buttons */}
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowConfirmModal(false)} className="flex-1 py-3 rounded-xl border border-white/10 hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all">Cancel</button>
-                  <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#a855f7] to-[#8b5cf6] text-xs font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-all">
-                    {loading ? 'Processing...' : 'Deploy'}
+                  <button 
+                    type="button" 
+                    onClick={() => setShowConfirmModal(false)} 
+                    className="flex-1 py-3.5 rounded-xl border border-white/10 hover:bg-white/5 text-[10px] font-bold uppercase tracking-wider text-white transition-all duration-300"
+                  >
+                    Отмена
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#b89030] text-black font-extrabold text-[10px] uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+                  >
+                    {loading ? 'Отправка...' : 'Заказать'}
                   </button>
                 </div>
               </form>
@@ -406,9 +476,8 @@ export function BookingPage() {
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.2); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.4); }
-        @keyframes dash { to { stroke-dashoffset: -100; } }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.4); }
       `}</style>
     </div>
   );

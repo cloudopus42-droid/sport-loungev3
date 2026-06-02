@@ -181,7 +181,7 @@ export function ProfilePage() {
       
       localStorage.setItem('current_order_id', res.data.id);
       setTimeout(() => {
-        window.location.href = '/booking';
+        window.location.href = `${import.meta.env.BASE_URL}booking`;
       }, 1000);
 
     } catch (err: any) {
@@ -959,7 +959,7 @@ export function ProfilePage() {
               bookings.filter(b => b.seatLabel !== 'Микс-билет' && !b.seatId?.startsWith('MIX-')).length === 0 ? (
                 <GlassCard className="p-6 sm:p-8 text-center">
                   <p className="text-xs sm:text-sm text-white/40">У вас пока нет бронирований столов</p>
-                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = '/'}>Забронировать стол</GlowButton>
+                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = import.meta.env.BASE_URL}>Забронировать стол</GlowButton>
                 </GlassCard>
               ) : (
                 <div className="space-y-3">
@@ -1053,7 +1053,7 @@ export function ProfilePage() {
               bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-')).length === 0 ? (
                 <GlassCard className="p-6 sm:p-8 text-center">
                   <p className="text-xs sm:text-sm text-white/40">У вас пока нет сохраненных миксов</p>
-                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = '/booking'}>Создать новый микс</GlowButton>
+                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = `${import.meta.env.BASE_URL}booking`}>Создать новый микс</GlowButton>
                 </GlassCard>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
