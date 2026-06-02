@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -8,8 +8,9 @@ import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
 import premiumHookah from '../premium_hookah.png';
-import { ThreeSmoke } from '@/components/ThreeSmoke';
 import { GlowIcon } from '@/components/ui/GlowIcon';
+
+const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
 
 
 // Predefined luxury zones with background images matching reference design
@@ -248,7 +249,9 @@ export function HomePage() {
             <GlassCard className="p-6 h-full flex flex-col justify-between border border-glass-border/30 bg-[#0c0816]/90 relative overflow-hidden select-none">
               <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest block mb-2">VOLUMETRIC VISUALIZER</span>
               <div className="relative h-48 flex items-center justify-center">
-                <ThreeSmoke />
+                <Suspense fallback={null}>
+                  <ThreeSmoke />
+                </Suspense>
                 <img 
                   src={premiumHookah} 
                   alt="Sport Lounge Premium Hookah" 

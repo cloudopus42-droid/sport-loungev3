@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogOut } from 'lucide-react';
@@ -9,13 +9,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { InvitationBanner } from '@/components/InvitationBanner';
 import { CONTACT } from '@/config/seats';
 import type { Invitation } from '@/types';
-import { ParticleEngine } from '@/components/ui/ParticleEngine';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
-import { ThreeSmoke } from '@/components/ThreeSmoke';
-import { LuxuryMusicPlayer } from '@/components/ui/LuxuryMusicPlayer';
 import { showToast } from '@/components/NotificationToast';
 import { GlowIcon } from '@/components/ui/GlowIcon';
+
+const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
+const ParticleEngine = lazy(() => import('@/components/ui/ParticleEngine').then(m => ({ default: m.ParticleEngine })));
+const LuxuryMusicPlayer = lazy(() => import('@/components/ui/LuxuryMusicPlayer').then(m => ({ default: m.LuxuryMusicPlayer })));
 
 const navItems = [
   { path: '/', iconName: 'home' as const, label: 'Главная' },
@@ -131,7 +132,8 @@ export function MainLayout() {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <SEO />
+    <div className="min-h-screen pb-16 lg:pb-0 bg-[#080605] text-white relative">
+      <SEO />
       {/* Volumetric ambient gold fog & depth haze layers */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[#070504]">
         {/* Dynamic moving radial gold & neon light spots for Liquid Glass refraction */}
@@ -153,7 +155,9 @@ export function MainLayout() {
         <div className="absolute inset-0 opacity-[0.06] mix-blend-screen bg-[url('https://assets.mixkit.co/videos/preview/mixkit-smoke-in-slow-motion-41814-large.mp4')] bg-cover" />
         
         {/* 3D WebGL Smoke Render - Drift across entire background */}
-        <ThreeSmoke />
+        <Suspense fallback={null}>
+          <ThreeSmoke />
+        </Suspense>
 
         {/* CSS Volumetric Haze Layers */}
         <div className="absolute inset-0 opacity-[0.08] mix-blend-color-dodge">
@@ -176,9 +180,13 @@ export function MainLayout() {
         </div>
         <div className="w-[1px] h-20 bg-gradient-to-t from-accent-gold/30 to-transparent" />
       </div>
-      <ParticleEngine />
+      <Suspense fallback={null}>
+        <ParticleEngine />
+      </Suspense>
       <ConciergeChat />
-      <LuxuryMusicPlayer />
+      <Suspense fallback={null}>
+        <LuxuryMusicPlayer />
+      </Suspense>
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Top Luxury Header matching reference image */}

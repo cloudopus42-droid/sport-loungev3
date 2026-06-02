@@ -4,12 +4,23 @@ import {
   Check, 
   Activity, Box, Database, Zap, Settings, Command
 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
 
 type Mix = any;
+
+const bookingFormSchema = z.object({
+  seatLabel: z.string().min(1, 'Укажите стол'),
+  liquidBase: z.string().min(1, 'Укажите базу'),
+  specialNotes: z.string().max(500, 'Максимум 500 символов').optional(),
+});
+
+type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
 const LIQUID_BASES = [
   { id: 'water', name: 'На воде', price: 0, desc: 'Классическая фильтрация' },
@@ -32,9 +43,17 @@ export function BookingPage() {
   
   const [selectedMix, setSelectedMix] = useState<any | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [liquidBase, setLiquidBase] = useState('water');
-  const [specialNotes, setSpecialNotes] = useState('');
-  const [seatLabel, setSeatLabel] = useState(TABLE_OPTIONS[0]);
+
+  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingFormSchema),
+    defaultValues: {
+      seatLabel: TABLE_OPTIONS[0],
+      liquidBase: 'water',
+      specialNotes: '',
+    }
+  });
+
+  const currentLiquidBase = watch('liquidBase');
 
   const [masterCalled, setMasterCalled] = useState(false);
 
@@ -116,23 +135,23 @@ export function BookingPage() {
     setShowConfirmModal(true);
   };
 
-  const handleOrderSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onOrderSubmit = async (data: BookingFormValues) => {
     if (!selectedMix) return;
     setLoading(true);
     try {
       const isCustom = selectedMix.isCustom;
       const res = await api.post('/api/orders', {
         mix_id: isCustom ? null : selectedMix.id,
-        liquid_id: liquidBase,
-        notes: specialNotes,
-        seat_id: seatLabel.replace(/\s+/g, '-').toLowerCase(),
-        seat_label: seatLabel,
+        liquid_id: data.liquidBase,
+        notes: data.specialNotes || '',
+        seat_id: data.seatLabel.replace(/\s+/g, '-').toLowerCase(),
+        seat_label: data.seatLabel,
         seat_zone: 'hall',
       });
       setActiveOrder(res.data);
       localStorage.setItem('current_order_id', res.data.id);
       setShowConfirmModal(false);
+      reset();
       showToast('Заказ принят!', 'success');
     } catch (err) {
       showToast('Ошибка', 'error');
@@ -340,32 +359,36 @@ export function BookingPage() {
               
               <h3 className="text-lg font-light tracking-wide mb-6">Deploy Instance: <span className="font-bold text-[#a855f7]">{selectedMix.name}</span></h3>
               
-              <form onSubmit={handleOrderSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit(onOrderSubmit)} className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Target Node (Table)</label>
-                  <select value={seatLabel} onChange={e => setSeatLabel(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-[#a855f7] focus:outline-none transition-colors">
+                  <select {...register('seatLabel')} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-[#a855f7] focus:outline-none transition-colors">
                     {TABLE_OPTIONS.map(opt => <option key={opt} value={opt} className="bg-[#0a0514]">{opt}</option>)}
                   </select>
+                  {errors.seatLabel && <p className="text-red-500 text-[10px]">{errors.seatLabel.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Base Framework</label>
+                  <input type="hidden" {...register('liquidBase')} />
                   <div className="grid grid-cols-2 gap-2">
                     {LIQUID_BASES.map(base => (
                       <button
-                        key={base.id} type="button" onClick={() => setLiquidBase(base.id)}
-                        className={`text-left p-3 rounded-xl border transition-all ${liquidBase === base.id ? 'border-[#a855f7] bg-[#a855f7]/10' : 'border-white/10 hover:border-white/30'}`}
+                        key={base.id} type="button" onClick={() => setValue('liquidBase', base.id, { shouldValidate: true })}
+                        className={`text-left p-3 rounded-xl border transition-all ${currentLiquidBase === base.id ? 'border-[#a855f7] bg-[#a855f7]/10' : 'border-white/10 hover:border-white/30'}`}
                       >
                         <div className="text-xs font-bold">{base.name}</div>
                         <div className="text-[9px] text-white/40 mt-1">{base.price > 0 ? `+${base.price} ₽` : 'Included'}</div>
                       </button>
                     ))}
                   </div>
+                  {errors.liquidBase && <p className="text-red-500 text-[10px]">{errors.liquidBase.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest font-bold text-white/50">Configuration Flags</label>
-                  <textarea value={specialNotes} onChange={e => setSpecialNotes(e.target.value)} placeholder="Enter custom parameters..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs h-20 resize-none focus:border-[#a855f7] focus:outline-none transition-colors" />
+                  <textarea {...register('specialNotes')} placeholder="Enter custom parameters..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-xs h-20 resize-none focus:border-[#a855f7] focus:outline-none transition-colors" />
+                  {errors.specialNotes && <p className="text-red-500 text-[10px]">{errors.specialNotes.message}</p>}
                 </div>
 
                 <div className="flex gap-3 pt-2">
