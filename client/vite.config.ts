@@ -16,6 +16,10 @@ export default defineConfig({
     strictPort: true,
   },
   build: {
+    target: 'es2020',
+    minify: 'esbuild',
+    cssMinify: true,
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -25,6 +29,12 @@ export default defineConfig({
             }
             if (id.includes('framer-motion')) {
               return 'vendor-framer';
+            }
+            if (id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('zod') || id.includes('react-hook-form') || id.includes('@hookform')) {
+              return 'vendor-forms';
             }
           }
         },
