@@ -59,6 +59,14 @@ const uploadLimiter = rateLimit({
   message: { error: 'Слишком много загрузок. Попробуйте позже.', status: 429 },
 });
 
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Слишком много запросов к ИИ. Пожалуйста, подождите немного.', status: 429 },
+});
+
 const app = express();
 
 // Apply middleware
@@ -106,7 +114,7 @@ app.use('/api/invitations', invitationRoutes);
 app.use('/api/bookings', generalLimiter, bookingRoutes);
 app.use('/api/showcases', showcaseRoutes);
 app.use('/api/seats', seatRoutes);
-app.use('/api/ai', aiRoutes);
+app.use('/api/ai', aiLimiter, aiRoutes);
 app.use('/api/memberships', membershipRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/orders', orderRoutes);
