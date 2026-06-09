@@ -56,7 +56,7 @@ export const SEATS: Seat[] = [
 // Zone config
 export const ZONE_COLORS: Record<string, { bg: string; border: string; text: string; glow: string }> = {
   hall: { bg: 'rgba(0, 242, 254, 0.10)', border: 'rgba(0, 242, 254, 0.30)', text: '#00f2fe', glow: '' },
-  vip: { bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.40)', text: '#a855f7', glow: '' },
+  vip: { bg: 'rgba(255, 191, 0, 0.15)', border: 'rgba(255, 191, 0, 0.40)', text: '#FFBF00', glow: '' },
   ps: { bg: 'rgba(59, 130, 246, 0.12)', border: 'rgba(59, 130, 246, 0.35)', text: '#3b82f6', glow: '' },
   room: { bg: 'rgba(251, 191, 36, 0.12)', border: 'rgba(251, 191, 36, 0.35)', text: '#fbbf24', glow: '' },
   pro: { bg: 'rgba(239, 68, 68, 0.12)', border: 'rgba(239, 68, 68, 0.30)', text: '#ef4444', glow: '' },

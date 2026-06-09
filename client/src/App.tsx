@@ -8,6 +8,7 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 
 // Lazily load route components
 const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.HomePage })));
+const MenuPage = lazy(() => import('@/pages/MenuPage').then(m => ({ default: m.MenuPage })));
 const BookingPage = lazy(() => import('@/pages/BookingPage').then(m => ({ default: m.BookingPage })));
 const MixologistPage = lazy(() => import('@/pages/MixologistPage').then(m => ({ default: m.MixologistPage })));
 const FeedPage = lazy(() => import('@/pages/FeedPage').then(m => ({ default: m.FeedPage })));
@@ -33,14 +34,15 @@ export default function App() {
     <AuthProvider>
       <SocketProvider>
         <Suspense fallback={
-          <div className="min-h-screen bg-[#080605] flex flex-col items-center justify-center text-white font-sans">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#a855f7] to-[#4c1d95] flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)] animate-spin mb-4" />
+          <div className="min-h-screen bg-[#0e0e0e] flex flex-col items-center justify-center text-white font-sans">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFBF00] to-[#4c1d95] flex items-center justify-center shadow-[0_0_15px_rgba(255, 191, 0,0.5)] animate-spin mb-4" />
             <span className="text-xs uppercase tracking-[0.25em] text-white/50 animate-pulse">Initializing System...</span>
           </div>
         }>
           <Routes>
             <Route path="/" element={<MainLayout />}>
               <Route index element={<HomePage />} />
+              <Route path="menu" element={<MenuPage />} />
               <Route path="booking" element={<BookingPage />} />
               <Route path="mixologist" element={<MixologistPage />} />
               <Route path="feed" element={<FeedPage />} />

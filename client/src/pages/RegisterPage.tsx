@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Lock, Mail, Crown, AlertCircle, Eye, EyeOff, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lock, Mail, Crown, AlertCircle, Eye, EyeOff, User, Phone, ChevronRight, Sparkles } from 'lucide-react';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { useAuth } from '@/hooks/useAuth';
+import api from '@/lib/api';
+import { HOOKAH_FLAVORS, FLAVOR_CATEGORIES } from '@/config/seats';
+
+const EMOJI_AVATARS = [
+  '😎', '🤓', '🥳', '😈', '👻', '🦊', '🐱', '🐶', '🦁', '🐯',
+  '🐻', '🐼', '🐨', '🐸', '🦄', '🐲', '🔥', '⭐', '💎', '🎮',
+  '🎧', '🏆', '🎯', '🚀', '💫', '🌟', '✨', '🎭', '🎨', '🎬',
+  '🎪', '🍀', '🌸', '🌙', '❄️', '🌈', '🦅', '🦋', '🐺', '🦈',
+];
 
 export function RegisterPage() {
   const [name, setName] = useState('');
@@ -14,8 +23,16 @@ export function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, setUser } = useAuth();
   const navigate = useNavigate();
+
+  // Onboarding state (Step 2)
+  const [step, setStep] = useState<1 | 2>(1);
+  const [phone, setPhone] = useState('');
+  const [selectedEmoji, setSelectedEmoji] = useState('');
+  const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState('Все');
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +52,7 @@ export function RegisterPage() {
 
     try {
       await register(email, password, name);
-      navigate('/', { replace: true });
+      setStep(2); // Go to onboarding
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string; message?: string } } };
       setError(axiosErr.response?.data?.error || axiosErr.response?.data?.message || 'Ошибка регистрации');
@@ -44,12 +61,39 @@ export function RegisterPage() {
     }
   };
 
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const updates: Record<string, string> = {};
+      if (phone.trim()) updates.phone = phone.trim();
+      if (selectedEmoji) updates.avatar = `emoji:${selectedEmoji}`;
+      if (selectedFlavors.length > 0) updates.favoriteFlavors = selectedFlavors.join(',');
+
+      if (Object.keys(updates).length > 0) {
+        const { data } = await api.patch('/api/auth/me', updates);
+        if (data.user) {
+          setUser(data.user);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+      }
+      navigate('/booking', { replace: true });
+    } catch {
+      navigate('/booking', { replace: true });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleSkip = () => {
+    navigate('/', { replace: true });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
       {/* Background gradient orbs */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
-          className="absolute top-1/4 -left-20 w-72 h-72 bg-accent-purple/10 rounded-full blur-[120px]"
+          className="absolute top-1/4 -left-20 w-72 h-72 bg-accent-gold/10 rounded-full blur-[120px]"
           animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -73,142 +117,281 @@ export function RegisterPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-accent-purple to-accent-cyan flex items-center justify-center shadow-glow-cyan mb-4">
-            <Crown className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-accent-gold to-accent-cyan flex items-center justify-center shadow-glow-cyan mb-4">
+            {step === 1 ? <Crown className="w-8 h-8 text-white" /> : <Sparkles className="w-8 h-8 text-white" />}
           </div>
           <h1 className="text-2xl font-display font-bold gradient-text">SPORT LOUNGE</h1>
-          <p className="text-sm text-white/40 mt-1">Создать аккаунт</p>
+          <p className="text-sm text-white/40 mt-1">
+            {step === 1 ? 'Создать аккаунт' : 'Настройте ваш профиль'}
+          </p>
+
+          {/* Step indicators */}
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <div className={`w-8 h-1 rounded-full transition-all ${step === 1 ? 'bg-accent-gold' : 'bg-accent-gold/30'}`} />
+            <div className={`w-8 h-1 rounded-full transition-all ${step === 2 ? 'bg-accent-gold' : 'bg-white/10'}`} />
+          </div>
         </motion.div>
 
-        {/* Form */}
-        <motion.form
-          onSubmit={handleSubmit}
-          className="glass-card p-6 space-y-5"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          <div className="space-y-4">
-            {/* Name */}
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Имя</label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ваше имя"
-                  className="glass-input pl-10"
-                  required
-                  autoComplete="name"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="glass-input pl-10"
-                  required
-                  autoComplete="email"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Пароль</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Минимум 6 символов"
-                  className="glass-input pl-10 pr-10"
-                  required
-                  minLength={6}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-white/30 hover:text-white/60 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Подтвердите пароль</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <input
-                  type={showConfirm ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Повторите пароль"
-                  className="glass-input pl-10 pr-10"
-                  required
-                  minLength={6}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-white/30 hover:text-white/60 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <motion.div
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
+        <AnimatePresence mode="wait">
+          {step === 1 ? (
+            /* STEP 1: Registration */
+            <motion.form
+              key="step1"
+              onSubmit={handleSubmit}
+              className="glass-card p-6 space-y-5"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.3 }}
             >
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error}
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-xs text-white/50 mb-1.5 font-medium">Имя</label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ваше имя"
+                      className="glass-input pl-10"
+                      required
+                      autoComplete="name"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-xs text-white/50 mb-1.5 font-medium">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      className="glass-input pl-10"
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-xs text-white/50 mb-1.5 font-medium">Пароль</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Минимум 6 символов"
+                      className="glass-input pl-10 pr-10"
+                      required
+                      minLength={6}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-white/30 hover:text-white/60 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-xs text-white/50 mb-1.5 font-medium">Подтвердите пароль</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type={showConfirm ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Повторите пароль"
+                      className="glass-input pl-10 pr-10"
+                      required
+                      minLength={6}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-white/30 hover:text-white/60 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <motion.div
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {error}
+                </motion.div>
+              )}
+
+              {/* Submit */}
+              <GlowButton
+                type="submit"
+                size="lg"
+                loading={loading}
+                className="w-full"
+              >
+                Зарегистрироваться
+              </GlowButton>
+
+              {/* Login Link */}
+              <p className="text-center text-sm text-white/40">
+                Уже есть аккаунт?{' '}
+                <Link
+                  to="/login"
+                  className="text-accent-cyan hover:text-accent-cyan/80 transition-colors font-medium"
+                >
+                  Войти
+                </Link>
+              </p>
+            </motion.form>
+          ) : (
+            /* STEP 2: Onboarding */
+            <motion.div
+              key="step2"
+              className="glass-card p-6 space-y-5"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center space-y-1">
+                <h2 className="text-lg font-display font-bold text-white">Добро пожаловать, {name}! 🎉</h2>
+                <p className="text-xs text-white/40">Заполните профиль, чтобы мы знали вас лучше</p>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-xs text-white/50 mb-1.5 font-medium">Номер телефона</label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+7 (999) 123-45-67"
+                    className="glass-input pl-10"
+                    autoComplete="tel"
+                  />
+                </div>
+                <p className="text-[10px] text-white/25 mt-1">Для связи и уведомлений о заказах</p>
+              </div>
+
+              {/* Emoji Avatar */}
+              <div>
+                <label className="block text-xs text-white/50 mb-2 font-medium">Выберите аватарку</label>
+                <div className="grid grid-cols-8 gap-1.5 p-3 rounded-2xl bg-black/30 border border-glass-border/20">
+                  {EMOJI_AVATARS.map(emoji => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setSelectedEmoji(selectedEmoji === emoji ? '' : emoji)}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg hover:bg-accent-gold/10 hover:scale-110 transition-all border ${
+                        selectedEmoji === emoji
+                          ? 'border-accent-gold bg-accent-gold/15 scale-110 shadow-[0_0_10px_rgba(212,175,55,0.2)]'
+                          : 'border-transparent'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Favorite Flavors */}
+              <div>
+                <label className="block text-xs text-white/50 mb-2 font-medium">Любимые вкусы кальяна</label>
+                
+                {/* Category tabs */}
+                <div className="flex gap-1 overflow-x-auto scrollbar-hide mb-2 pb-1">
+                  {FLAVOR_CATEGORIES.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setActiveCategory(cat)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${
+                        activeCategory === cat
+                          ? 'bg-accent-gold/20 text-accent-gold border border-accent-gold/30'
+                          : 'bg-white/[0.03] text-white/40 border border-transparent hover:text-white/60'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Flavor chips */}
+                <div className="flex flex-wrap gap-1.5 p-3 rounded-2xl bg-black/30 border border-glass-border/20 max-h-[140px] overflow-y-auto scrollbar-hide">
+                  {HOOKAH_FLAVORS
+                    .filter(f => activeCategory === 'Все' || f.category === activeCategory)
+                    .map(flavor => {
+                      const isSelected = selectedFlavors.includes(flavor.name);
+                      return (
+                        <button
+                          key={flavor.name}
+                          type="button"
+                          onClick={() => setSelectedFlavors(prev =>
+                            isSelected ? prev.filter(f => f !== flavor.name) : [...prev, flavor.name]
+                          )}
+                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-medium transition-all border ${
+                            isSelected
+                              ? 'border-accent-gold bg-accent-gold/15 text-accent-gold'
+                              : 'border-white/5 bg-white/[0.02] text-white/50 hover:border-white/15'
+                          }`}
+                        >
+                          <span>{flavor.emoji}</span>
+                          <span>{flavor.name}</span>
+                        </button>
+                      );
+                    })}
+                </div>
+                {selectedFlavors.length > 0 && (
+                  <p className="text-[10px] text-accent-gold/60 mt-1">Выбрано: {selectedFlavors.length}</p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2.5 pt-2">
+                <GlowButton
+                  onClick={handleSaveProfile}
+                  loading={savingProfile}
+                  size="lg"
+                  className="w-full"
+                >
+                  <span className="flex items-center gap-2">
+                    Сохранить и заказать <ChevronRight className="w-4 h-4" />
+                  </span>
+                </GlowButton>
+
+                <button
+                  onClick={handleSkip}
+                  className="w-full py-2.5 text-xs text-white/30 hover:text-white/50 transition-colors"
+                >
+                  Пропустить →
+                </button>
+              </div>
             </motion.div>
           )}
-
-          {/* Submit */}
-          <GlowButton
-            type="submit"
-            size="lg"
-            loading={loading}
-            className="w-full"
-          >
-            Зарегистрироваться
-          </GlowButton>
-
-          {/* Login Link */}
-          <p className="text-center text-sm text-white/40">
-            Уже есть аккаунт?{' '}
-            <Link
-              to="/login"
-              className="text-accent-cyan hover:text-accent-cyan/80 transition-colors font-medium"
-            >
-              Войти
-            </Link>
-          </p>
-        </motion.form>
+        </AnimatePresence>
       </motion.div>
     </div>
   );

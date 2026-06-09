@@ -20,7 +20,7 @@ const createBookingSchema = z.object({
   hookahMix: z.string().optional(),
   hookahStrength: z.enum(['light', 'medium', 'strong']).default('medium'),
   hookahCount: z.number().int().min(1).max(10).default(1),
-  comment: z.string().max(500).optional(),
+  comment: z.string().max(1000).optional(),
 });
 
 function mapBookingToFrontend(b: any) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut } from 'lucide-react';
+import { LogOut, Crown } from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { SEO } from '@/components/SEO';
@@ -13,21 +13,24 @@ import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
 import { GlowIcon } from '@/components/ui/GlowIcon';
+import { ShaderBackground } from '@/components/ShaderBackground';
+import { WaveBackground } from '@/components/WaveBackground';
 
-const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
+
 const ParticleEngine = lazy(() => import('@/components/ui/ParticleEngine').then(m => ({ default: m.ParticleEngine })));
 const LuxuryMusicPlayer = lazy(() => import('@/components/ui/LuxuryMusicPlayer').then(m => ({ default: m.LuxuryMusicPlayer })));
 
 const navItems = [
   { path: '/', iconName: 'home' as const, label: 'Главная' },
-  { path: '/mixologist', iconName: 'flame' as const, label: 'Миксолог' },
+  { path: '/feed', iconName: 'camera' as const, label: 'Лента' },
   { path: '/booking', iconName: 'calendar' as const, label: 'Заказ' },
+  { path: '/mixologist', iconName: 'flame' as const, label: 'Миксолог' },
   { path: '/profile', iconName: 'user' as const, label: 'Профиль' },
 ];
 
 export function MainLayout() {
   const { socket } = useSocket();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
 
@@ -134,39 +137,8 @@ export function MainLayout() {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <div className="min-h-screen pb-16 lg:pb-0 bg-[#080605] text-white relative">
+    <div className="min-h-screen pb-16 lg:pb-0 bg-[#131313] text-white relative">
       <SEO />
-      {/* Volumetric ambient gold fog & depth haze layers */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[#070504]">
-        {/* Dynamic moving radial gold & neon light spots for Liquid Glass refraction */}
-        <div className="absolute top-[-25%] left-[-15%] w-[80%] h-[80%] rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.08)_0%,transparent_70%)] blur-[100px] animate-haze-pulse" style={{ animationDuration: '14s' }} />
-        <div className="absolute bottom-[-25%] right-[-15%] w-[85%] h-[85%] rounded-full bg-[radial-gradient(circle,rgba(138,102,35,0.07)_0%,transparent_70%)] blur-[110px] animate-haze-pulse" style={{ animationDuration: '20s' }} />
-        <div className="absolute top-[35%] left-[20%] w-[70%] h-[70%] rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.04)_0%,transparent_75%)] blur-[120px]" />
-        
-        {/* Liquid Glass Neon Glow spots */}
-        <div className="absolute top-[10%] left-[60%] w-[55%] h-[55%] rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.18)_0%,transparent_70%)] blur-[120px] animate-haze-pulse" style={{ animationDuration: '18s' }} />
-        <div className="absolute bottom-[15%] left-[5%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(217,70,239,0.16)_0%,transparent_70%)] blur-[110px] animate-haze-pulse" style={{ animationDuration: '16s' }} />
-        <div className="absolute top-[50%] left-[35%] w-[45%] h-[45%] rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.14)_0%,transparent_70%)] blur-[130px] animate-haze-pulse" style={{ animationDuration: '22s' }} />
-        
-        {/* Floating Ambient Mesh Gradient Spheres */}
-        <div className="float-sphere-1" />
-        <div className="float-sphere-2" />
-        <div className="float-sphere-3" />
-        
-        {/* Ambient smoke/mist overlay */}
-        <div className="absolute inset-0 opacity-[0.06] mix-blend-screen bg-[url('https://assets.mixkit.co/videos/preview/mixkit-smoke-in-slow-motion-41814-large.mp4')] bg-cover" />
-        
-        {/* 3D WebGL Smoke Render - Drift across entire background */}
-        <Suspense fallback={null}>
-          <ThreeSmoke />
-        </Suspense>
-
-        {/* CSS Volumetric Haze Layers */}
-        <div className="absolute inset-0 opacity-[0.08] mix-blend-color-dodge">
-          <div className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.12)_0%,transparent_60%)] animate-haze-float pointer-events-none" />
-          <div className="absolute w-[180%] h-[180%] top-[-40%] left-[-40%] bg-[radial-gradient(circle_at_center,rgba(138,102,35,0.08)_0%,transparent_70%)] animate-haze-float-reverse pointer-events-none" />
-        </div>
-      </div>
 
       {/* Decorative luxury side margins for wide screens */}
       <div className="hidden xl:flex fixed left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-6 z-20 pointer-events-none opacity-30 select-none">
@@ -182,6 +154,8 @@ export function MainLayout() {
         </div>
         <div className="w-[1px] h-20 bg-gradient-to-t from-accent-gold/30 to-transparent" />
       </div>
+      <ShaderBackground />
+      <WaveBackground />
       <Suspense fallback={null}>
         <ParticleEngine />
       </Suspense>
@@ -192,7 +166,7 @@ export function MainLayout() {
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Top Luxury Header matching reference image */}
-      <header className="sticky top-0 z-40 bg-[#050308]/90 backdrop-blur-md border-b border-white/5">
+      <header className="sticky top-0 z-40 bg-[#131313]/80 backdrop-blur-2xl border-b border-white/5">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-4 gap-4">
           
           {/* Logo - bold clean wordmark */}
@@ -203,13 +177,12 @@ export function MainLayout() {
 
           {/* Desktop Navigation Links - Centered (exactly 5 items matching Sellix structure) */}
           <nav className="hidden lg:flex items-center gap-8 flex-1 justify-center">
-            <a 
-              href="#menu" 
-              onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); }}
-              className="text-xs font-medium text-white/70 hover:text-white transition-all tracking-wide"
-            >
+            <NavLink to="/menu" className={({ isActive }) => clsx(
+              "text-xs font-medium transition-all tracking-wide",
+              isActive ? "text-accent-gold font-bold" : "text-white/70 hover:text-white"
+            )}>
               Меню
-            </a>
+            </NavLink>
             <NavLink to="/booking" className={({ isActive }) => clsx(
               "text-xs font-medium transition-all tracking-wide",
               isActive ? "text-accent-gold font-bold" : "text-white/70 hover:text-white"
@@ -222,20 +195,28 @@ export function MainLayout() {
             )}>
               ИИ-Миксолог
             </NavLink>
+
             <a 
-              href="#menu" 
-              onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); }}
+              href="#map" 
+              onClick={(e) => { e.preventDefault(); handleNavClick('#map'); }}
               className="text-xs font-medium text-white/70 hover:text-white transition-all tracking-wide"
             >
-              Зоны
+              📍 Карта
             </a>
-            <a 
-              href="#contacts" 
-              onClick={(e) => { e.preventDefault(); handleNavClick('#contacts'); }}
-              className="text-xs font-medium text-white/70 hover:text-white transition-all tracking-wide"
-            >
-              Контакты
-            </a>
+            <NavLink to="/feed" className={({ isActive }) => clsx(
+              "text-xs font-medium transition-all tracking-wide",
+              isActive ? "text-accent-gold font-bold" : "text-white/70 hover:text-white"
+            )}>
+              Лента
+            </NavLink>
+            {isAdmin && (
+              <NavLink to="/admin" className={({ isActive }) => clsx(
+                "text-xs font-medium transition-all tracking-wide flex items-center gap-1",
+                isActive ? "text-accent-gold font-bold" : "text-accent-gold/70 hover:text-accent-gold"
+              )}>
+                <Crown className="w-3 h-3" /> Админ
+              </NavLink>
+            )}
           </nav>
 
           {/* Action buttons (Right side) - Instagram, Telegram & Auth / Book order */}
@@ -266,10 +247,12 @@ export function MainLayout() {
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
                 <NavLink to="/profile" className="hidden sm:flex items-center gap-2 text-xs font-semibold text-white/70 hover:text-white transition-all">
-                  {user?.avatar ? (
+                  {user?.avatar?.startsWith('emoji:') ? (
+                    <span className="text-sm">{user.avatar.replace('emoji:', '')}</span>
+                  ) : user?.avatar ? (
                     <img src={resolveImageUrl(user.avatar)} alt={user.name} className="w-4 h-4 rounded-full object-cover" />
                   ) : (
-                    <GlowIcon name="user" color="purple" size={14} />
+                    <GlowIcon name="user" color="gold" size={14} />
                   )}
                   <span>{user?.name || 'Профиль'}</span>
                 </NavLink>
@@ -286,7 +269,7 @@ export function MainLayout() {
             {/* Make booking order button a premium white pill with dark text */}
             <NavLink to="/booking">
               <motion.button
-                className="px-5 py-2 text-xs rounded-full bg-white hover:bg-white/90 text-[#050308] border-none font-extrabold shadow-[0_4px_16px_rgba(168,85,247,0.25)] transition-all flex items-center gap-1"
+                className="px-4 py-2 text-[10px] sm:px-5 sm:text-xs rounded-full bg-primary-container hover:bg-primary-container/90 text-[#131313] border-none font-extrabold shadow-[0_4px_16px_rgba(255,191,0,0.25)] transition-all flex items-center gap-1"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -299,10 +282,10 @@ export function MainLayout() {
 
       {/* High-Tech Fintech Grid Lines in background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-[0.06]">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(168,85,247,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(168,85,247,0.08)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,191,0,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,191,0,0.04)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
-      {/* Background Tech Purple Particles */}
+      {/* Background Ambient Gold Particles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {Array.from({ length: 14 }).map((_, i) => (
           <div
@@ -340,7 +323,7 @@ export function MainLayout() {
                       )}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <GlowIcon name={item.iconName} size={20} color={isActive ? 'purple' : 'white'} glow={isActive} />
+                      <GlowIcon name={item.iconName} size={20} color={isActive ? 'gold' : 'white'} glow={isActive} />
                       <span className="text-[10px] font-medium">{item.label}</span>
                       {isActive && (
                         <motion.div
@@ -381,7 +364,7 @@ export function MainLayout() {
         .purple-particle {
           position: absolute;
           bottom: -20px;
-          background: radial-gradient(circle, rgba(168,85,247,0.4) 0%, rgba(168,85,247,0) 70%);
+          background: radial-gradient(circle, rgba(255,191,0,0.3) 0%, rgba(255,191,0,0) 70%);
           border-radius: 50%;
           pointer-events: none;
           animation: float-particle 15s linear infinite;

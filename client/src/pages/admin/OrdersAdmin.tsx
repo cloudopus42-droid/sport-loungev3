@@ -62,8 +62,8 @@ export function OrdersAdmin() {
       setOrders(prev => prev.map(o => o.id === id ? { ...o, ...res.data } : o));
       showToast(`Статус заказа обновлен! 💨`, 'success');
       
-      // If status is 'done', remove from queue view or flag as done
-      if (newStatus === 'done') {
+      // If status is 'done' or 'cancelled', remove from queue view
+      if (newStatus === 'done' || newStatus === 'cancelled') {
         setOrders(prev => prev.filter(o => o.id !== id));
       }
     } catch (err: any) {
@@ -176,7 +176,7 @@ export function OrdersAdmin() {
               const statusColors: Record<string, string> = {
                 accepted: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
                 preparing: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-                roasting: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                roasting: 'bg-purple-500/10 text-amber-400 border-amber-500/20',
                 delivering: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
               };
 
@@ -272,7 +272,7 @@ export function OrdersAdmin() {
                           {order.status === 'preparing' && (
                             <button
                               onClick={() => handleUpdateStatus(order.id, 'roasting')}
-                              className="flex-1 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
+                              className="flex-1 py-2 rounded-lg bg-amber-500 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
                             >
                               <Flame className="w-3 h-3" /> Угли
                             </button>
@@ -301,6 +301,19 @@ export function OrdersAdmin() {
                             title="Продлить на +5 минут"
                           >
                             +5м
+                          </button>
+
+                          {/* Cancel Order trigger */}
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Вы действительно хотите полностью отменить этот заказ?')) {
+                                handleUpdateStatus(order.id, 'cancelled');
+                              }
+                            }}
+                            className="px-3 py-2 rounded-lg bg-red-650/15 border border-red-500/30 hover:bg-red-650 hover:text-white text-red-400 font-bold text-xs"
+                            title="Отменить заказ"
+                          >
+                            Отмена
                           </button>
                         </div>
 

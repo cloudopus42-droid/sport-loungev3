@@ -12,11 +12,20 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </HelmetProvider>
 );
 
-// Register PWA service worker in production
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((err) => {
-      console.log('SW registration failed: ', err);
-    });
+// Unregister any active PWA service workers and clear caches to prevent cache lock
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister().then((unregistered) => {
+        if (unregistered) {
+          console.log('Active service worker unregistered successfully.');
+          caches.keys().then((names) => {
+            for (const name of names) {
+              caches.delete(name);
+            }
+          });
+        }
+      });
+    }
   });
 }

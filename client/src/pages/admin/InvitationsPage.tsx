@@ -11,6 +11,7 @@ import { showToast } from '@/components/NotificationToast';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
 import type { Invitation } from '@/types';
+import { resolveImageUrl } from '@/lib/urls';
 
 export function AdminInvitationsPage() {
   const { socket } = useSocket();
@@ -154,7 +155,7 @@ export function AdminInvitationsPage() {
       render: (inv: Invitation) => (
         <div className="w-[50px] h-[50px] rounded-lg overflow-hidden bg-dark-surface flex-shrink-0">
           {inv.imageUrl ? (
-            <img src={inv.imageUrl} alt="" className="w-full h-full object-cover" />
+            <img src={resolveImageUrl(inv.imageUrl)} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <ImageIcon className="w-5 h-5 text-white/20" />

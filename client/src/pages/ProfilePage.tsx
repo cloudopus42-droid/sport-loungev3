@@ -92,10 +92,10 @@ const VIP_CARD_THEMES: Record<string, {
   diamond: {
     name: 'Diamond Nebula Passport',
     gradient: 'from-sky-450 via-indigo-900 to-purple-950',
-    border: 'border-purple-400/50',
+    border: 'border-amber-400/50',
     glow: 'shadow-[0_0_40px_rgba(192,132,252,0.55)]',
-    text: 'text-purple-100/90',
-    badge: 'bg-purple-900/40 text-purple-200 border-purple-450/40',
+    text: 'text-amber-100/90',
+    badge: 'bg-purple-900/40 text-amber-200 border-amber-450/40',
     icon: <Sparkles className="w-5 h-5 text-cyan-300 animate-spin animate-duration-[4000ms]" />
   }
 };
@@ -103,7 +103,7 @@ const AVATAR_FRAMES = [
   { id: 'none', name: 'Без рамки', style: '' },
   { id: 'sovereign', name: 'Золотое Сияние', style: 'ring-4 ring-accent-gold shadow-[0_0_15px_rgba(212,175,55,0.6)] animate-pulse' },
   { id: 'cyber', name: 'Кибер Неон', style: 'ring-4 ring-accent-cyan shadow-[0_0_20px_rgba(0,242,254,0.6)] animate-pulse' },
-  { id: 'amethyst', name: 'Аметист VIP', style: 'ring-4 ring-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.6)] animate-pulse animate-duration-[3000ms]' },
+  { id: 'amethyst', name: 'Аметист VIP', style: 'ring-4 ring-purple-500 shadow-[0_0_20px_rgba(255, 191, 0,0.6)] animate-pulse animate-duration-[3000ms]' },
   { id: 'ruby', name: 'Рубиновый Дым', style: 'ring-4 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)]' }
 ];
 
@@ -119,6 +119,7 @@ export function ProfilePage() {
   const { user, setUser } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
+  const [orders, setOrders] = useState<any[]>([]);
   const [hookahStatuses, setHookahStatuses] = useState<Record<string, any>>({});
   const [activeTab, setActiveTab] = useState<'visits' | 'mixes'>('visits');
 
@@ -135,20 +136,105 @@ export function ProfilePage() {
   const [preferences, setPreferences] = useState<{ topFlavors: string[]; topMixes: string[] } | null>(null);
   const [loadingPrefs, setLoadingPrefs] = useState(true);
 
-  const handleRepeatMix = (booking: any) => {
-    const parts = (booking.hookahMix || '').split(' | ');
-    let liquidBase = 'water';
-    if (parts.length >= 2) {
-      const baseName = parts[1];
-      if (baseName.includes('молок')) liquidBase = 'milk';
-      else if (baseName.includes('сок')) liquidBase = 'juice';
-      else if (baseName.includes('вин') || baseName.includes('Коктейл')) liquidBase = 'wine';
+  const fetchOrders = async () => {
+    try {
+      const { data } = await api.get('/api/orders/my');
+      setOrders(data);
+    } catch (err) {
+      console.warn('Failed to load orders history:', err);
     }
+  };
 
-    setRepeatBooking(booking);
+  const getUniqueRecipes = () => {
+    const recipesMap = new Map<string, {
+      id: string;
+      mixString: string;
+      mix_id?: string | null;
+      date: string;
+      strength: string;
+      baseName: string;
+      comment?: string;
+    }>();
+
+    // 1. Extract from bookings
+    bookings.forEach(b => {
+      if (b.hookahMix && b.hookahMix.trim() && b.hookahMix !== 'Без кальяна (заказ на месте)') {
+        const key = b.hookahMix.trim();
+        let baseName = 'На воде';
+        if (b.hookahMix.toLowerCase().includes('молок') || b.hookahMix.toLowerCase().includes('milk')) baseName = 'На молоке';
+        else if (b.hookahMix.toLowerCase().includes('сок') || b.hookahMix.toLowerCase().includes('juice')) baseName = 'На соке';
+        else if (b.hookahMix.toLowerCase().includes('вин') || b.hookahMix.toLowerCase().includes('wine')) baseName = 'На вине';
+
+        const strengthLabel = b.hookahStrength === 'light' ? 'Легкая' : b.hookahStrength === 'medium' ? 'Средняя' : 'Крепкая';
+
+        if (!recipesMap.has(key) || new Date(b.date) > new Date(recipesMap.get(key)!.date)) {
+          recipesMap.set(key, {
+            id: b.id || b._id,
+            mixString: b.hookahMix,
+            mix_id: null,
+            date: b.date,
+            strength: strengthLabel,
+            baseName,
+            comment: b.comment || 'Заказ при бронировании стола'
+          });
+        }
+      }
+    });
+
+    // 2. Extract from orders
+    orders.forEach(o => {
+      if (o.notes && o.notes.trim()) {
+        const key = o.notes.trim();
+        let mixString = o.notes;
+        let strengthLabel = 'Средняя';
+        let baseName = 'На воде';
+        
+        const flavorMatch = o.notes.match(/\[Вкус:\s*([^\]]+)\]/);
+        const strengthMatch = o.notes.match(/\[Крепость:\s*([^\]]+)\]/);
+        
+        if (flavorMatch) {
+          mixString = flavorMatch[1];
+        }
+        if (strengthMatch) {
+          const str = strengthMatch[1];
+          strengthLabel = str === 'light' ? 'Легкая' : str === 'medium' ? 'Средняя' : str === 'strong' ? 'Крепкая' : 'Экстра';
+        }
+        if (o.liquidId) {
+          baseName = o.liquidId === 'water' ? 'На воде' : o.liquidId === 'milk' ? 'На молоке' : o.liquidId === 'juice' ? 'На соке' : 'На вине';
+        }
+
+        if (!recipesMap.has(key) || new Date(o.createdAt) > new Date(recipesMap.get(key)!.date)) {
+          recipesMap.set(key, {
+            id: o.id || o._id,
+            mixString: o.notes,
+            mix_id: o.mixId || null,
+            date: o.createdAt,
+            strength: strengthLabel,
+            baseName,
+            comment: mixString
+          });
+        }
+      }
+    });
+
+    return Array.from(recipesMap.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
+
+  const handleRepeatMix = (recipe: any) => {
+    let liquidBase = 'water';
+    if (recipe.baseName.includes('молок') || recipe.mixString.toLowerCase().includes('milk')) liquidBase = 'milk';
+    else if (recipe.baseName.includes('сок') || recipe.mixString.toLowerCase().includes('juice')) liquidBase = 'juice';
+    else if (recipe.baseName.includes('вин') || recipe.mixString.toLowerCase().includes('wine')) liquidBase = 'wine';
+
+    setRepeatBooking({
+      hookahMix: recipe.mixString,
+      mix_id: recipe.mix_id || null,
+      phone: user?.phone || '',
+      comment: recipe.comment || ''
+    });
     setRepeatLiquidBase(liquidBase);
-    setRepeatPhone(user?.phone || booking.phone || '');
-    setRepeatSpecialNotes(booking.comment || '');
+    setRepeatPhone(user?.phone || '');
+    setRepeatSpecialNotes('');
     setShowRepeatModal(true);
   };
 
@@ -163,12 +249,17 @@ export function ProfilePage() {
 
     setSubmittingRepeat(true);
     try {
-      const notesString = repeatBooking.hookahMix 
+      let notesString = repeatBooking.hookahMix 
         ? `${repeatBooking.hookahMix}${repeatSpecialNotes ? ` | Пожелания: ${repeatSpecialNotes}` : ''}`
         : repeatSpecialNotes;
 
+      // Truncate to comply with Zod max 1000 length limit
+      if (notesString.length > 990) {
+        notesString = notesString.slice(0, 985) + '...';
+      }
+
       const res = await api.post('/api/orders', {
-        mix_id: null,
+        mix_id: repeatBooking.mix_id || null,
         liquid_id: repeatLiquidBase,
         notes: notesString,
         seat_id: repeatSeatLabel.replace(/\s+/g, '-').toLowerCase(),
@@ -191,6 +282,7 @@ export function ProfilePage() {
     }
   };
 
+
   // Editable fields
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
@@ -209,6 +301,14 @@ export function ProfilePage() {
   // Custom Avatar Upload
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const EMOJI_AVATARS = [
+    '😎', '🤓', '🥳', '😈', '👻', '🦊', '🐱', '🐶', '🦁', '🐯',
+    '🐻', '🐼', '🐨', '🐸', '🦄', '🐲', '🔥', '⭐', '💎', '🎮',
+    '🎧', '🏆', '🎯', '🚀', '💫', '🌟', '✨', '🎭', '🎨', '🎬',
+    '🎪', '🍀', '🌸', '🌙', '❄️', '🌈', '🦅', '🦋', '🐺', '🦈',
+  ];
 
   // VIP Card Flipping & QR Pass
   const [isFlipped, setIsFlipped] = useState(false);
@@ -256,6 +356,17 @@ export function ProfilePage() {
     setOpacityVal(val);
     localStorage.setItem('glass_opacity', val.toString());
     document.documentElement.style.setProperty('--glass-opacity', val.toString());
+  };
+
+  const [webglDisabled, setWebglDisabled] = useState(() => {
+    return localStorage.getItem('disable_webgl_bg') === 'true';
+  });
+
+  const handleWebGLToggle = (disabled: boolean) => {
+    setWebglDisabled(disabled);
+    localStorage.setItem('disable_webgl_bg', disabled ? 'true' : 'false');
+    window.dispatchEvent(new CustomEvent('webgl-toggle', { detail: { disabled } }));
+    showToast(disabled ? '3D фоны отключены (Режим производительности)' : '3D фоны включены', 'success');
   };
 
   const updatePrefs = (updated: any) => {
@@ -331,6 +442,7 @@ export function ProfilePage() {
     fetchBookings();
     fetchVIPClubData();
     fetchPreferences();
+    fetchOrders();
   }, []);
 
   // Keep track of notified booking ready alerts (synchronized with localStorage)
@@ -422,6 +534,22 @@ export function ProfilePage() {
       showToast('Аватар успешно обновлён!', 'success');
     } catch (err: any) {
       showToast(err.response?.data?.error || 'Ошибка при загрузке аватара', 'error');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleEmojiAvatar = async (emoji: string) => {
+    setUploadingAvatar(true);
+    try {
+      await api.patch('/api/auth/me', { avatar: `emoji:${emoji}` });
+      const updatedUser: UserType = { ...user!, avatar: `emoji:${emoji}` };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setShowEmojiPicker(false);
+      showToast(`Аватар изменён на ${emoji}`, 'success');
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Ошибка при смене аватара', 'error');
     } finally {
       setUploadingAvatar(false);
     }
@@ -648,6 +776,10 @@ export function ProfilePage() {
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-accent-cyan animate-pulse">
                   <div className="w-6 h-6 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
                 </div>
+              ) : user?.avatar?.startsWith('emoji:') ? (
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-3xl sm:text-4xl shadow-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 ${selectedFrame.style}`}>
+                  {user.avatar.replace('emoji:', '')}
+                </div>
               ) : user?.avatar ? (
                 <img 
                   src={resolveImageUrl(user.avatar)} 
@@ -660,13 +792,22 @@ export function ProfilePage() {
                   {initials}
                 </div>
               )}
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-glass-bg border border-glass-border flex items-center justify-center text-white/40 hover:text-accent-gold hover:border-accent-gold/40 transition-colors shadow-lg"
-                title="Загрузить аватар"
-              >
-                <Camera className="w-3.5 h-3.5" />
-              </button>
+              <div className="absolute -bottom-1 -right-1 flex gap-1">
+                <button 
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="w-7 h-7 rounded-full bg-glass-bg border border-glass-border flex items-center justify-center text-sm hover:border-accent-gold/40 transition-colors shadow-lg"
+                  title="Выбрать эмодзи"
+                >
+                  😊
+                </button>
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-7 h-7 rounded-full bg-glass-bg border border-glass-border flex items-center justify-center text-white/40 hover:text-accent-gold hover:border-accent-gold/40 transition-colors shadow-lg"
+                  title="Загрузить фото"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                </button>
+              </div>
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -675,6 +816,32 @@ export function ProfilePage() {
                 className="hidden" 
               />
             </div>
+
+            {/* Emoji Picker */}
+            {showEmojiPicker && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10, height: 0 }} 
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                className="mb-4 p-3 rounded-2xl bg-black/40 border border-glass-border/30"
+              >
+                <p className="text-[9px] text-white/40 uppercase tracking-wider font-bold mb-2">Выберите эмодзи-аватарку:</p>
+                <div className="grid grid-cols-8 gap-1.5">
+                  {EMOJI_AVATARS.map(emoji => (
+                    <button
+                      key={emoji}
+                      onClick={() => handleEmojiAvatar(emoji)}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg hover:bg-accent-gold/10 hover:scale-110 transition-all border ${
+                        user?.avatar === `emoji:${emoji}` 
+                          ? 'border-accent-gold bg-accent-gold/15' 
+                          : 'border-transparent'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Name */}
             {editing ? (
@@ -820,6 +987,26 @@ export function ProfilePage() {
                   className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
+
+              <div className="col-span-full border-t border-white/5 pt-4 mt-2">
+                <div className="flex justify-between items-center mb-2 text-xs">
+                  <span className="text-white/60">3D WebGL-фоны (Интерактивная анимация дыма)</span>
+                  <span className={webglDisabled ? 'text-red-400 font-bold' : 'text-green-400 font-bold'}>
+                    {webglDisabled ? 'ОТКЛЮЧЕНО (Энергосбережение)' : 'ВКЛЮЧЕНО'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleWebGLToggle(!webglDisabled)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                    webglDisabled
+                      ? 'bg-red-500/10 text-red-400 border-red-500/35 shadow-[0_0_8px_rgba(239,68,68,0.15)]'
+                      : 'bg-green-500/10 text-green-400 border-green-500/35 shadow-[0_0_8px_rgba(34,197,94,0.15)]'
+                  }`}
+                >
+                  {webglDisabled ? 'Включить 3D-анимацию' : 'Отключить для плавной работы'}
+                </button>
+              </div>
             </div>
           </GlassCard>
         </motion.div>
@@ -959,7 +1146,7 @@ export function ProfilePage() {
               bookings.filter(b => b.seatLabel !== 'Микс-билет' && !b.seatId?.startsWith('MIX-')).length === 0 ? (
                 <GlassCard className="p-6 sm:p-8 text-center">
                   <p className="text-xs sm:text-sm text-white/40">У вас пока нет бронирований столов</p>
-                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = import.meta.env.BASE_URL}>Забронировать стол</GlowButton>
+                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = `${import.meta.env.BASE_URL}booking`}>Заказать кальян</GlowButton>
                 </GlassCard>
               ) : (
                 <div className="space-y-3">
@@ -1050,53 +1237,59 @@ export function ProfilePage() {
               )
             ) : (
               // MIXES TAB
-              bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-')).length === 0 ? (
+              getUniqueRecipes().length === 0 ? (
                 <GlassCard className="p-6 sm:p-8 text-center">
                   <p className="text-xs sm:text-sm text-white/40">У вас пока нет сохраненных миксов</p>
-                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = `${import.meta.env.BASE_URL}booking`}>Создать новый микс</GlowButton>
+                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = `${import.meta.env.BASE_URL}mixologist`}>Создать новый микс</GlowButton>
                 </GlassCard>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-')).map((booking, i) => {
+                  {getUniqueRecipes().map((recipe, i) => {
                     return (
-                      <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                        <GlassCard className="p-4 border border-accent-gold/20 flex flex-col justify-between h-full hover:border-accent-gold/40 transition-colors">
+                      <motion.div key={recipe.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                        <GlassCard className="p-4 border border-accent-gold/20 flex flex-col justify-between h-full hover:border-accent-gold/45 transition-colors">
                           <div>
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-[10px] font-mono text-accent-gold font-bold tracking-widest">{booking.seatId}</span>
-                              <span className="text-[9px] text-white/30">{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
+                              <span className="text-[9px] font-mono text-accent-gold font-bold tracking-widest">
+                                {recipe.mix_id ? 'АВТОРСКИЙ' : 'ИНДИВИДУАЛЬНЫЙ'}
+                              </span>
+                              <span className="text-[9px] text-white/30">{new Date(recipe.date).toLocaleDateString('ru-RU')}</span>
                             </div>
                             
-                            {(booking as any).hookahMix && (
-                              <div className="space-y-2 mt-2">
-                                <div className="text-xs text-white font-semibold flex items-center gap-1.5">
-                                  <Flame className="w-3.5 h-3.5 text-accent-gold" />
-                                  <span>Детали рецепта</span>
+                            <div className="space-y-2 mt-2">
+                              <div className="text-xs text-white font-semibold flex items-center gap-1.5">
+                                <Flame className="w-3.5 h-3.5 text-accent-gold" />
+                                <span>{recipe.comment || 'Сборка вкуса'}</span>
+                              </div>
+                              
+                              <div className="text-[11px] text-white/70 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-glass-border/10 space-y-1">
+                                <div className="text-[10px] text-accent-cyan font-semibold">
+                                  База: <span className="text-white">{recipe.baseName}</span> • Крепость: <span className="text-white">{recipe.strength}</span>
                                 </div>
-                                <div className="text-[11px] text-white/70 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-glass-border/10 space-y-1">
-                                  {(booking as any).hookahMix.split(' | ').map((line: string, idx: number) => {
-                                    if (line.startsWith('Mix: ')) {
-                                      return (
-                                        <div key={idx} className="mt-1 pt-1 border-t border-white/5 text-accent-gold">
-                                          <strong>Вкусы:</strong> {line.replace('Mix: ', '')}
-                                        </div>
-                                      );
-                                    }
-                                    return <div key={idx}>{line}</div>;
-                                  })}
-                                  {booking.comment && (
-                                    <div className="text-[10px] text-white/50 italic mt-1 font-light">
-                                      "{booking.comment}"
-                                    </div>
+                                
+                                <div className="mt-1.5 pt-1.5 border-t border-white/5 font-mono text-[10px] text-white/60 break-words leading-normal">
+                                  {recipe.mixString.includes(' | ') ? (
+                                    recipe.mixString.split(' | ').map((line, idx) => {
+                                      if (line.startsWith('Mix: ') || line.startsWith('Вкус: ')) {
+                                        return (
+                                          <div key={idx} className="text-accent-gold font-sans font-semibold">
+                                            {line}
+                                          </div>
+                                        );
+                                      }
+                                      return <div key={idx}>{line}</div>;
+                                    })
+                                  ) : (
+                                    recipe.mixString
                                   )}
                                 </div>
                               </div>
-                            )}
+                            </div>
                           </div>
 
                           <div className="mt-4 pt-3 border-t border-white/5 flex gap-2">
                             <button
-                              onClick={() => handleRepeatMix(booking)}
+                              onClick={() => handleRepeatMix(recipe)}
                               className="w-full py-2 bg-gradient-to-r from-accent-gold/10 to-amber-500/10 border border-accent-gold/30 hover:border-accent-gold/60 text-accent-gold text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
                             >
                               <Flame className="w-3.5 h-3.5 text-accent-gold animate-pulse" />

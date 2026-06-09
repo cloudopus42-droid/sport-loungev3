@@ -87,7 +87,7 @@ export function LoginCallbackPage() {
   }, [handleGoogleCallback, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#09090E] flex flex-col items-center justify-center text-white px-4">
+    <div className="min-h-screen bg-[#131313] flex flex-col items-center justify-center text-white px-4">
       <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
       <h2 className="text-xl font-medium tracking-wide">Вход через Google...</h2>
       <p className="text-gray-400 mt-2 text-sm">Пожалуйста, подождите, мы авторизуем вашу сессию.</p>

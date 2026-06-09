@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX, X, Music } from 'lucide-react';
-import speedDialMusic from '@/zero-7-speed-dial.mp3';
+
+// Ambient lounge music — royalty-free
+const MUSIC_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3';
 
 export function LuxuryMusicPlayer() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true); // Enabled by default
+  const [isPlaying, setIsPlaying] = useState(false); // Disabled by default, starts on success
   const [volume, setVolume] = useState(0.10); // Default 10%
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -14,7 +16,7 @@ export function LuxuryMusicPlayer() {
 
   // Initialize Audio
   useEffect(() => {
-    const audio = new Audio(speedDialMusic);
+    const audio = new Audio(MUSIC_URL);
     audio.loop = true;
     audio.volume = volume;
     audioRef.current = audio;
@@ -43,6 +45,7 @@ export function LuxuryMusicPlayer() {
       })
       .catch((err) => {
         console.log('Autoplay blocked, registering user interaction listeners:', err);
+        setIsPlaying(false);
         // Fallback to interaction listeners
         document.addEventListener('click', startPlaying);
         document.addEventListener('touchstart', startPlaying);
@@ -109,7 +112,7 @@ export function LuxuryMusicPlayer() {
   };
 
   return (
-    <div className="fixed bottom-6 left-6 z-[45]">
+    <div className="fixed bottom-20 sm:bottom-6 left-4 sm:left-6 z-[45]">
       {/* 1. Floating Round Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
@@ -158,7 +161,7 @@ export function LuxuryMusicPlayer() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 50 }}
             transition={{ type: 'spring', damping: 20, stiffness: 220 }}
-            className="fixed bottom-24 left-4 right-4 sm:right-auto sm:left-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-80 glass-card overflow-hidden shadow-2xl flex flex-col z-50 p-4 space-y-4"
+            className="fixed bottom-36 sm:bottom-24 left-4 right-4 sm:right-auto sm:left-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-80 glass-card overflow-hidden shadow-2xl flex flex-col z-50 p-4 space-y-4"
           >
             {/* Header */}
             <div className="flex justify-between items-center pb-2 border-b border-glass-border/40">

@@ -73,6 +73,7 @@ export interface Invitation {
 
 export interface Booking {
   _id: string;
+  id?: string;
   user: User | string;
   seatId: string;
   seatLabel: string;
@@ -83,6 +84,11 @@ export interface Booking {
   phone: string;
   comment?: string;
   status: 'pending' | 'confirmed' | 'cancelled';
+  hookahMix?: string;
+  hookahStrength?: 'light' | 'medium' | 'strong';
+  hookahCount?: number;
+  hookahStatus?: 'none' | 'preparing' | 'ready' | 'served';
+  hookahStatusUpdatedAt?: string;
   createdAt: string;
 }
 

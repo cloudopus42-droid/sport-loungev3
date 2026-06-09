@@ -349,7 +349,7 @@ export function AnalyticsPage() {
           { icon: DollarSign, label: 'Выручка', value: fmt(grossRevenue), sub: `${totalHookahs} шт кальянов`, color: 'text-green-400', bg: 'bg-green-500/10' },
           { icon: TrendingDown, label: 'Все расходы', value: fmt(totalExpenses), sub: 'Фермы+ЗП+Склад', color: 'text-red-400', bg: 'bg-red-500/10' },
           { icon: Percent, label: 'Загруженность залов', value: `${occupancyRate}%`, sub: `из ${totalCapacitySlots} сеансов`, color: 'text-accent-cyan', bg: 'bg-accent-cyan/10' },
-          { icon: Repeat, label: 'Retention Rate', value: `${retentionRate}%`, sub: 'вернувшиеся гости', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+          { icon: Repeat, label: 'Retention Rate', value: `${retentionRate}%`, sub: 'вернувшиеся гости', color: 'text-amber-400', bg: 'bg-purple-500/10' },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }}>
             <GlassCard className="p-3 sm:p-4">
@@ -388,15 +388,15 @@ export function AnalyticsPage() {
             </div>
 
             {/* Predictive Model Card */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-black border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-              <div className="flex items-center gap-2 mb-2 text-purple-300 font-semibold text-xs">
-                <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-black border border-amber-500/20 shadow-[0_0_15px_rgba(255, 191, 0,0.1)]">
+              <div className="flex items-center gap-2 mb-2 text-amber-300 font-semibold text-xs">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
                 <span>Прогноз ИИ на следующий месяц</span>
               </div>
               <p className="text-[10px] text-white/60 leading-relaxed mb-3">
                 Машинный алгоритм прогнозирует изменение динамики на основе тренда роста бронирований: <span className="text-green-400 font-semibold">{(revenueGrowthRate * 100).toFixed(1)}%</span>.
               </p>
-              <div className="flex justify-between items-center border-t border-purple-500/10 pt-2 text-xs">
+              <div className="flex justify-between items-center border-t border-amber-500/10 pt-2 text-xs">
                 <span className="text-white/40">Ожидаемая выручка:</span>
                 <span className="text-white font-bold font-mono text-sm">{fmt(predictedRevenue)}</span>
               </div>
@@ -598,7 +598,7 @@ export function AnalyticsPage() {
       <GlassCard className="p-4 sm:p-5">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <h3 className="text-xs sm:text-sm font-display font-semibold text-white flex items-center gap-2">
-            <Package className="w-4 h-4 text-purple-400" /> Учёт остатков склада
+            <Package className="w-4 h-4 text-amber-400" /> Учёт остатков склада
           </h3>
           <GlowButton size="sm" onClick={() => {
             if (editingInventory) { saveSettings({ hookahPrice, expenses, inventory }); showToast('Остатки обновлены', 'success'); }

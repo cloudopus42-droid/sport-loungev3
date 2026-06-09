@@ -4,6 +4,7 @@ import { Heart, Share2, User as UserIcon } from 'lucide-react';
 import clsx from 'clsx';
 import type { Post, User } from '@/types';
 import api from '@/lib/api';
+import { resolveImageUrl } from '@/lib/urls';
 
 interface PostCardProps {
   post: Post;
@@ -62,7 +63,7 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex items-center gap-3 p-4">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center flex-shrink-0">
           {author?.avatar ? (
-            <img src={author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+            <img src={resolveImageUrl(author.avatar)} alt="" className="w-full h-full rounded-full object-cover" />
           ) : (
             <UserIcon className="w-5 h-5 text-white" />
           )}
@@ -81,7 +82,7 @@ export function PostCard({ post }: PostCardProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-white/10 to-white/5 bg-[length:200%_100%] animate-shimmer" />
         )}
         <img
-          src={post.imageUrl}
+          src={resolveImageUrl(post.imageUrl)}
           alt={post.title}
           className={clsx(
             'w-full h-full object-cover transition-opacity duration-500',

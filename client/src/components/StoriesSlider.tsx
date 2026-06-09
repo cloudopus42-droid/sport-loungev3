@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Story } from '@/types';
 import { StorySkeleton } from './ui/Skeleton';
+import { resolveImageUrl } from '@/lib/urls';
 
 interface StoriesSliderProps {
   stories: Story[];
@@ -103,7 +104,7 @@ export function StoriesSlider({ stories, loading = false }: StoriesSliderProps) 
             <div className="w-[68px] h-[68px] rounded-full p-[2.5px] bg-gradient-to-br from-yellow-300 via-accent-gold to-yellow-600 shadow-[0_0_12px_rgba(212,175,55,0.3)] animate-pulse animate-duration-[2500ms]">
               <div className="w-full h-full rounded-full overflow-hidden border-2 border-dark-bg">
                 <img
-                  src={story.mediaUrl}
+                  src={resolveImageUrl(story.mediaUrl)}
                   alt=""
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -191,7 +192,7 @@ export function StoriesSlider({ stories, loading = false }: StoriesSliderProps) 
             >
               {activeStories[activeStory].mediaType === 'video' ? (
                 <video
-                  src={activeStories[activeStory].mediaUrl}
+                  src={resolveImageUrl(activeStories[activeStory].mediaUrl)}
                   className="max-w-full max-h-full object-contain"
                   autoPlay
                   muted
@@ -199,7 +200,7 @@ export function StoriesSlider({ stories, loading = false }: StoriesSliderProps) 
                 />
               ) : (
                 <img
-                  src={activeStories[activeStory].mediaUrl}
+                  src={resolveImageUrl(activeStories[activeStory].mediaUrl)}
                   alt=""
                   className="max-w-full max-h-full object-contain"
                 />

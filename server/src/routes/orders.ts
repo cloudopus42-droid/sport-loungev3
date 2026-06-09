@@ -15,7 +15,7 @@ const router = Router();
 const createOrderSchema = z.object({
   mix_id: z.string().uuid().nullable().optional(),
   liquid_id: z.string().min(1),
-  notes: z.string().max(500).optional().default(''),
+  notes: z.string().max(1000).optional().default(''),
   seat_id: z.string().min(1),
   seat_label: z.string().min(1),
   seat_zone: z.string().min(1),
@@ -469,7 +469,7 @@ router.get('/me/preferences', auth, async (req: Request, res: Response, next: Ne
 router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status } = req.body;
-    const allowed = ['accepted', 'preparing', 'roasting', 'delivering', 'done'];
+    const allowed = ['accepted', 'preparing', 'roasting', 'delivering', 'done', 'cancelled'];
     
     if (!allowed.includes(status)) {
       res.status(400).json({ error: 'Некорректный статус заказа', status: 400 });

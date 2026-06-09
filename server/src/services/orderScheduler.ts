@@ -74,4 +74,51 @@ export function startOrderScheduler() {
       console.error('⚠️ [Scheduler] Unhandled error in background delay checker:', schedErr.message);
     }
   }, 30000); // Check every 30 seconds
+
+  // ══════════════════════════════════════════════════════
+  // Auto-cleanup: Delete orders & bookings older than 7 days
+  // Runs every 6 hours
+  // ══════════════════════════════════════════════════════
+  const CLEANUP_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
+  const RETENTION_DAYS = 7;
+
+  const runCleanup = async () => {
+    try {
+      const cutoffDate = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+      // Clean old orders
+      const { data: deletedOrders, error: ordersErr } = await supabase
+        .from('orders')
+        .delete()
+        .lt('created_at', cutoffDate)
+        .select('id');
+
+      if (ordersErr) {
+        console.error('⚠️ [Cleanup] Error cleaning old orders:', ordersErr.message);
+      } else if (deletedOrders && deletedOrders.length > 0) {
+        console.log(`🧹 [Cleanup] Removed ${deletedOrders.length} orders older than ${RETENTION_DAYS} days.`);
+      }
+
+      // Clean old completed/cancelled bookings
+      const { data: deletedBookings, error: bookingsErr } = await supabase
+        .from('bookings')
+        .delete()
+        .lt('created_at', cutoffDate)
+        .in('status', ['confirmed', 'cancelled'])
+        .select('id');
+
+      if (bookingsErr) {
+        console.error('⚠️ [Cleanup] Error cleaning old bookings:', bookingsErr.message);
+      } else if (deletedBookings && deletedBookings.length > 0) {
+        console.log(`🧹 [Cleanup] Removed ${deletedBookings.length} bookings older than ${RETENTION_DAYS} days.`);
+      }
+    } catch (err: any) {
+      console.error('⚠️ [Cleanup] Unhandled error:', err.message);
+    }
+  };
+
+  // Run immediately on startup, then every 6 hours
+  setTimeout(runCleanup, 5000);
+  setInterval(runCleanup, CLEANUP_INTERVAL);
+  console.log(`🧹 Auto-cleanup scheduled: orders/bookings older than ${RETENTION_DAYS} days, every 6h.`);
 }

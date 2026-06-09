@@ -1,11 +1,119 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, Bell, Sparkles, Users, Radio, Flame, Award } from 'lucide-react';
+import { TrendingUp, DollarSign, Bell, Sparkles, Users, Radio, Flame, Award, Plus, Trash2, Calendar } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { StatCardSkeleton } from '@/components/ui/Skeleton';
 import api from '@/lib/api';
 import { useSocket } from '@/hooks/useSocket';
+import { HOOKAH_FLAVORS, FLAVOR_CATEGORIES } from '@/config/seats';
 
+function FlavorManagement() {
+  const [flavors, setFlavors] = useState(HOOKAH_FLAVORS);
+  const [newName, setNewName] = useState('');
+  const [newEmoji, setNewEmoji] = useState('');
+  const [newCategory, setNewCategory] = useState('Фрукты');
+  const [filterCat, setFilterCat] = useState('Все');
+
+  const handleAdd = () => {
+    if (!newName.trim() || !newEmoji.trim()) return;
+    const newFlavor = { name: newName.trim(), emoji: newEmoji.trim(), category: newCategory };
+    setFlavors(prev => [...prev, newFlavor]);
+    setNewName('');
+    setNewEmoji('');
+  };
+
+  const handleRemove = (name: string) => {
+    setFlavors(prev => prev.filter(f => f.name !== name));
+  };
+
+  const cats = FLAVOR_CATEGORIES;
+  const filtered = filterCat === 'Все' ? flavors : flavors.filter(f => f.category === filterCat);
+
+  return (
+    <GlassCard className="p-6 border-glass-border/40">
+      <h3 className="text-md font-display font-semibold text-white tracking-wide flex items-center gap-2 mb-4 border-b border-glass-border/10 pb-3">
+        <Flame className="w-5 h-5 text-accent-gold" />
+        <span>Управление ассортиментом вкусов</span>
+        <span className="ml-auto text-[10px] font-normal text-white/30">{flavors.length} вкусов</span>
+      </h3>
+
+      {/* Add new flavor */}
+      <div className="flex flex-wrap gap-2 mb-4 p-3 rounded-xl bg-black/20 border border-white/5">
+        <input
+          value={newEmoji}
+          onChange={e => setNewEmoji(e.target.value)}
+          placeholder="😋"
+          className="w-12 bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-center text-sm text-white focus:border-accent-gold focus:outline-none"
+          maxLength={4}
+        />
+        <input
+          value={newName}
+          onChange={e => setNewName(e.target.value)}
+          placeholder="Название вкуса"
+          className="flex-1 min-w-[140px] bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-accent-gold focus:outline-none"
+        />
+        <select
+          value={newCategory}
+          onChange={e => setNewCategory(e.target.value)}
+          className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-accent-gold focus:outline-none"
+        >
+          {cats.filter(c => c !== 'Все').map(c => (
+            <option key={c} value={c} className="bg-[#131313]">{c}</option>
+          ))}
+        </select>
+        <button
+          onClick={handleAdd}
+          disabled={!newName.trim() || !newEmoji.trim()}
+          className="flex items-center gap-1 px-4 py-2 rounded-lg bg-accent-gold/20 border border-accent-gold/30 text-accent-gold text-xs font-bold hover:bg-accent-gold/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <Plus className="w-3.5 h-3.5" /> Добавить
+        </button>
+      </div>
+
+      {/* Category filter */}
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide mb-3 pb-1">
+        {cats.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setFilterCat(cat)}
+            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${
+              filterCat === cat
+                ? 'bg-accent-gold/20 text-accent-gold border border-accent-gold/30'
+                : 'bg-white/[0.03] text-white/40 border border-transparent hover:text-white/60'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Flavor list */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[300px] overflow-y-auto scrollbar-hide">
+        {filtered.map(flavor => (
+          <div
+            key={flavor.name}
+            className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 group transition-all"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-lg flex-shrink-0">{flavor.emoji}</span>
+              <div className="min-w-0">
+                <p className="text-xs text-white/80 font-medium truncate">{flavor.name}</p>
+                <p className="text-[9px] text-white/30">{flavor.category}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => handleRemove(flavor.name)}
+              className="p-1.5 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+              title="Удалить"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+  );
+}
 interface Stats {
   totalPosts: number;
   totalMixes: number;
@@ -77,15 +185,22 @@ export function Dashboard() {
   // Taste analytics state
   const [tasteStats, setTasteStats] = useState<TasteStats | null>(null);
 
+  // Hookah calendar stats states
+  const [bookingsData, setBookingsData] = useState<any[]>([]);
+  const [ordersData, setOrdersData] = useState<any[]>([]);
+  const [calYear, setCalYear] = useState(new Date().getFullYear());
+  const [calMonth, setCalMonth] = useState(new Date().getMonth());
+
   const fetchData = async () => {
     try {
-      const [postsRes, mixesRes, promosRes, invitationsRes, bookingsRes, tasteStatsRes] = await Promise.allSettled([
+      const [postsRes, mixesRes, promosRes, invitationsRes, bookingsRes, tasteStatsRes, ordersRes] = await Promise.allSettled([
         api.get('/api/posts', { params: { limit: 1 } }),
         api.get('/api/mixes'),
         api.get('/api/promos'),
         api.get('/api/invitations'),
         api.get('/api/bookings/all'),
         api.get('/api/bookings/taste-stats'),
+        api.get('/api/orders')
       ]);
 
       const totalPosts = postsRes.status === 'fulfilled'
@@ -102,6 +217,10 @@ export function Dashboard() {
         : 0;
 
       const bookings = bookingsRes.status === 'fulfilled' ? bookingsRes.value.data : [];
+      const orders = ordersRes.status === 'fulfilled' ? ordersRes.value.data : [];
+      setBookingsData(bookings);
+      setOrdersData(orders);
+
       const totalOrders = bookings.length;
       const totalRevenue = bookings.filter((b: any) => b.status === 'confirmed').length * 1200;
 
@@ -155,10 +274,21 @@ export function Dashboard() {
       fetchData();
     });
 
+    socket.on('order:created', () => {
+      fetchData();
+      playChime();
+    });
+
+    socket.on('order:updated', () => {
+      fetchData();
+    });
+
     return () => {
       socket.off('online:count');
       socket.off('booking:created');
       socket.off('booking:updated');
+      socket.off('order:created');
+      socket.off('order:updated');
     };
   }, [socket]);
 
@@ -352,6 +482,205 @@ export function Dashboard() {
               </table>
             </div>
           </GlassCard>
+
+          {/* Visual Hookah Calendar Stats */}
+          {(() => {
+            const monthNames = [
+              'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+              'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+            ];
+
+            const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+            const getFirstDayOfMonth = (year: number, month: number) => {
+              const day = new Date(year, month, 1).getDay();
+              return day === 0 ? 6 : day - 1; // 0 = Mon, 6 = Sun
+            };
+
+            const getHookahEvents = () => {
+              const events: Record<string, number> = {};
+
+              // 1. Process bookings
+              bookingsData.forEach((b: any) => {
+                if (b.status !== 'cancelled' && b.hookahMix && b.hookahMix !== 'Без кальяна (заказ на месте)') {
+                  const count = b.hookahCount || 1;
+                  const dateStr = b.date;
+                  if (dateStr) {
+                    events[dateStr] = (events[dateStr] || 0) + count;
+                  }
+                }
+              });
+
+              // 2. Process orders
+              ordersData.forEach((o: any) => {
+                if (o.status !== 'cancelled') {
+                  const dateStr = o.createdAt ? o.createdAt.split('T')[0] : '';
+                  if (dateStr) {
+                    events[dateStr] = (events[dateStr] || 0) + 1;
+                  }
+                }
+              });
+
+              return events;
+            };
+
+            const hookahEvents = getHookahEvents();
+
+            // Calculate aggregates
+            const todayStr = new Date().toISOString().split('T')[0];
+            let todayCount = 0;
+            let weekCount = 0;
+            let monthCount = 0;
+
+            const nowTime = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+
+            Object.entries(hookahEvents).forEach(([dateStr, count]) => {
+              const dateVal = new Date(dateStr);
+              const diffDays = Math.floor((nowTime - dateVal.getTime()) / oneDay);
+
+              if (dateStr === todayStr) {
+                todayCount += count;
+              }
+              if (diffDays >= 0 && diffDays < 7) {
+                weekCount += count;
+              }
+              if (diffDays >= 0 && diffDays < 30) {
+                monthCount += count;
+              }
+            });
+
+            const daysInMonth = getDaysInMonth(calYear, calMonth);
+            const firstDay = getFirstDayOfMonth(calYear, calMonth);
+            const cells: { dateStr: string; dayNum: number; isCurrentMonth: boolean }[] = [];
+
+            for (let i = 0; i < firstDay; i++) {
+              cells.push({ dateStr: '', dayNum: 0, isCurrentMonth: false });
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+              const mm = (calMonth + 1).toString().padStart(2, '0');
+              const dd = d.toString().padStart(2, '0');
+              const dateStr = `${calYear}-${mm}-${dd}`;
+              cells.push({ dateStr, dayNum: d, isCurrentMonth: true });
+            }
+
+            return (
+              <GlassCard className="p-6 border-glass-border/40 mt-6 select-none relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[radial-gradient(circle_at_top_right,rgba(255,191,0,0.04),transparent_70%)] pointer-events-none"></div>
+
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white/95 flex items-center gap-2">
+                      <Calendar className="w-4.5 h-4.5 text-accent-gold" />
+                      <span>Календарь заказов кальянов</span>
+                    </h3>
+                    <p className="text-[10px] text-white/35">Дневная активность забивок и заказов на месте</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-xl border border-white/5 self-end sm:self-auto">
+                    <button
+                      onClick={() => {
+                        if (calMonth === 0) {
+                          setCalMonth(11);
+                          setCalYear(y => y - 1);
+                        } else {
+                          setCalMonth(m => m - 1);
+                        }
+                      }}
+                      className="p-1 rounded hover:bg-white/5 text-white/50 hover:text-white transition-colors text-[10px] font-bold"
+                    >
+                      ◀
+                    </button>
+                    <span className="text-xs font-bold text-white min-w-[90px] text-center">
+                      {monthNames[calMonth]} {calYear}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (calMonth === 11) {
+                          setCalMonth(0);
+                          setCalYear(y => y + 1);
+                        } else {
+                          setCalMonth(m => m + 1);
+                        }
+                      }}
+                      className="p-1 rounded hover:bg-white/5 text-white/50 hover:text-white transition-colors text-[10px] font-bold"
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1.5 text-center text-[9px] uppercase tracking-wider font-extrabold text-white/35 mb-3">
+                  <span>Пн</span>
+                  <span>Вт</span>
+                  <span>Ср</span>
+                  <span>Чт</span>
+                  <span>Пт</span>
+                  <span>Сб</span>
+                  <span>Вс</span>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1.5">
+                  {cells.map((cell, idx) => {
+                    if (!cell.isCurrentMonth) {
+                      return <div key={`empty-${idx}`} className="aspect-square bg-transparent rounded-lg" />;
+                    }
+
+                    const count = hookahEvents[cell.dateStr] || 0;
+                    let bgStyle = 'bg-white/[0.01] border-white/5 text-white/40';
+                    let glowStyle = '';
+
+                    if (count > 0) {
+                      if (count <= 2) {
+                        bgStyle = 'bg-amber-500/10 border-accent-gold/20 text-accent-gold';
+                        glowStyle = 'shadow-[0_0_8px_rgba(255,191,0,0.1)]';
+                      } else if (count <= 5) {
+                        bgStyle = 'bg-accent-gold text-black font-extrabold border-accent-gold';
+                        glowStyle = 'shadow-[0_0_12px_rgba(255,191,0,0.3)]';
+                      } else {
+                        bgStyle = 'bg-gradient-to-br from-yellow-400 to-amber-600 text-black font-black border-yellow-300';
+                        glowStyle = 'shadow-[0_0_18px_rgba(255,191,0,0.5)] animate-pulse';
+                      }
+                    }
+
+                    return (
+                      <div
+                        key={cell.dateStr}
+                        className={`aspect-square rounded-xl border flex flex-col items-center justify-center relative group transition-all duration-300 ${bgStyle} ${glowStyle}`}
+                      >
+                        <span className="text-[10px] font-bold">{cell.dayNum}</span>
+                        {count > 0 && (
+                          <span className="text-[8px] font-mono leading-none mt-0.5 opacity-80">
+                            {count}💨
+                          </span>
+                        )}
+
+                        {/* Tooltip on hover */}
+                        <div className="absolute bottom-full mb-1 opacity-0 pointer-events-none group-hover:opacity-100 bg-[#0e0e0e] border border-white/10 px-2 py-1 rounded-md text-[9px] font-medium text-white whitespace-nowrap z-30 shadow-lg transition-opacity">
+                          {cell.dayNum} {monthNames[calMonth].slice(0, 3)}: {count} кальянов
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 mt-6 pt-4 border-t border-white/5 text-center">
+                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                    <p className="text-[9px] uppercase tracking-wider text-white/45 font-bold mb-0.5">Сегодня</p>
+                    <p className="text-base font-extrabold text-accent-gold">{todayCount} 💨</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                    <p className="text-[9px] uppercase tracking-wider text-white/45 font-bold mb-0.5">Неделя (7 дней)</p>
+                    <p className="text-base font-extrabold text-white">{weekCount} 💨</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                    <p className="text-[9px] uppercase tracking-wider text-white/45 font-bold mb-0.5">Месяц (30 дней)</p>
+                    <p className="text-base font-extrabold text-white">{monthCount} 💨</p>
+                  </div>
+                </div>
+              </GlassCard>
+            );
+          })()}
 
         </div>
 
@@ -564,6 +893,9 @@ export function Dashboard() {
 
         </div>
       </GlassCard>
+
+      {/* Flavor Management Panel */}
+      <FlavorManagement />
 
     </div>
   );

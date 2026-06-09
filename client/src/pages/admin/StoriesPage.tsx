@@ -10,6 +10,7 @@ import { DragDropList } from '@/components/DragDropList';
 import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 import type { Story } from '@/types';
+import { resolveImageUrl } from '@/lib/urls';
 
 export function StoriesPage() {
   const [stories, setStories] = useState<Story[]>([]);
@@ -152,12 +153,12 @@ export function StoriesPage() {
                 {/* Preview */}
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-dark-surface flex-shrink-0">
                   {story.mediaType === 'video' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-accent-purple/10">
-                      <Film className="w-6 h-6 text-accent-purple" />
+                    <div className="w-full h-full flex items-center justify-center bg-accent-gold/10">
+                      <Film className="w-6 h-6 text-accent-gold" />
                     </div>
                   ) : (
                     <img
-                      src={story.mediaUrl}
+                      src={resolveImageUrl(story.mediaUrl)}
                       alt=""
                       className="w-full h-full object-cover"
                     />

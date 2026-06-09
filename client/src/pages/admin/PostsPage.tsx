@@ -9,6 +9,7 @@ import { FileUploader } from '@/components/FileUploader';
 import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 import type { Post } from '@/types';
+import { resolveImageUrl } from '@/lib/urls';
 
 export function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -133,7 +134,7 @@ export function PostsPage() {
       render: (post: Post) => (
         <div className="w-[50px] h-[50px] rounded-lg overflow-hidden bg-dark-surface flex-shrink-0">
           {post.imageUrl ? (
-            <img src={post.imageUrl} alt="" className="w-full h-full object-cover" />
+            <img src={resolveImageUrl(post.imageUrl)} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <ImageIcon className="w-5 h-5 text-white/20" />

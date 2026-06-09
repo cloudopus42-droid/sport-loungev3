@@ -132,11 +132,11 @@ export function ParticleEngine() {
         const size = p.baseSize * musicMultiplier;
         const alpha = Math.min(1.0, p.baseAlpha * (musicPlayingRef.current ? 1.5 : 1.0));
 
-        // Draw glowing particle (fintech fuchsia, purple, and cyan blend)
+        // Draw glowing particle (fintech amber, gold, and cyan blend)
         ctx.beginPath();
         const grad = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, size * 2.5);
         
-        let color = '168, 85, 247'; // Default purple
+        let color = '255, 191, 0'; // Default purple
         if (p.layer === 4) {
           color = '217, 70, 239'; // Fuchsia
         } else if (p.layer === 5) {

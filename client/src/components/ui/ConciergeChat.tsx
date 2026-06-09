@@ -67,7 +67,7 @@ export function ConciergeChat() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[45]">
+    <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[45]">
       {/* 1. Floating Gold Action Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
@@ -98,7 +98,7 @@ export function ConciergeChat() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 50 }}
             transition={{ type: 'spring', damping: 20, stiffness: 220 }}
-            className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-96 h-[480px] glass-card overflow-hidden shadow-2xl flex flex-col z-50"
+            className="fixed bottom-36 sm:bottom-24 right-4 left-4 sm:left-auto sm:right-0 sm:absolute sm:bottom-18 w-[calc(100vw-2rem)] sm:w-96 h-[480px] glass-card overflow-hidden shadow-2xl flex flex-col z-50"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-accent-gold/10 to-transparent px-4 py-3.5 border-b border-glass-border flex items-center justify-between">

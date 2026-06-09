@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 import type { Promo } from '@/types';
+import { resolveImageUrl } from '@/lib/urls';
 
 export function PromosPage() {
   const [promos, setPromos] = useState<Promo[]>([]);
@@ -140,7 +141,7 @@ export function PromosPage() {
       render: (promo: Promo) => (
         <div className="w-[50px] h-[50px] rounded-lg overflow-hidden bg-dark-surface flex-shrink-0">
           {promo.imageUrl ? (
-            <img src={promo.imageUrl} alt="" className="w-full h-full object-cover" />
+            <img src={resolveImageUrl(promo.imageUrl)} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <ImageIcon className="w-5 h-5 text-white/20" />

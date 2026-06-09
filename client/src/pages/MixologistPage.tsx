@@ -7,8 +7,8 @@ import { GlowButton } from '@/components/ui/GlowButton';
 import { showToast } from '@/components/NotificationToast';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
-import { ThreeDNA } from '@/components/ThreeDNA';
 import { HOOKAH_FLAVORS, FLAVOR_CATEGORIES } from '@/config/seats';
+
 
 const BOWL_TYPES = [
   { id: 'clay', name: 'Глиняная чаша', price: 1200, emoji: '🏺', desc: 'Классическая тяга, чистая вкусопередача' },
@@ -247,21 +247,14 @@ export function MixologistPage() {
               })}
             </div>
 
-            {/* 3D DNA and Characteristics */}
+            {/* Characteristics and Proportions */}
             {hookahMix.length > 0 && (
               <motion.div 
                 className="space-y-4 bg-white/5 p-4 rounded-2xl border border-glass-border/30"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <ThreeDNA 
-                  mix={hookahMix}
-                  mixPercentages={mixPercentages}
-                  activeCategory={flavorCategory}
-                  onSelectCategory={setFlavorCategory}
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-glass-border/10 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2 select-none">
                     <div className="text-[10px] uppercase tracking-wider text-accent-gold font-bold">Свойства микса</div>
                     {[
@@ -307,8 +300,18 @@ export function MixologistPage() {
           </GlassCard>
         </div>
 
-        {/* Right Side: Bowls, Bases, and Checkout */}
+        {/* Right Side: 3D Preview, Bowls, Bases, and Checkout */}
         <div className="lg:col-span-4 space-y-4">
+          {/* Crystal Edition Preview */}
+          <GlassCard className="p-5 flex flex-col items-center justify-center border-accent-cyan/20 bg-[#131313]/90 relative overflow-hidden select-none">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_#06B6D4_0%,transparent_70%)]" />
+            <div className="text-center space-y-3 relative z-10 py-6">
+              <span className="text-5xl">🔮</span>
+              <h3 className="text-lg font-display font-light text-white uppercase tracking-wider">Crystal <span className="text-cyan-400 font-semibold italic">Edition</span></h3>
+              <p className="text-[11px] text-white/50 leading-relaxed font-light">Кристальная модель с прозрачной колбой и LED-подсветкой для ценителей визуального искусства.</p>
+            </div>
+          </GlassCard>
+
           <GlassCard className="p-5 space-y-4">
             <h4 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5 border-b border-glass-border/10 pb-2 mb-0">
               🏺 Тип чаши

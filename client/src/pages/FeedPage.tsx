@@ -10,6 +10,7 @@ import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import type { Post, User } from '@/types';
 
+
 interface Comment {
   id?: string;
   _id?: string;
@@ -128,9 +129,9 @@ export function FeedPage() {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-2xl mx-auto space-y-6">
+    <div className="px-4 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between select-none">
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Лента сообщества</h1>
           <p className="text-xs text-white/40 mt-0.5">Фото и истории гостей Sport Lounge</p>
@@ -142,6 +143,20 @@ export function FeedPage() {
           </GlowButton>
         )}
       </div>
+
+      {/* Community Header Banner */}
+      <GlassCard className="p-6 border-accent-gold/20 bg-gradient-to-r from-black/80 to-[#1c1a25]/90 relative overflow-hidden select-none animate-reveal">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_#EC4899_0%,transparent_70%)]" />
+        <div className="space-y-3 relative z-10">
+          <span className="text-[10px] text-pink-400 uppercase tracking-[0.2em] font-bold">COMMUNITY GALLERY</span>
+          <h2 className="text-xl sm:text-2xl font-display font-light text-white uppercase tracking-wider">
+            Наша <span className="text-pink-400 font-semibold italic">Галерея</span>
+          </h2>
+          <p className="text-xs text-white/50 leading-relaxed font-light max-w-md">
+            Исследуйте галерею моментов наших гостей. Делитесь своими впечатлениями и атмосферой лаунжа.
+          </p>
+        </div>
+      </GlassCard>
 
       {/* Create Post Form */}
       <AnimatePresence>
@@ -177,98 +192,119 @@ export function FeedPage() {
         )}
       </AnimatePresence>
 
-      {/* Posts */}
-      {posts.map((post, i) => {
-        const author = post.author as User;
-        const liked = user ? post.likedBy?.includes(user._id) : false;
-        const comments = commentsData[post._id] || [];
-        const expanded = expandedComments.has(post._id);
+      {/* Gallery Filter */}
+      <div className="flex flex-wrap gap-2 mb-6 justify-center animate-reveal select-none">
+        <button className="px-5 py-1.5 rounded-full border border-accent-gold text-accent-gold bg-accent-gold/10 text-[10px] uppercase font-bold tracking-wider animate-pulse shadow-glow-amber">
+          Популярное
+        </button>
+        <button className="px-5 py-1.5 rounded-full border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-colors text-[10px] uppercase font-bold tracking-wider bg-white/5">
+          Новое
+        </button>
+        <button className="px-5 py-1.5 rounded-full border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-colors text-[10px] uppercase font-bold tracking-wider bg-white/5">
+          Отметки
+        </button>
+      </div>
 
-        return (
-          <motion.div key={post._id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.05, 0.3) }}>
-            <GlassCard className="overflow-hidden">
-              {/* Author */}
-              <div className="flex items-center gap-3 px-4 py-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                  {author?.avatar ? (
-                    <img src={resolveImageUrl(author.avatar)}
-                      className="w-full h-full rounded-full object-cover" alt="" />
-                  ) : (author?.name?.[0]?.toUpperCase() || '?')}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">{author?.name || 'Аноним'}</p>
-                  <p className="text-[10px] text-white/30">{new Date(post.createdAt).toLocaleDateString('ru-RU')}</p>
-                </div>
-              </div>
+      {/* Posts Masonry Columns */}
+      <div className="md:columns-2 gap-6 space-y-6 md:space-y-0">
+        {posts.map((post, i) => {
+          const author = post.author as User;
+          const liked = user ? post.likedBy?.includes(user._id) : false;
+          const comments = commentsData[post._id] || [];
+          const expanded = expandedComments.has(post._id);
 
-              {/* Image */}
-              {post.imageUrl && (
-                <img src={resolveImageUrl(post.imageUrl)}
-                  className="w-full aspect-[4/3] object-cover" alt={post.title} loading="lazy" />
-              )}
-
-              {/* Content */}
-              <div className="px-4 py-3 space-y-2">
-                <h3 className="text-base font-semibold text-white">{post.title}</h3>
-                {post.description && <p className="text-sm text-white/50">{post.description}</p>}
-
-                {/* Actions */}
-                <div className="flex items-center gap-4 pt-1">
-                  <motion.button onClick={() => handleLike(post._id)}
-                    className={clsx('flex items-center gap-1.5 text-sm transition-colors', liked ? 'text-red-400' : 'text-white/40 hover:text-red-400')}
-                    whileTap={{ scale: 0.9 }}>
-                    <Heart className={clsx('w-5 h-5', liked && 'fill-current')} />
-                    <span>{post.likes || 0}</span>
-                  </motion.button>
-
-                  <button onClick={() => toggleComments(post._id)}
-                    className="flex items-center gap-1.5 text-sm text-white/40 hover:text-accent-cyan transition-colors">
-                    <MessageCircle className="w-5 h-5" />
-                    <span>{(post as any).comments?.length || 0}</span>
-                  </button>
+          return (
+            <motion.div 
+              key={post._id} 
+              initial={{ opacity: 0, y: 15 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: Math.min(i * 0.05, 0.3) }}
+              className="break-inside-avoid mb-6"
+            >
+              <GlassCard className="overflow-hidden !border-white/10 hover:!border-accent-gold/30 hover:shadow-[0_0_25px_0_rgba(255,191,0,0.15)] transition-all duration-300">
+                {/* Author */}
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-gold to-accent-amber flex items-center justify-center text-black text-xs font-bold flex-shrink-0 border border-accent-gold/45 shadow-[0_0_8px_rgba(255,191,0,0.2)]">
+                    {author?.avatar ? (
+                      <img src={resolveImageUrl(author.avatar)}
+                        className="w-full h-full rounded-full object-cover" alt="" />
+                    ) : (author?.name?.[0]?.toUpperCase() || '?')}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">@{author?.name || 'anonym'}</p>
+                    <p className="text-[9px] text-white/30 uppercase tracking-wide">{new Date(post.createdAt).toLocaleDateString('ru-RU')}</p>
+                  </div>
                 </div>
 
-                {/* Comments */}
-                <AnimatePresence>
-                  {expanded && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                      className="space-y-2 pt-2 border-t border-glass-border">
-                      {comments.map((c) => (
-                        <div key={c.id || c._id} className="flex gap-2">
-                          <div className="w-6 h-6 rounded-full bg-glass-bg flex items-center justify-center text-[10px] text-white/50 flex-shrink-0 mt-0.5">
-                            {c.user?.name?.[0]?.toUpperCase() || '?'}
+                {/* Image */}
+                {post.imageUrl && (
+                  <img src={resolveImageUrl(post.imageUrl)}
+                    className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" alt={post.title} loading="lazy" />
+                )}
+
+                {/* Content */}
+                <div className="px-4 py-4 space-y-3">
+                  <h3 className="text-sm font-bold text-white">{post.title}</h3>
+                  {post.description && <p className="text-xs text-white/50 leading-relaxed font-light">{post.description}</p>}
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-4 pt-1 text-white/40">
+                    <motion.button onClick={() => handleLike(post._id)}
+                      className={clsx('flex items-center gap-1.5 text-xs transition-colors', liked ? 'text-red-400' : 'hover:text-red-400')}
+                      whileTap={{ scale: 0.9 }}>
+                      <Heart className={clsx('w-4 h-4', liked && 'fill-current')} />
+                      <span className="font-semibold">{post.likes || 0}</span>
+                    </motion.button>
+
+                    <button onClick={() => toggleComments(post._id)}
+                      className="flex items-center gap-1.5 text-xs hover:text-accent-cyan transition-colors">
+                      <MessageCircle className="w-4 h-4" />
+                      <span className="font-semibold">{(post as any).comments?.length || 0}</span>
+                    </button>
+                  </div>
+
+                  {/* Comments */}
+                  <AnimatePresence>
+                    {expanded && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                        className="space-y-2.5 pt-3 border-t border-white/5 mt-2">
+                        {comments.map((c) => (
+                          <div key={c.id || c._id} className="flex gap-2">
+                            <div className="w-6 h-6 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-[9px] text-white/50 flex-shrink-0 mt-0.5">
+                              {c.user?.name?.[0]?.toUpperCase() || '?'}
+                            </div>
+                            <div className="space-y-0.5">
+                              <span className="text-[10px] font-bold text-white/70">@{c.user?.name}</span>
+                              <p className="text-xs text-white/40 leading-normal font-light">{c.text}</p>
+                            </div>
                           </div>
-                          <div>
-                            <span className="text-xs font-medium text-white/70">{c.user?.name}</span>
-                            <p className="text-xs text-white/40">{c.text}</p>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
 
-                      {isAuthenticated && (
-                        <div className="flex gap-2 pt-1">
-                          <input
-                            value={commentInputs[post._id] || ''}
-                            onChange={(e) => setCommentInputs((prev) => ({ ...prev, [post._id]: e.target.value }))}
-                            placeholder="Комментарий..."
-                            className="glass-input text-xs flex-1 !py-1.5"
-                            onKeyDown={(e) => e.key === 'Enter' && submitComment(post._id)}
-                          />
-                          <motion.button onClick={() => submitComment(post._id)}
-                            className="p-2 rounded-lg bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 transition-colors"
-                            whileTap={{ scale: 0.9 }}>
-                            <Send className="w-3.5 h-3.5" />
-                          </motion.button>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </GlassCard>
-          </motion.div>
-        );
-      })}
+                        {isAuthenticated && (
+                          <div className="flex gap-2 pt-1.5 border-t border-white/5">
+                            <input
+                              value={commentInputs[post._id] || ''}
+                              onChange={(e) => setCommentInputs((prev) => ({ ...prev, [post._id]: e.target.value }))}
+                              placeholder="Комментарий..."
+                              className="glass-input text-xs flex-1 !py-1.5"
+                              onKeyDown={(e) => e.key === 'Enter' && submitComment(post._id)}
+                            />
+                            <motion.button onClick={() => submitComment(post._id)}
+                              className="p-2 rounded-lg bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 transition-colors"
+                              whileTap={{ scale: 0.9 }}>
+                              <Send className="w-3.5 h-3.5" />
+                            </motion.button>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </GlassCard>
+            </motion.div>
+          );
+        })}
+      </div>
 
       {loading && (
         <div className="flex justify-center py-8">
@@ -288,3 +324,4 @@ export function FeedPage() {
     </div>
   );
 }
+export default FeedPage;

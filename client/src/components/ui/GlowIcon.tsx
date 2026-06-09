@@ -17,18 +17,19 @@ interface GlowIconProps {
     | 'compass'
     | 'check'
     | 'x'
-    | 'shieldCheck';
+    | 'shieldCheck'
+    | 'camera';
   size?: number;
-  color?: 'purple' | 'cyan' | 'magenta' | 'white';
+  color?: 'gold' | 'cyan' | 'magenta' | 'white';
   glow?: boolean;
   className?: string;
   animateOnHover?: boolean;
 }
 
 const colorMap = {
-  purple: {
-    stroke: '#a855f7',
-    glow: 'rgba(168, 85, 247, 0.45)',
+  gold: {
+    stroke: '#FFBF00',
+    glow: 'rgba(255, 191, 0, 0.45)',
   },
   cyan: {
     stroke: '#06b6d4',
@@ -47,12 +48,12 @@ const colorMap = {
 export function GlowIcon({
   name,
   size = 20,
-  color = 'purple',
+  color = 'gold',
   glow = true,
   className,
   animateOnHover = false,
 }: GlowIconProps) {
-  const selectedColor = colorMap[color] || colorMap.purple;
+  const selectedColor = colorMap[color] || colorMap.gold;
 
   // Custom paths for smooth self-drawing animations
   const iconPaths: Record<string, string[]> = {
@@ -105,6 +106,10 @@ export function GlowIcon({
     shieldCheck: [
       'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
       'M9 11l2 2 4-4',
+    ],
+    camera: [
+      'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z',
+      'M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
     ],
   };
 

@@ -1,5 +1,5 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -7,10 +7,17 @@ import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
-import premiumHookah from '../premium_hookah.png';
 import { GlowIcon } from '@/components/ui/GlowIcon';
 
-const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
+
+interface ShowcaseItem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  order: number;
+  isActive: boolean;
+}
 
 
 // Predefined luxury zones with background images matching reference design
@@ -52,6 +59,7 @@ const PREMIUM_ZONES = [
 
 export function HomePage() {
   const [promos, setPromos] = useState<Promo[]>([]);
+  const [showcases, setShowcases] = useState<ShowcaseItem[]>([]);
   const [activeZoneSlide, setActiveZoneSlide] = useState<Record<string, number>>({
     'hookah-lounge': 0,
     'restaurant': 0,
@@ -60,6 +68,7 @@ export function HomePage() {
 
   const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null);
   const [cardCoords, setCardCoords] = useState({ x: 0, y: 0 });
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -77,10 +86,41 @@ export function HomePage() {
       .catch(err => {
         console.error('Error fetching homepage promos:', err);
       });
+
+    api.get<ShowcaseItem[]>('/api/showcases')
+      .then((res) => {
+        setShowcases(res.data);
+      })
+      .catch(err => {
+        console.error('Error fetching homepage showcases:', err);
+      });
   }, []);
 
+  const MAP_SERVICES = [
+    { id: 'yandex', name: 'Яндекс Карты', icon: '🗺️', url: 'https://yandex.ru/maps/?text=Чебоксары+ул+Гагарина+40а&z=17' },
+    { id: 'google', name: 'Google Maps', icon: '📍', url: 'https://www.google.com/maps/search/?api=1&query=56.1365,47.2734' },
+    { id: '2gis', name: '2ГИС', icon: '🏙️', url: 'https://2gis.ru/cheboksary/search/ул.+Гагарина+40а' },
+    { id: 'apple', name: 'Apple Maps', icon: '🍎', url: 'https://maps.apple.com/?q=56.1365,47.2734&z=17' },
+  ];
+
+  const openMap = (serviceId: string) => {
+    const svc = MAP_SERVICES.find(s => s.id === serviceId);
+    if (svc) window.open(svc.url, '_blank');
+  };
+
   const handleAddressClick = () => {
-    window.open('https://yandex.ru/maps/-/CDT1Z-pC', '_blank');
+    const saved = localStorage.getItem('preferred_map_service');
+    if (saved && MAP_SERVICES.find(s => s.id === saved)) {
+      openMap(saved);
+    } else {
+      setShowMapPicker(true);
+    }
+  };
+
+  const handleMapServiceSelect = (serviceId: string) => {
+    localStorage.setItem('preferred_map_service', serviceId);
+    setShowMapPicker(false);
+    openMap(serviceId);
   };
 
 
@@ -111,222 +151,241 @@ export function HomePage() {
       transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
       className="space-y-12 pb-16 overflow-x-hidden"
     >
-      {/* Centered Hero Section with Neon Globe Backdrop */}
-      <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
-        {/* Glow Spheres & Vector Dotted Globe Map */}
-        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
-          <div className="absolute w-[400px] h-[400px] sm:w-[620px] sm:h-[620px] bg-accent-purple/10 rounded-full blur-[140px] opacity-70" />
-          <div className="absolute w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] bg-accent-amber/5 rounded-full blur-[120px] opacity-50" />
-          
-          {/* Vector Map Globe */}
-          <svg className="absolute w-[360px] h-[360px] sm:w-[580px] sm:h-[580px] text-purple-500/20 opacity-80" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.4">
-            <circle cx="100" cy="100" r="95" stroke="rgba(168, 85, 247, 0.25)" strokeWidth="1" className="animate-pulse" />
-            <path d="M5 100 A 95 45 0 0 1 195 100" strokeDasharray="2,2" stroke="rgba(168, 85, 247, 0.2)" />
-            <path d="M5 100 A 95 95 0 0 1 195 100" strokeDasharray="3,3" stroke="rgba(168, 85, 247, 0.15)" />
-            <path d="M100 5 A 45 95 0 0 1 100 195" strokeDasharray="2,2" stroke="rgba(168, 85, 247, 0.2)" />
-            
-            {/* North America dots */}
-            <circle cx="50" cy="80" r="1.2" className="fill-purple-500/60" />
-            <circle cx="60" cy="75" r="1.2" className="fill-purple-500/60" />
-            <circle cx="55" cy="85" r="0.8" className="fill-purple-500/40" />
-            <circle cx="45" cy="70" r="1.2" className="fill-purple-400/60" />
-            <circle cx="70" cy="78" r="1.5" className="fill-purple-500/80 animate-pulse" />
-            <circle cx="65" cy="90" r="0.8" className="fill-purple-500/40" />
-            
-            {/* Europe / Asia dots */}
-            <circle cx="120" cy="70" r="1.2" className="fill-purple-500/60" />
-            <circle cx="130" cy="65" r="1.8" className="fill-purple-400/80 animate-pulse" />
-            <circle cx="125" cy="75" r="1.2" className="fill-purple-500/60" />
-            <circle cx="140" cy="70" r="0.8" className="fill-purple-500/40" />
-            <circle cx="135" cy="80" r="1.2" className="fill-purple-500/60" />
-            <circle cx="150" cy="75" r="1.8" className="fill-purple-400/70" />
-            <circle cx="145" cy="88" r="1.2" className="fill-purple-500/60" />
-            <circle cx="160" cy="85" r="0.8" className="fill-purple-500/40" />
-            
-            {/* Nodes */}
-            <circle cx="125" cy="75" r="2.5" className="fill-indigo-400 animate-ping" />
-            <circle cx="125" cy="75" r="1.5" className="fill-white" />
-            <circle cx="132" cy="78" r="3.5" className="fill-purple-400 animate-ping" />
-            <circle cx="132" cy="78" r="2.2" className="fill-white" />
-            <circle cx="58" cy="76" r="3" className="fill-cyan-400 animate-ping" />
-            <circle cx="58" cy="76" r="1.8" className="fill-white" />
-          </svg>
-        </div>
+      {/* Centered Hero Section with Elegant Radial Glow */}
+      <section className="relative overflow-hidden pt-16 pb-20 min-h-[620px] flex items-center justify-center text-center">
+        {/* Background handled by ShaderBackground */}
 
-        <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8">
-          {/* Subtitle Telemetry header */}
+        <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-10">
+          {/* Status pill */}
           <motion.div 
-            className="flex items-center justify-center gap-2"
+            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-accent-gold/20 bg-accent-gold/[0.06] backdrop-blur-sm mx-auto glow-box"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
-            <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-bold">
-              SPORT LOUNGE • КРУГЛОСУТОЧНО 24/7
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-pulse shadow-[0_0_8px_rgba(255,191,0,0.6)]" />
+            <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold/80 font-semibold">
+              Премиальный Кибер-Лаунж
             </span>
           </motion.div>
           
-          {/* Centered Large Header */}
+          {/* Main Heading */}
           <motion.h1 
-            className="text-4xl sm:text-6xl md:text-7xl font-display font-black text-white leading-[1.08] uppercase tracking-tight"
+            className="text-5xl sm:text-7xl md:text-8xl font-display font-bold text-accent-gold leading-[1.02] tracking-[-0.02em] glow-text drop-shadow-[0_0_20px_rgba(255,191,0,0.4)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
           >
-            ИСТИННЫЙ ВКУС <br />
-            <span className="gradient-text font-black">И КРЕПОСТЬ</span>
+            Искусство Дыма<br />
+            <span className="gradient-text">&amp; Вкуса</span>
           </motion.h1>
           
-          {/* Paragraph description */}
+          {/* Subtitle */}
           <motion.p 
-            className="text-sm sm:text-base text-white/50 max-w-2xl mx-auto leading-relaxed font-light"
+            className="text-sm sm:text-base md:text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Премиальный лаунж с изысканным обслуживанием, авторскими кальянами и элитными чайными церемониями. Сделайте заказ прямо за свой стол в реальном времени.
+            Погрузитесь в атмосферу исключительного отдыха. Эксклюзивные табачные бленды, авторская миксология и безупречный сервис в эстетике современного кибер-минимализма.
           </motion.p>
           
-          {/* Action buttons (White pill & Transparent outline) */}
+          {/* CTA Buttons */}
           <motion.div 
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <NavLink to="/booking" className="w-full sm:w-auto">
               <motion.button
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#050308] border-none font-bold text-sm shadow-[0_4px_24px_rgba(168,85,247,0.35)] flex items-center justify-center gap-1.5 transition-all"
-                whileHover={{ scale: 1.02 }}
+                className="w-full sm:w-auto px-10 py-4 rounded-cyber bg-accent-gold text-[#131313] font-bold text-sm uppercase tracking-widest glow-box hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 shadow-glow-amber-lg"
+                whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <GlowIcon name="clock" color="purple" size={16} glow={false} /> Сделать заказ
+                Заказать сейчас
               </motion.button>
             </NavLink>
             <NavLink to="/mixologist" className="w-full sm:w-auto">
               <motion.button
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white bg-transparent text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all"
-                whileHover={{ scale: 1.02 }}
+                className="w-full sm:w-auto px-10 py-4 rounded-cyber liquid-glass text-accent-gold font-bold text-sm uppercase tracking-widest hover:bg-accent-gold/10 hover:glow-box transition-all duration-300 flex items-center justify-center gap-2 border border-white/10"
+                whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <GlowIcon name="flame" color="purple" size={16} animateOnHover /> ИИ-Миксолог
+                <Flame className="w-4 h-4" /> Смотреть Меню
               </motion.button>
             </NavLink>
           </motion.div>
 
-          {/* Centered address cards */}
+          {/* Address line */}
           <motion.div 
-            className="flex flex-col sm:flex-row justify-center items-center gap-8 pt-8 text-xs text-white/40 font-mono tracking-widest"
+            className="flex flex-col sm:flex-row justify-center items-center gap-6 pt-4 text-[11px] text-white/25 font-medium tracking-widest uppercase"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <span className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors" onClick={handleAddressClick}>
-              <GlowIcon name="mappin" color="purple" size={14} /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
+            <span className="flex items-center gap-1.5 cursor-pointer hover:text-white/50 transition-colors duration-300" onClick={handleAddressClick}>
+              <GlowIcon name="mappin" color="gold" size={12} /> Чебоксары, ул. Гагарина 40а
             </span>
-            <span className="hidden sm:inline opacity-30">•</span>
+            <span className="hidden sm:inline text-white/10">|</span>
             <span className="flex items-center gap-1.5">
-              <GlowIcon name="clock" color="purple" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
+              <GlowIcon name="clock" color="gold" size={12} /> Круглосуточно 24/7
             </span>
           </motion.div>
         </div>
       </section>
 
-      {/* Live System Console Dashboard Section - Structured Fintech Grid */}
-      <section className="relative pt-4 max-w-6xl mx-auto px-4 z-10">
-        <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-6 select-none">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
-            <span className="text-[10px] font-mono text-white/50 tracking-wider">LIVE TELEMETRY FEED: SYSTEM ONLINE</span>
+      {/* About Us Section */}
+      <section className="py-20 max-w-6xl mx-auto px-4 z-10 relative overflow-hidden select-none">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center relative z-10">
+          {/* Image Side */}
+          <div className="md:col-span-5 relative group animate-float">
+            <div className="absolute -inset-4 border border-accent-gold/40 rounded-cyber translate-x-4 translate-y-4 -z-10 transition-transform duration-500 group-hover:translate-x-6 group-hover:translate-y-6 group-hover:border-accent-gold glow-box"></div>
+            <img 
+              alt="Signature Cocktail" 
+              className="rounded-cyber shadow-[0_0_40px_rgba(255,191,0,0.15)] object-cover w-full h-[450px] filter contrast-125 brightness-90 grayscale-[10%]" 
+              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=60&w=480&auto=format&fit=crop&fm=webp"
+            />
+            {/* Glassmorphism badge */}
+            <div className="absolute -bottom-6 -right-6 liquid-glass p-4 rounded-cyber shadow-lg glow-box border border-white/10">
+              <div className="flex items-center gap-3">
+                <span className="text-accent-gold text-lg glow-text animate-pulse">🍹</span>
+                <div>
+                  <div className="font-display font-bold text-accent-gold text-xs leading-tight glow-text">Авторская</div>
+                  <div className="text-[10px] text-accent-gold uppercase tracking-[0.1em] font-semibold">Миксология</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <span className="text-[10px] font-mono text-accent-gold font-bold">SPORT LOUNGE CONSOLE V3.0</span>
+          {/* Text Side */}
+          <div className="md:col-span-6 md:col-start-7 flex flex-col justify-center space-y-5">
+            <div className="flex items-center gap-3 opacity-90">
+              <div className="h-[2px] w-8 bg-accent-gold glow-box"></div>
+              <span className="text-xs uppercase tracking-widest text-accent-gold font-bold glow-text">О нас</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-display font-light text-white leading-tight uppercase tracking-wider">
+              Святилище <br/> <span className="gradient-text font-semibold italic">Спокойствия</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-white/50 leading-relaxed font-light">
+              SPORT LOUNGE — это не просто лаунж, это закрытое пространство для истинных ценителей. Мы создали уникальный клуб, где время замедляет свой ход, уступая место глубоким разговорам, сенсорным открытиям и абсолютному расслаблению.
+            </p>
+            <p className="text-xs sm:text-sm text-white/50 leading-relaxed font-light">
+              Каждая деталь нашего интерьера, от гладких темных поверхностей до пульсирующего янтарного света, продумана для создания идеального баланса между киберпанком и чувственным удовольствием.
+            </p>
+            <div>
+              <NavLink to="/booking" className="text-accent-gold text-xs uppercase tracking-widest hover:glow-text transition-all duration-300 flex items-center gap-1.5 group font-bold">
+                Подробнее о концепции
+                <span className="transition-transform group-hover:translate-x-1.5">→</span>
+              </NavLink>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Showcase Section (Витрина кальянов) */}
+      {showcases.length > 0 && (
+        <section id="showcase" className="relative pt-4 max-w-6xl mx-auto px-4 z-10">
+          <div className="flex items-center justify-between border-b border-white/[0.04] pb-3 mb-6 select-none">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-accent-gold/80 shadow-[0_0_8px_rgba(255,191,0,0.5)]" />
+              <span className="text-[10px] font-medium text-white/35 tracking-wider uppercase">Эксклюзивная витрина</span>
+            </div>
+            <span className="text-[10px] font-medium text-white/20 tracking-wider">Premium Selection</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {showcases.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                className="relative rounded-[28px] overflow-hidden group border border-glass-border/30 bg-[#1c1b1b]/60 backdrop-blur-md flex flex-col justify-between hover:border-accent-gold/40 transition-colors"
+              >
+                <div>
+                  {item.imageUrl && (
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-t-[28px]">
+                      <img
+                        src={resolveImageUrl(item.imageUrl)}
+                        alt={item.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    </div>
+                  )}
+                  <div className="p-6 space-y-3">
+                    <h3 className="text-lg font-display font-bold text-white group-hover:text-accent-gold transition-colors">{item.title}</h3>
+                    <p className="text-xs text-white/50 leading-relaxed font-light">{item.description}</p>
+                  </div>
+                </div>
+                
+                <div className="p-6 pt-0 mt-auto flex justify-between items-center border-t border-white/5">
+                  <span className="text-[10px] text-accent-gold uppercase tracking-wider font-semibold">Premium Object</span>
+                  <NavLink to="/booking">
+                    <button className="px-4 py-1.5 rounded-full bg-accent-gold/10 hover:bg-accent-gold text-accent-gold hover:text-dark-bg text-[10px] font-bold uppercase tracking-wider border border-accent-gold/30 hover:border-accent-gold transition-all duration-300">
+                      Заказать покур
+                    </button>
+                  </NavLink>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Quick Menu Preview Section */}
+      <section className="py-20 max-w-6xl mx-auto px-4 z-10 relative overflow-hidden select-none">
+        <div className="liquid-glass border border-white/10 p-8 rounded-cyber flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
+          <div>
+            <h2 className="text-3xl font-display font-light text-white uppercase tracking-wider">
+              Авторские <span className="gradient-text font-semibold italic">Миксы</span>
+            </h2>
+            <p className="text-xs text-white/50 mt-1 font-light">Тщательно отобранные композиции для искушенных гостей</p>
+          </div>
+          <NavLink to="/menu">
+            <button className="liquid-glass border border-white/10 text-accent-gold text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 rounded-cyber hover:glow-box hover:bg-accent-gold/10 transition-all duration-300">
+              Полное Меню
+            </button>
+          </NavLink>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-          {/* Main Visual: ThreeSmoke and breathing hookah render */}
-          <div className="md:col-span-6 lg:col-span-5">
-            <GlassCard className="p-6 h-full flex flex-col justify-between border border-glass-border/30 bg-[#0c0816]/90 relative overflow-hidden select-none">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest block mb-2">VOLUMETRIC VISUALIZER</span>
-              <div className="relative h-48 flex items-center justify-center">
-                <Suspense fallback={null}>
-                  <ThreeSmoke />
-                </Suspense>
-                <img 
-                  src={premiumHookah} 
-                  alt="Sport Lounge Premium Hookah" 
-                  className="max-h-[190px] w-auto object-contain filter drop-shadow-[0_12px_40px_rgba(168,85,247,0.22)] z-10 animate-breathe-image"
-                />
-              </div>
-              <div className="text-center pt-2">
-                <span className="text-[10px] text-white/50">Премиальные чаши и элитные смеси</span>
-              </div>
-            </GlassCard>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Menu Card 1 */}
+          <div className="liquid-glass border border-white/10 p-6 hover:glow-box transition-all duration-500 rounded-cyber flex flex-col justify-between space-y-6 group relative overflow-hidden">
+            <div className="flex justify-between items-start mb-2 border-b border-accent-gold/20 pb-3">
+              <h3 className="font-display font-bold text-sm text-white group-hover:text-accent-gold transition-colors">Обсидиановый Закат</h3>
+              <span className="text-[9px] font-bold text-black bg-accent-gold px-2 py-0.5 rounded shadow-[0_0_10px_rgba(255,191,0,0.5)]">Крепкий</span>
+            </div>
+            <p className="text-xs text-white/50 leading-relaxed font-light flex-grow">Глубокие ноты темного бельгийского шоколада, терпкой дикой вишни и легкий, едва уловимый оттенок копченого дуба. Плотный, насыщенный дым.</p>
+            <div className="flex justify-between items-center pt-3 border-t border-white/5">
+              <span className="text-[10px] text-white/30 uppercase tracking-wider font-semibold">Premium Line</span>
+              <div className="text-xs font-bold text-accent-gold tracking-widest glow-text">2 800 ₽</div>
+            </div>
           </div>
-
-          {/* System status widgets */}
-          <div className="md:col-span-6 lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Widget 1: Seating occupancy and wait time */}
-            <GlassCard className="p-5 flex flex-col justify-between border border-glass-border/20 bg-[#0c0816]/90 select-none">
-              <div>
-                <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-2">Нагрузка хоста</span>
-                <span className="text-3xl font-extrabold text-white font-mono tracking-tight block">34 / 54</span>
-                <span className="text-xs text-white/40 block mt-1">активных столов в зале</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-white/60 pt-4 border-t border-white/5">
-                <GlowIcon name="clock" color="purple" size={14} className="text-accent-purple" />
-                <span>Ожидание сборки заказа: ~8.5 мин</span>
-              </div>
-            </GlassCard>
-
-            {/* Widget 2: Flavor Gauges */}
-            <GlassCard className="p-5 flex flex-col justify-between border border-glass-border/20 bg-[#0c0816]/90 select-none">
-              <div>
-                <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-3">Интенсивность покура</span>
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-white/60">
-                      <span>Сладкий</span>
-                      <span className="text-accent-gold font-mono font-bold">72%</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-accent-purple to-accent-amber" style={{ width: '72%' }} />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-white/60">
-                      <span>Крепкий</span>
-                      <span className="text-accent-cyan font-mono font-bold">65%</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-accent-cyan to-accent-purple" style={{ width: '65%' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-
-            {/* Widget 3: Live lounge sound system */}
-            <GlassCard className="p-5 sm:col-span-2 flex items-center justify-between gap-4 border border-glass-border/20 bg-[#0c0816]/90 select-none">
-              <div className="flex items-center gap-3 truncate">
-                <div className="w-9 h-9 rounded-xl bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center text-lg flex-shrink-0 animate-pulse">
-                  📻
-                </div>
-                <div className="truncate">
-                  <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold">Аудиосистема заведения</span>
-                  <span className="text-xs text-white font-bold block truncate">Speed Dial — Zero 7</span>
-                </div>
-              </div>
-              
-              {/* Mini audio wave bars */}
-              <div className="flex items-end gap-1 h-6 flex-shrink-0">
-                <span className="w-0.5 h-3 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-4 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-2 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-accent-purple rounded-full soundwave-bar" />
-              </div>
-            </GlassCard>
+          {/* Menu Card 2 */}
+          <div className="liquid-glass border border-white/10 p-6 hover:glow-box transition-all duration-500 rounded-cyber flex flex-col justify-between space-y-6 group relative overflow-hidden">
+            <div className="flex justify-between items-start mb-2 border-b border-accent-gold/20 pb-3">
+              <h3 className="font-display font-bold text-sm text-white group-hover:text-accent-gold transition-colors">Золотой Час</h3>
+              <span className="text-[9px] font-bold text-black bg-accent-gold px-2 py-0.5 rounded shadow-[0_0_10px_rgba(255,191,0,0.5)]">Легкий</span>
+            </div>
+            <p className="text-xs text-white/50 leading-relaxed font-light flex-grow">Свежесть сицилийского лимона, сладость спелого манго и прохладное послевкусие перечной мяты. Освежающий выбор для расслабленного вечера.</p>
+            <div className="flex justify-between items-center pt-3 border-t border-white/5">
+              <span className="text-[10px] text-white/30 uppercase tracking-wider font-semibold">Classic Line</span>
+              <div className="text-xs font-bold text-accent-gold tracking-widest glow-text">2 200 ₽</div>
+            </div>
+          </div>
+          {/* Menu Card 3 */}
+          <div className="liquid-glass border border-white/10 p-6 hover:glow-box transition-all duration-500 rounded-cyber flex flex-col justify-between space-y-6 group relative overflow-hidden">
+            <div className="flex justify-between items-start mb-2 border-b border-accent-gold/20 pb-3">
+              <h3 className="font-display font-bold text-sm text-white group-hover:text-accent-gold transition-colors">Янтарный Туман</h3>
+              <span className="text-[9px] font-bold text-black bg-accent-gold px-2 py-0.5 rounded shadow-[0_0_10px_rgba(255,191,0,0.5)]">Средний</span>
+            </div>
+            <p className="text-xs text-white/50 leading-relaxed font-light flex-grow">Сложный бленд с ароматом пряной корицы, печеного яблока и сладкой карамели. Создает теплую, уютную атмосферу неонового вечера.</p>
+            <div className="flex justify-between items-center pt-3 border-t border-white/5">
+              <span className="text-[10px] text-white/30 uppercase tracking-wider font-semibold">Signature Line</span>
+              <div className="text-xs font-bold text-accent-gold tracking-widest glow-text">2 500 ₽</div>
+            </div>
           </div>
         </div>
       </section>
@@ -408,10 +467,10 @@ export function HomePage() {
 
           {/* Vertical scroll/navigation chevrons on the right */}
           <div className="hidden md:flex flex-col gap-3 justify-center items-center">
-            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#0c0816]/90 border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
+            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#131313]/90 border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
               <ChevronLeft className="w-4 h-4 rotate-90" />
             </button>
-            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#0c0816]/90 border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
+            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#131313]/90 border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
               <ChevronRight className="w-4 h-4 rotate-90" />
             </button>
           </div>
@@ -422,7 +481,7 @@ export function HomePage() {
       <section id="why-us" className="relative pt-8">
         <div className="text-center space-y-2 mb-10 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold flex items-center justify-center gap-1">
-            <GlowIcon name="flame" color="purple" size={14} /> НАШИ ПРЕИМУЩЕСТВА
+            <GlowIcon name="flame" color="gold" size={14} /> НАШИ ПРЕИМУЩЕСТВА
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
             Почему гости <span className="gradient-text font-semibold italic">выбирают нас</span>
@@ -453,7 +512,7 @@ export function HomePage() {
                   style={{
                     width: '320px',
                     height: '320px',
-                    background: 'radial-gradient(120px circle at var(--x) var(--y), rgba(168, 85, 247, 0.15), transparent 80%)',
+                    background: 'radial-gradient(120px circle at var(--x) var(--y), rgba(255, 191, 0, 0.15), transparent 80%)',
                     left: `${cardCoords.x - 160}px`,
                     top: `${cardCoords.y - 160}px`,
                     mixBlendMode: 'screen',
@@ -469,7 +528,7 @@ export function HomePage() {
               <GlassCard className="p-6 h-full flex flex-col justify-between hover:border-accent-gold/40 border-glass-border/30 z-10 relative">
                 <div>
                   <div className="w-10 h-10 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center mb-4">
-                    <GlowIcon name={item.iconName} color="purple" size={18} animateOnHover />
+                    <GlowIcon name={item.iconName} color="gold" size={18} animateOnHover />
                   </div>
                   <h4 className="text-sm font-semibold text-white mb-2">{item.title}</h4>
                   <p className="text-[11px] text-white/45 leading-relaxed font-light">{item.desc}</p>
@@ -510,7 +569,7 @@ export function HomePage() {
               <div className="pt-6 z-10">
                 <NavLink to="/mixologist">
                   <motion.button
-                    className="px-8 py-3.5 rounded-full border border-[#a855f7]/40 text-white bg-gradient-to-r from-[#6d28d9] to-[#311082] hover:from-[#7c3aed] hover:to-[#4c1d95] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(168,85,247,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
+                    className="px-8 py-3.5 rounded-full border border-[#FFBF00]/40 text-white bg-gradient-to-r from-[#6d28d9] to-[#311082] hover:from-[#7c3aed] hover:to-[#4c1d95] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(255, 191, 0,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -523,7 +582,7 @@ export function HomePage() {
 
           {/* VIP Pass Panel */}
           <div className="lg:col-span-4">
-            <GlassCard className="p-8 h-full flex flex-col justify-between bg-gradient-to-br from-[#0c0816]/95 via-[#050308]/98 to-black border-accent-gold/35 relative overflow-hidden text-center group min-h-[320px] z-10">
+            <GlassCard className="p-8 h-full flex flex-col justify-between bg-gradient-to-br from-[#131313]/95 via-[#131313]/98 to-black border-accent-gold/35 relative overflow-hidden text-center group min-h-[320px] z-10">
               {/* Decorative corners matching reference VIP layout */}
               <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-accent-gold/60 pointer-events-none" />
               <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-accent-gold/60 pointer-events-none" />
@@ -596,16 +655,16 @@ export function HomePage() {
       )}
 
       {/* Interactive Map & Detailed Contacts */}
-      <section id="contacts" className="relative pt-6">
+      <section id="map" className="relative pt-6">
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
-          <GlowIcon name="mappin" color="purple" size={20} className="flex-shrink-0" /> Как нас найти
+          <GlowIcon name="mappin" color="gold" size={20} className="flex-shrink-0" /> Как нас найти
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <GlassCard className="overflow-hidden p-0 border border-glass-border shadow-lg">
               <iframe
-                src="https://yandex.ru/map-widget/v1/?ll=47.2725%2C56.1366&z=17&pt=47.2725%2C56.1366%2Cpm2rdm&lang=ru_RU"
+                src="https://yandex.ru/map-widget/v1/?ll=47.2734%2C56.1365&z=17&pt=47.2734%2C56.1365%2Cpm2rdm&lang=ru_RU"
                 width="100%"
                 height="320"
                 style={{ border: 0, display: 'block', filter: 'invert(90%) hue-rotate(15deg) saturate(75%) brightness(70%) contrast(110%)' }}
@@ -622,24 +681,31 @@ export function HomePage() {
                 <h3 className="text-base sm:text-lg font-display font-semibold text-white">Адрес и Контакты</h3>
                 
                 <div className="flex items-start gap-3.5">
-                  <GlowIcon name="mappin" color="purple" size={16} className="mt-0.5 flex-shrink-0" />
+                  <GlowIcon name="mappin" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs sm:text-sm text-white font-medium">{CONTACT.address}</p>
                     <a 
-                      href="https://yandex.ru/maps/?pt=47.2725,56.1366&z=17&l=map"
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); handleAddressClick(); }}
                       className="text-[11px] text-accent-gold hover:underline mt-1 inline-block"
                     >
-                      Открыть в Яндекс.Картах →
+                      Открыть на карте →
                     </a>
+                    {localStorage.getItem('preferred_map_service') && (
+                      <button
+                        onClick={() => { localStorage.removeItem('preferred_map_service'); setShowMapPicker(true); }}
+                        className="text-[9px] text-white/25 hover:text-white/50 ml-2 transition-colors"
+                      >
+                        (сменить сервис карт)
+                      </button>
+                    )}
                   </div>
                 </div>
 
                 <div className="h-px bg-glass-border" />
 
                 <div className="flex items-start gap-3.5">
-                  <GlowIcon name="clock" color="purple" size={16} className="mt-0.5 flex-shrink-0" />
+                  <GlowIcon name="clock" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
                   <div className="text-xs sm:text-sm">
                     <p className="text-white font-medium">{WORKING_HOURS}</p>
                     <p className="text-[11px] text-white/30 mt-0.5">Работаем без выходных дней</p>
@@ -665,6 +731,52 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      {/* Map Service Picker Modal */}
+      <AnimatePresence>
+        {showMapPicker && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMapPicker(false)}
+            />
+            <motion.div
+              className="relative w-full max-w-sm bg-gradient-to-b from-[#1a1a1a] to-[#0e0e0e] border border-accent-gold/20 rounded-3xl p-6 shadow-2xl z-10 overflow-hidden"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            >
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_#ffbf00_0%,transparent_70%)] pointer-events-none" />
+              <div className="relative z-10 space-y-5">
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-display font-bold text-white">Открыть на карте</h3>
+                  <p className="text-[11px] text-white/40">Выберите удобный сервис карт. Ваш выбор будет сохранён.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {MAP_SERVICES.map(svc => (
+                    <button
+                      key={svc.id}
+                      onClick={() => handleMapServiceSelect(svc.id)}
+                      className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-accent-gold/40 hover:bg-accent-gold/5 transition-all group"
+                    >
+                      <span className="text-2xl group-hover:scale-110 transition-transform">{svc.icon}</span>
+                      <span className="text-xs font-semibold text-white/80 group-hover:text-accent-gold transition-colors">{svc.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowMapPicker(false)}
+                  className="w-full py-2.5 text-xs text-white/40 hover:text-white/60 transition-colors"
+                >
+                  Отмена
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

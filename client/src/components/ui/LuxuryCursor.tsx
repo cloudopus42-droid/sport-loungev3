@@ -68,7 +68,7 @@ export function LuxuryCursor() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[9999] hidden lg:block">
-      {/* 1. Outer Liquid Purple/Fuchsia Ring */}
+      {/* 1. Outer Liquid Amber/Gold Ring */}
       <motion.div
         className="fixed w-9 h-9 border border-accent-gold/45 rounded-full pointer-events-none"
         style={{
@@ -77,14 +77,14 @@ export function LuxuryCursor() {
           translateX: '-50%',
           translateY: '-50%',
           boxShadow: hovered 
-            ? '0 0 16px rgba(168, 85, 247, 0.45), inset 0 0 8px rgba(217, 70, 239, 0.25)' 
-            : '0 0 6px rgba(168, 85, 247, 0.1)',
-          borderColor: hovered ? 'rgba(217, 70, 239, 0.85)' : 'rgba(168, 85, 247, 0.45)',
+            ? '0 0 16px rgba(255, 191, 0, 0.45), inset 0 0 8px rgba(217, 70, 239, 0.25)' 
+            : '0 0 6px rgba(255, 191, 0, 0.1)',
+          borderColor: hovered ? 'rgba(217, 70, 239, 0.85)' : 'rgba(255, 191, 0, 0.45)',
         }}
         animate={{
           scale: clicked ? 0.75 : hovered ? 1.5 : 1,
           backgroundColor: clicked 
-            ? 'rgba(168, 85, 247, 0.15)' 
+            ? 'rgba(255, 191, 0, 0.15)' 
             : hovered 
             ? 'rgba(217, 70, 239, 0.05)' 
             : 'rgba(0, 0, 0, 0)',
@@ -94,7 +94,7 @@ export function LuxuryCursor() {
 
       {/* 2. Glowing Fuchsia Core */}
       <motion.div
-        className="fixed w-2 h-2 bg-gradient-to-br from-pink-400 to-purple-600 rounded-full pointer-events-none"
+        className="fixed w-2 h-2 bg-gradient-to-br from-pink-400 to-amber-600 rounded-full pointer-events-none"
         style={{
           x: innerX,
           y: innerY,

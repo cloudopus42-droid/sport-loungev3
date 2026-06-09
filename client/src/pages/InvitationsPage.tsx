@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import api from '@/lib/api';
 import type { Invitation } from '@/types';
+import { resolveImageUrl } from '@/lib/urls';
 
 export function InvitationsPage() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -72,7 +73,7 @@ export function InvitationsPage() {
                 {invitation.imageUrl && (
                   <div className="relative h-40 overflow-hidden">
                     <img
-                      src={invitation.imageUrl}
+                      src={resolveImageUrl(invitation.imageUrl)}
                       alt={invitation.title}
                       className="w-full h-full object-cover"
                       loading="lazy"
