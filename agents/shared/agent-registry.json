@@ -1,0 +1,54 @@
+{
+  "agents": {
+    "orchestrator": {
+      "tools": ["message-bus", "file-read", "file-write", "command-run", "agent-delegate", "status-update"],
+      "triggers": ["any-message", "user-request", "task-complete", "alert"],
+      "memory": { "maxHistory": 100, "persistFile": "agents/agents/orchestrator/memory.jsonl" }
+    },
+    "ui-ux": {
+      "tools": ["file-read", "css-analyze", "color-palette", "contrast-check", "a11y-audit", "message-bus"],
+      "triggers": ["file-change:*.css", "file-change:*.tsx:components", "file-change:tailwind.config.*"],
+      "memory": { "maxHistory": 50, "persistFile": "agents/agents/ui-ux-agent/memory.jsonl" }
+    },
+    "frontend": {
+      "tools": ["file-read", "file-write", "typescript-check", "npm-run", "component-gen", "message-bus"],
+      "triggers": ["file-change:client/src/**", "new-api-endpoint", "model-change"],
+      "memory": { "maxHistory": 50, "persistFile": "agents/agents/frontend-agent/memory.jsonl" }
+    },
+    "backend": {
+      "tools": ["file-read", "file-write", "typescript-check", "npm-run", "db-query", "api-test", "message-bus"],
+      "triggers": ["file-change:server/src/**", "new-model", "schema-change"],
+      "memory": { "maxHistory": 50, "persistFile": "agents/agents/backend-agent/memory.jsonl" }
+    },
+    "devops": {
+      "tools": ["file-read", "file-write", "command-run", "docker-cli", "git-cli", "deploy-api", "message-bus"],
+      "triggers": ["file-change:Dockerfile", "file-change:docker-compose.*", "commit-main", "deploy-request"],
+      "memory": { "maxHistory": 30, "persistFile": "agents/agents/devops-agent/memory.jsonl" }
+    },
+    "seo": {
+      "tools": ["file-read", "html-analyze", "meta-gen", "jsonld-gen", "sitemap-gen", "message-bus"],
+      "triggers": ["new-route", "file-change:index.html", "content-change", "deploy"],
+      "memory": { "maxHistory": 30, "persistFile": "agents/agents/seo-agent/memory.jsonl" }
+    },
+    "analytics": {
+      "tools": ["db-query", "report-gen", "metric-calc", "sheet-api", "message-bus"],
+      "triggers": ["deploy", "week-end", "anomaly", "new-feature"],
+      "memory": { "maxHistory": 50, "persistFile": "agents/agents/analytics-agent/memory.jsonl" }
+    },
+    "content": {
+      "tools": ["text-gen", "translate", "tone-check", "hashtag-gen", "message-bus"],
+      "triggers": ["new-mix", "new-promo", "new-page", "empty-state"],
+      "memory": { "maxHistory": 30, "persistFile": "agents/agents/content-agent/memory.jsonl" }
+    },
+    "security": {
+      "tools": ["npm-audit", "code-scan", "header-check", "jwt-audit", "secret-scan", "gitignore-check", "message-bus"],
+      "triggers": ["file-change:auth.*", "file-change:.env*", "file-change:package.json", "pre-deploy", "new-endpoint"],
+      "memory": { "maxHistory": 30, "persistFile": "agents/agents/security-agent/memory.jsonl" }
+    },
+    "data": {
+      "tools": ["db-query", "migration-gen", "index-analyze", "supabase-api", "sheets-api", "n8n-api", "message-bus"],
+      "triggers": ["new-model", "slow-query", "schema-change", "integration-request"],
+      "memory": { "maxHistory": 50, "persistFile": "agents/agents/data-agent/memory.jsonl" }
+    }
+  }
+}

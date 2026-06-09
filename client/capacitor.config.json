@@ -1,0 +1,6 @@
+{
+  "appId": "com.sportlounge.app",
+  "appName": "SportLounge",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

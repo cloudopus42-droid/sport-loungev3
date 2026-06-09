@@ -1,0 +1,93 @@
+{
+  "name": "AI Sommelier Hookah Mixologist",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-sommelier-mix",
+        "options": {}
+      },
+      "id": "3d8e8b0c-3c3d-490f-b00c-3c3de1e5a2f5",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "model": "gpt-4-turbo",
+        "messages": {
+          "messageValues": [
+            {
+              "role": "system",
+              "message": "Вы — премиальный Кальянный Сомелье и Шеф-Миксолог в элитном лаунже SPORT LOUNGE. Ваша задача — взять вкусовой микс гостя, его крепость и комментарий, и дополнить это профессиональной сервировкой: идеальной чашей (глина, фрукт, phunnel), температурой (3 или 4 угля), советом по забивке (пушисто, с колодцем, плотно) и авторским чайным сопровождением (например, молочный улун с мятой или пуэр на вишневом соке). Будьте кратки, пишите в изысканном, премиальном стиле с использованием эмодзи. Отвечайте в формате JSON с ключами: 'pairingSuggestion', 'bowlType', 'preparationTips', 'sommelierNote'."
+            },
+            {
+              "role": "user",
+              "message": "Микс гостя: {{ $json.body.hookahMix }}\nКрепость: {{ $json.body.hookahStrength }}\nКомментарий: {{ $json.body.comment || 'Без комментариев' }}"
+            }
+          ]
+        },
+        "jsonOutput": true
+      },
+      "id": "4d8e8b0d-3c3d-490f-b00c-3c3de1e5a2f5",
+      "name": "OpenAI Sommelier Generator",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.1,
+      "position": [
+        300,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "5652912760",
+        "text": "🔥 *НОВЫЙ ЗАКАЗ: ИИ-ШЕФ МИКСОЛОГ* 🔥\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n👤 *Гость:* {{ $('Webhook Trigger').item.json.body.user ? $('Webhook Trigger').item.json.body.user.name : 'Анонимный Гость' }}\n📱 *Телефон:* `{{ $('Webhook Trigger').item.json.body.phone }}`\n💨 *Выбранный микс:* `{{ $('Webhook Trigger').item.json.body.hookahMix }}`\n⚡ *Крепость:* `{{ $('Webhook Trigger').item.json.body.hookahStrength.toUpperCase() }}`\n\n📖 *РЕЦЕПТ И СОВЕТЫ ОТ ИИ-СОМЕЛЬЕ:* \n bowl *Рекомендуемая чаша:* {{ $json.message.content.bowlType }}\n💡 *Секрет забивки:* {{ $json.message.content.preparationTips }}\n🍵 *Чайное сопровождение:* {{ $json.message.content.pairingSuggestion }}\n\n✨ *Заметка сомелье:* _\"{{ $json.message.content.sommelierNote }}\"_ \n━━━━━━━━━━━━━━━━━━━━━━━━━━\n_n8n Автоматизация SPORT LOUNGE_",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "5d8e8b0e-3c3d-490f-b00c-3c3de1e5a2f5",
+      "name": "Telegram Order Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        550,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Sommelier Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Sommelier Generator": {
+      "main": [
+        [
+          {
+            "node": "Telegram Order Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "staticData": null,
+  "meta": null,
+  "pinData": {}
+}
