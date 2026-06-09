@@ -4,7 +4,7 @@ import { Heart, Share2, User as UserIcon } from 'lucide-react';
 import clsx from 'clsx';
 import type { Post, User } from '@/types';
 import api from '@/lib/api';
-import { resolveImageUrl } from '@/lib/urls';
+import { resolveImageUrl, PREMIUM_PLACEHOLDER_SVG } from '@/lib/urls';
 
 interface PostCardProps {
   post: Post;
@@ -63,7 +63,14 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex items-center gap-3 p-4">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center flex-shrink-0">
           {author?.avatar ? (
-            <img src={resolveImageUrl(author.avatar)} alt="" className="w-full h-full rounded-full object-cover" />
+            <img 
+              src={resolveImageUrl(author.avatar)} 
+              alt="" 
+              className="w-full h-full rounded-full object-cover" 
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = PREMIUM_PLACEHOLDER_SVG;
+              }}
+            />
           ) : (
             <UserIcon className="w-5 h-5 text-white" />
           )}
@@ -90,6 +97,10 @@ export function PostCard({ post }: PostCardProps) {
           )}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = PREMIUM_PLACEHOLDER_SVG;
+            setImageLoaded(true);
+          }}
         />
 
         {/* Double-tap like overlay */}

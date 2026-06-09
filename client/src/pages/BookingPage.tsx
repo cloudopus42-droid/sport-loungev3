@@ -265,8 +265,11 @@ export function BookingPage() {
       const savedId = localStorage.getItem('current_order_id');
       if (data && data.id === savedId) {
         setActiveOrder(data);
-        if (data.status === 'done') {
-          showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
+        if (data.status === 'done' || data.status === 'cancelled') {
+          localStorage.removeItem('current_order_id');
+          if (data.status === 'done') {
+            showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
+          }
         }
       }
     });
@@ -295,16 +298,26 @@ export function BookingPage() {
     };
     tick();
     timerIntervalRef.current = setInterval(tick, 1000);
-    const pollInterval = setInterval(() => fetchOrderStatus(activeOrder.id), 8000);
+
+    let pollInterval: any;
+    if (activeOrder.status !== 'done' && activeOrder.status !== 'cancelled') {
+      pollInterval = setInterval(() => fetchOrderStatus(activeOrder.id), 8000);
+    }
+
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      clearInterval(pollInterval);
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, [activeOrder]);
 
   const fetchOrderStatus = (id: string) => {
     api.get(`/api/orders/${id}/status`)
-      .then(res => setActiveOrder(res.data))
+      .then(res => {
+        setActiveOrder(res.data);
+        if (res.data.status === 'done' || res.data.status === 'cancelled') {
+          localStorage.removeItem('current_order_id');
+        }
+      })
       .catch(() => {
         localStorage.removeItem('current_order_id');
         setActiveOrder(null);

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Story } from '@/types';
 import { StorySkeleton } from './ui/Skeleton';
-import { resolveImageUrl } from '@/lib/urls';
+import { resolveImageUrl, PREMIUM_PLACEHOLDER_SVG } from '@/lib/urls';
 
 interface StoriesSliderProps {
   stories: Story[];
@@ -108,6 +108,9 @@ export function StoriesSlider({ stories, loading = false }: StoriesSliderProps) 
                   alt=""
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = PREMIUM_PLACEHOLDER_SVG;
+                  }}
                 />
               </div>
             </div>
@@ -203,6 +206,9 @@ export function StoriesSlider({ stories, loading = false }: StoriesSliderProps) 
                   src={resolveImageUrl(activeStories[activeStory].mediaUrl)}
                   alt=""
                   className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = PREMIUM_PLACEHOLDER_SVG;
+                  }}
                 />
               )}
             </motion.div>
