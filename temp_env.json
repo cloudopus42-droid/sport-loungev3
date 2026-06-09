@@ -6,7 +6,7 @@
   { "key": "TELEGRAM_CHAT_ID", "value": "5652912760" },
   { "key": "TELEGRAM_API_BASE_URL", "value": "https://api.telegram.org" },
   { "key": "SUPABASE_URL", "value": "https://haemdfhteicygsidftqp.supabase.co" },
-  { "key": "SUPABASE_KEY", "value": "sb_secret_V9gEDtPTvq8XlJuefmVPAg_PoO4pWp_" },
-  { "key": "SUPABASE_ANON_KEY", "value": "sb_publishable_hdjCkqf7FcWJekjombPjWg_OzILJPDE" },
-  { "key": "ALLOWED_ORIGINS", "value": "http://localhost:3000,http://localhost:5173,https://client-gilt-six-38.vercel.app,https://client-r0ym5jwx2-cloudopus42-droids-projects.vercel.app" }
+  { "key": "SUPABASE_KEY", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZW1kZmh0ZWljeWdzaWRmdHFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDE3NDMxNSwiZXhwIjoyMDk1NzUwMzE1fQ.324lSMx1tWN-SeCJdFFs-dQCroBwhLqT75EvKH2O2vk" },
+  { "key": "SUPABASE_ANON_KEY", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZW1kZmh0ZWljeWdzaWRmdHFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNzQzMTUsImV4cCI6MjA5NTc1MDMxNX0.-SG7eaWU6nO3GBEWc9UBWug7GcqfnDeMAxkYq5k86Rs" },
+  { "key": "ALLOWED_ORIGINS", "value": "http://localhost:3000,http://localhost:5173,https://cloudopus42-droid.github.io" }
 ]
