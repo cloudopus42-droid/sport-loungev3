@@ -115,7 +115,7 @@ export function HomePage() {
       <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
         {/* Glow Spheres & Vector Dotted Globe Map */}
         <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
-          <div className="absolute w-[400px] h-[400px] sm:w-[620px] sm:h-[620px] bg-accent-purple/10 rounded-full blur-[140px] opacity-70" />
+          <div className="absolute w-[400px] h-[400px] sm:w-[620px] sm:h-[620px] bg-accent-gold/10 rounded-full blur-[140px] opacity-70" />
           <div className="absolute w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] bg-accent-amber/5 rounded-full blur-[120px] opacity-50" />
           
           {/* Vector Map Globe */}
@@ -201,7 +201,7 @@ export function HomePage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <GlowIcon name="clock" color="purple" size={16} glow={false} /> Сделать заказ
+                <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
               </motion.button>
             </NavLink>
             <NavLink to="/mixologist" className="w-full sm:w-auto">
@@ -210,7 +210,7 @@ export function HomePage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <GlowIcon name="flame" color="purple" size={16} animateOnHover /> ИИ-Миксолог
+                <GlowIcon name="flame" color="gold" size={16} animateOnHover /> ИИ-Миксолог
               </motion.button>
             </NavLink>
           </motion.div>
@@ -223,11 +223,11 @@ export function HomePage() {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <span className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors" onClick={handleAddressClick}>
-              <GlowIcon name="mappin" color="purple" size={14} /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
+              <GlowIcon name="mappin" color="gold" size={14} /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
             </span>
             <span className="hidden sm:inline opacity-30">•</span>
             <span className="flex items-center gap-1.5">
-              <GlowIcon name="clock" color="purple" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
+              <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
             </span>
           </motion.div>
         </div>
@@ -274,7 +274,7 @@ export function HomePage() {
                 <span className="text-xs text-white/40 block mt-1">активных столов в зале</span>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-white/60 pt-4 border-t border-white/5">
-                <GlowIcon name="clock" color="purple" size={14} className="text-accent-purple" />
+                <GlowIcon name="clock" color="gold" size={14} className="text-accent-gold" />
                 <span>Ожидание сборки заказа: ~8.5 мин</span>
               </div>
             </GlassCard>
@@ -290,16 +290,16 @@ export function HomePage() {
                       <span className="text-accent-gold font-mono font-bold">72%</span>
                     </div>
                     <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-accent-purple to-accent-amber" style={{ width: '72%' }} />
+                      <div className="h-full bg-gradient-to-r from-accent-gold to-accent-amber" style={{ width: '72%' }} />
                     </div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex justify-between text-[10px] text-white/60">
                       <span>Крепкий</span>
-                      <span className="text-accent-cyan font-mono font-bold">65%</span>
+                      <span className="text-accent-gold font-mono font-bold">65%</span>
                     </div>
                     <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-accent-cyan to-accent-purple" style={{ width: '65%' }} />
+                      <div className="h-full bg-gradient-to-r from-accent-gold to-accent-gold" style={{ width: '65%' }} />
                     </div>
                   </div>
                 </div>
@@ -309,7 +309,7 @@ export function HomePage() {
             {/* Widget 3: Live lounge sound system */}
             <GlassCard className="p-5 sm:col-span-2 flex items-center justify-between gap-4 border border-glass-border/20 bg-[#0c0816]/90 select-none">
               <div className="flex items-center gap-3 truncate">
-                <div className="w-9 h-9 rounded-xl bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center text-lg flex-shrink-0 animate-pulse">
+                <div className="w-9 h-9 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center text-lg flex-shrink-0 animate-pulse">
                   📻
                 </div>
                 <div className="truncate">
@@ -320,11 +320,11 @@ export function HomePage() {
               
               {/* Mini audio wave bars */}
               <div className="flex items-end gap-1 h-6 flex-shrink-0">
-                <span className="w-0.5 h-3 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-4 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-2 bg-accent-purple rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-accent-purple rounded-full soundwave-bar" />
+                <span className="w-0.5 h-3 bg-accent-gold rounded-full soundwave-bar" />
+                <span className="w-0.5 h-5 bg-accent-gold rounded-full soundwave-bar" />
+                <span className="w-0.5 h-4 bg-accent-gold rounded-full soundwave-bar" />
+                <span className="w-0.5 h-2 bg-accent-gold rounded-full soundwave-bar" />
+                <span className="w-0.5 h-5 bg-accent-gold rounded-full soundwave-bar" />
               </div>
             </GlassCard>
           </div>
@@ -422,7 +422,7 @@ export function HomePage() {
       <section id="why-us" className="relative pt-8">
         <div className="text-center space-y-2 mb-10 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold flex items-center justify-center gap-1">
-            <GlowIcon name="flame" color="purple" size={14} /> НАШИ ПРЕИМУЩЕСТВА
+            <GlowIcon name="flame" color="gold" size={14} /> НАШИ ПРЕИМУЩЕСТВА
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
             Почему гости <span className="gradient-text font-semibold italic">выбирают нас</span>
@@ -469,7 +469,7 @@ export function HomePage() {
               <GlassCard className="p-6 h-full flex flex-col justify-between hover:border-accent-gold/40 border-glass-border/30 z-10 relative">
                 <div>
                   <div className="w-10 h-10 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center mb-4">
-                    <GlowIcon name={item.iconName} color="purple" size={18} animateOnHover />
+                    <GlowIcon name={item.iconName} color="gold" size={18} animateOnHover />
                   </div>
                   <h4 className="text-sm font-semibold text-white mb-2">{item.title}</h4>
                   <p className="text-[11px] text-white/45 leading-relaxed font-light">{item.desc}</p>
@@ -598,7 +598,7 @@ export function HomePage() {
       {/* Interactive Map & Detailed Contacts */}
       <section id="contacts" className="relative pt-6">
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
-          <GlowIcon name="mappin" color="purple" size={20} className="flex-shrink-0" /> Как нас найти
+          <GlowIcon name="mappin" color="gold" size={20} className="flex-shrink-0" /> Как нас найти
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -622,7 +622,7 @@ export function HomePage() {
                 <h3 className="text-base sm:text-lg font-display font-semibold text-white">Адрес и Контакты</h3>
                 
                 <div className="flex items-start gap-3.5">
-                  <GlowIcon name="mappin" color="purple" size={16} className="mt-0.5 flex-shrink-0" />
+                  <GlowIcon name="mappin" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs sm:text-sm text-white font-medium">{CONTACT.address}</p>
                     <a 
@@ -639,7 +639,7 @@ export function HomePage() {
                 <div className="h-px bg-glass-border" />
 
                 <div className="flex items-start gap-3.5">
-                  <GlowIcon name="clock" color="purple" size={16} className="mt-0.5 flex-shrink-0" />
+                  <GlowIcon name="clock" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
                   <div className="text-xs sm:text-sm">
                     <p className="text-white font-medium">{WORKING_HOURS}</p>
                     <p className="text-[11px] text-white/30 mt-0.5">Работаем без выходных дней</p>
@@ -654,7 +654,7 @@ export function HomePage() {
                   rel="noopener noreferrer" 
                   className="flex items-center gap-3.5 group"
                 >
-                  <GlowIcon name="send" color="cyan" size={16} className="flex-shrink-0" />
+                  <GlowIcon name="send" color="gold" size={16} className="flex-shrink-0" />
                   <div>
                     <p className="text-xs sm:text-sm text-accent-gold group-hover:underline font-medium">@{CONTACT.telegram}</p>
                     <p className="text-[11px] text-white/30">Написать нам в Telegram</p>
@@ -668,3 +668,4 @@ export function HomePage() {
     </motion.div>
   );
 }
+

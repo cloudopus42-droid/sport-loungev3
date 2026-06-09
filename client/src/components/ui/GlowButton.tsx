@@ -11,9 +11,9 @@ interface GlowButtonProps extends HTMLMotionProps<'button'> {
 }
 
 const variantStyles = {
-  primary: 'glass-btn-purple',
-  secondary: 'glass-btn-cyan',
-  gold: 'glass-btn-gold',
+  primary: 'bg-gradient-to-r from-accent-gold to-yellow-500 text-black font-bold shadow-glow-gold border border-yellow-200/20 hover:shadow-glow-gold-lg',
+  secondary: 'bg-white/5 hover:bg-white/10 text-white border border-white/10',
+  gold: 'bg-gradient-to-r from-accent-gold to-yellow-500 text-black font-bold shadow-glow-gold border border-yellow-200/20 hover:shadow-glow-gold-lg',
   danger: 'bg-gradient-to-r from-red-600 to-red-500 shadow-[0_4px_20px_rgba(239,68,68,0.4)] border border-white/20 text-white',
 };
 
@@ -33,7 +33,6 @@ export function GlowButton({
   ...props
 }: GlowButtonProps) {
   const isDisabled = disabled || loading;
-
   return (
     <motion.button
       className={clsx(

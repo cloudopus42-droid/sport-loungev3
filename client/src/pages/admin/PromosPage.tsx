@@ -154,7 +154,7 @@ export function PromosPage() {
       key: 'discount',
       label: 'Скидка',
       render: (promo: Promo) => (
-        <span className="text-accent-cyan font-semibold">-{promo.discountPercent}%</span>
+        <span className="text-accent-gold font-semibold">-{promo.discountPercent}%</span>
       ),
     },
     {
@@ -191,7 +191,7 @@ export function PromosPage() {
       render: (promo: Promo) => (
         <div className="flex items-center gap-1">
           <motion.button
-            className="p-1.5 rounded-lg text-white/30 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors"
+            className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors"
             onClick={(e) => { e.stopPropagation(); openEdit(promo); }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -231,7 +231,7 @@ export function PromosPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <Table columns={columns} data={promos} />
@@ -296,9 +296,9 @@ export function PromosPage() {
                 <button
                   type="button"
                   onClick={() => setActive(!active)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${active ? 'bg-accent-cyan/30' : 'bg-white/10'}`}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${active ? 'bg-accent-gold/30' : 'bg-white/10'}`}
                 >
-                  <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${active ? 'left-[22px] bg-accent-cyan shadow-glow-cyan' : 'left-0.5 bg-white/30'}`} />
+                  <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${active ? 'left-[22px] bg-accent-gold shadow-glow-gold' : 'left-0.5 bg-white/30'}`} />
                 </button>
               </div>
             </div>
@@ -323,3 +323,4 @@ export function PromosPage() {
     </div>
   );
 }
+

@@ -35,12 +35,10 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Normalize user to always have _id
 function normalizeUser(u: any): User {
   return { ...u, _id: u._id || u.id };
 }
 
-// Restore user from localStorage synchronously to avoid flash
 function getInitialUser(): User | null {
   try {
     const saved = localStorage.getItem('user');
@@ -115,7 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}login/callback`,
+        redirectTo: import.meta.env.VITE_REDIRECT_URL || `${window.location.origin}${import.meta.env.BASE_URL}login/callback`,
       },
     });
     if (error) throw error;

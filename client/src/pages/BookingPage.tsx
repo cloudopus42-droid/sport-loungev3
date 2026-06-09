@@ -482,3 +482,4 @@ export function BookingPage() {
     </div>
   );
 }
+

@@ -1,6 +1,6 @@
 import { config } from '../config/env';
 
-const SUPPORT_BOT_TOKEN = '7767469525:AAEVMgecmpKHdrMC8NqzCy37_Q41ld_2QcU';
+const SUPPORT_BOT_TOKEN = process.env.SUPPORT_BOT_TOKEN || '';
 const TELEGRAM_API_SUPPORT = `https://api.telegram.org/bot${SUPPORT_BOT_TOKEN}`;
 const TELEGRAM_API_MAIN = `${config.telegramApiBaseUrl}/bot${config.telegramToken}`;
 

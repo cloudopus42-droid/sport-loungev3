@@ -102,8 +102,8 @@ export function FileUploader({
           className={clsx(
             'relative flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer',
             isDragOver
-              ? 'border-accent-cyan bg-accent-cyan/10 shadow-glow-cyan'
-              : 'border-glass-border bg-glass-bg hover:border-accent-cyan/40 hover:bg-accent-cyan/5'
+              ? 'border-accent-gold bg-accent-gold/10 shadow-glow-gold'
+              : 'border-glass-border bg-glass-bg hover:border-accent-gold/40 hover:bg-accent-gold/5'
           )}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -115,12 +115,12 @@ export function FileUploader({
           <motion.div
             className={clsx(
               'w-12 h-12 rounded-full flex items-center justify-center',
-              isDragOver ? 'bg-accent-cyan/20' : 'bg-glass-bg'
+              isDragOver ? 'bg-accent-gold/20' : 'bg-glass-bg'
             )}
             animate={isDragOver ? { y: -4 } : { y: 0 }}
           >
             {isDragOver ? (
-              <Upload className="w-6 h-6 text-accent-cyan" />
+              <Upload className="w-6 h-6 text-accent-gold" />
             ) : (
               <ImageIcon className="w-6 h-6 text-white/40" />
             )}
@@ -151,3 +151,4 @@ export function FileUploader({
     </div>
   );
 }
+

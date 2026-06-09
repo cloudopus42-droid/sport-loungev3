@@ -30,3 +30,4 @@ export class WebGLSafeBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+

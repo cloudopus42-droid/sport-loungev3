@@ -103,3 +103,4 @@ export const HOOKAH_FLAVORS = [
 ];
 
 export const FLAVOR_CATEGORIES = ['Все', 'Фрукты', 'Ягоды', 'Десерт', 'Пряные', 'Свежие', 'Авторские'];
+

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Crown, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { GlowButton } from '@/components/ui/GlowButton';
 import { useAuth } from '@/hooks/useAuth';
 
 export function LoginPage() {
@@ -48,24 +47,10 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          className="absolute top-1/4 -left-20 w-72 h-72 bg-accent-gold/10 rounded-full blur-[120px]"
-          animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 -right-20 w-72 h-72 bg-accent-amber/10 rounded-full blur-[120px]"
-          animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent-bronze/5 rounded-full blur-[150px]"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </div>
+
+      <div className="float-orb-1" />
+      <div className="float-orb-2" />
+      <div className="float-orb-3" />
 
       <motion.div
         className="w-full max-w-sm relative"
@@ -80,10 +65,10 @@ export function LoginPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-yellow-300 via-accent-gold to-yellow-600 flex items-center justify-center shadow-glow-gold mb-4 border border-yellow-200/20">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-accent-gold via-yellow-500 to-accent-burgundy flex items-center justify-center shadow-glow-gold mb-4 border border-yellow-200/20">
             <Crown className="w-8 h-8 text-black" />
           </div>
-          <h1 className="text-2xl font-display font-semibold text-white tracking-wide">SPORT LOUNGE</h1>
+          <h1 className="text-2xl font-heading font-bold text-white tracking-wide">SPORT LOUNGE</h1>
           <p className="text-sm text-white/40 mt-1">Вход в аккаунт</p>
         </motion.div>
 
@@ -96,7 +81,6 @@ export function LoginPage() {
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <div className="space-y-4">
-            {/* Email */}
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Email</label>
               <div className="relative">
@@ -113,7 +97,6 @@ export function LoginPage() {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Пароль</label>
               <div className="relative">
@@ -139,7 +122,6 @@ export function LoginPage() {
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <motion.div
               className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
@@ -151,32 +133,30 @@ export function LoginPage() {
             </motion.div>
           )}
 
-          {/* Submit */}
-          <GlowButton
+          <button
             type="submit"
-            size="lg"
-            loading={loading}
-            className="w-full shadow-glow-gold-lg text-black font-bold"
+            disabled={loading}
+            className="gold-btn w-full py-2.5 text-sm font-heading font-bold"
           >
-            Войти
-          </GlowButton>
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto" />
+            ) : 'Войти'}
+          </button>
 
-          {/* Divider */}
           <div className="flex items-center my-4">
             <div className="flex-1 border-t border-white/5"></div>
             <span className="px-3 text-[10px] text-white/20 font-semibold tracking-wider">ИЛИ</span>
             <div className="flex-1 border-t border-white/5"></div>
           </div>
 
-          {/* Google Login */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading || googleLoading}
-            className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium text-sm flex items-center justify-center gap-2.5 transition-all shadow-sm hover:shadow-md"
+            className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium text-sm flex items-center justify-center gap-2.5 transition-all hover:border-accent-gold/30 hover:text-accent-gold"
           >
             {googleLoading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
             ) : (
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -188,7 +168,6 @@ export function LoginPage() {
             Войти через Google
           </button>
 
-          {/* Register Link */}
           <p className="text-center text-sm text-white/40 pt-2">
             Нет аккаунта?{' '}
             <Link

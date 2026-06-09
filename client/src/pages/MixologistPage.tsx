@@ -210,7 +210,7 @@ export function MixologistPage() {
               <h3 className="text-xs text-white/50 uppercase tracking-wider font-semibold flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-accent-gold" /> Выберите вкусы табака (до 4 видов)
               </h3>
-              <span className="text-[10px] text-accent-cyan font-bold font-mono">ВЫБРАНО: {hookahMix.length}/4</span>
+              <span className="text-[10px] text-accent-gold font-bold font-mono">ВЫБРАНО: {hookahMix.length}/4</span>
             </div>
 
             {/* Categories */}
@@ -446,3 +446,4 @@ export function MixologistPage() {
     </div>
   );
 }
+

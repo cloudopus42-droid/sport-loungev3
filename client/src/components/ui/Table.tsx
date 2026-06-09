@@ -38,7 +38,7 @@ export function Table<T extends { _id: string }>({
                   type="checkbox"
                   checked={allSelected}
                   onChange={onSelectAll}
-                  className="w-4 h-4 rounded border-glass-border bg-glass-bg text-accent-cyan focus:ring-accent-cyan/50 focus:ring-offset-0 cursor-pointer accent-accent-cyan"
+                  className="w-4 h-4 rounded border-glass-border bg-glass-bg text-accent-gold focus:ring-accent-gold/50 focus:ring-offset-0 cursor-pointer accent-accent-gold"
                 />
               </th>
             )}
@@ -58,9 +58,9 @@ export function Table<T extends { _id: string }>({
               key={item._id}
               className={clsx(
                 'border-b border-glass-border/50 transition-colors duration-200',
-                'hover:bg-accent-cyan/5',
+                'hover:bg-accent-gold/5',
                 onRowClick && 'cursor-pointer',
-                hasSelection && selectedIds.has(item._id) && 'bg-accent-cyan/10'
+                hasSelection && selectedIds.has(item._id) && 'bg-accent-gold/10'
               )}
               onClick={() => onRowClick?.(item)}
             >
@@ -70,7 +70,7 @@ export function Table<T extends { _id: string }>({
                     type="checkbox"
                     checked={selectedIds.has(item._id)}
                     onChange={() => onToggleSelect(item._id)}
-                    className="w-4 h-4 rounded border-glass-border bg-glass-bg text-accent-cyan focus:ring-accent-cyan/50 focus:ring-offset-0 cursor-pointer accent-accent-cyan"
+                    className="w-4 h-4 rounded border-glass-border bg-glass-bg text-accent-gold focus:ring-accent-gold/50 focus:ring-offset-0 cursor-pointer accent-accent-gold"
                   />
                 </td>
               )}
@@ -98,3 +98,4 @@ export function Table<T extends { _id: string }>({
     </div>
   );
 }
+

@@ -352,3 +352,4 @@ export function ThreeDNA({ mix, mixPercentages, activeCategory, onSelectCategory
   );
 }
 export default ThreeDNA;
+

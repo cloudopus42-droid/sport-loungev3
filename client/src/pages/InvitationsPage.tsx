@@ -35,7 +35,7 @@ export function InvitationsPage() {
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
-          <Mail className="w-5 h-5 text-accent-cyan" />
+          <Mail className="w-5 h-5 text-accent-gold" />
           Приглашения
         </h1>
         <p className="text-xs text-white/40 mt-0.5">Предстоящие события</p>
@@ -102,7 +102,7 @@ export function InvitationsPage() {
 
                   <div className="flex flex-wrap items-center gap-3 text-xs text-white/40">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-accent-cyan" />
+                      <Calendar className="w-3.5 h-3.5 text-accent-gold" />
                       {new Date(invitation.dateTime).toLocaleDateString('ru-RU', {
                         day: 'numeric',
                         month: 'long',
@@ -114,11 +114,11 @@ export function InvitationsPage() {
                       })}
                     </span>
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-accent-cyan" />
+                      <MapPin className="w-3.5 h-3.5 text-accent-gold" />
                       {invitation.location}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-accent-cyan" />
+                      <Users className="w-3.5 h-3.5 text-accent-gold" />
                       {invitation.currentParticipants || 0} участников
                     </span>
                   </div>
@@ -150,3 +150,4 @@ export function InvitationsPage() {
     </div>
   );
 }
+

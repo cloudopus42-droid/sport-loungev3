@@ -60,7 +60,7 @@ export function PostCard({ post }: PostCardProps) {
     >
       {/* Header */}
       <div className="flex items-center gap-3 p-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-gold to-accent-gold flex items-center justify-center flex-shrink-0">
           {author?.avatar ? (
             <img src={author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
           ) : (
@@ -140,7 +140,7 @@ export function PostCard({ post }: PostCardProps) {
           </motion.button>
 
           <motion.button
-            className="flex items-center gap-1.5 text-white/60 hover:text-accent-cyan transition-colors"
+            className="flex items-center gap-1.5 text-white/60 hover:text-accent-gold transition-colors"
             onClick={handleShare}
             whileTap={{ scale: 0.85 }}
           >
@@ -161,3 +161,4 @@ export function PostCard({ post }: PostCardProps) {
     </motion.div>
   );
 }
+

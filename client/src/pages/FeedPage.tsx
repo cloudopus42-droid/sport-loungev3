@@ -163,7 +163,7 @@ export function FeedPage() {
                     </button>
                   </div>
                 ) : (
-                  <label className="flex items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed border-glass-border hover:border-accent-cyan/30 cursor-pointer transition-colors">
+                  <label className="flex items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed border-glass-border hover:border-accent-gold/30 cursor-pointer transition-colors">
                     <Image className="w-5 h-5 text-white/30" />
                     <span className="text-sm text-white/30">Добавить фото</span>
                     <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
@@ -189,7 +189,7 @@ export function FeedPage() {
             <GlassCard className="overflow-hidden">
               {/* Author */}
               <div className="flex items-center gap-3 px-4 py-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-gold to-accent-gold flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                   {author?.avatar ? (
                     <img src={resolveImageUrl(author.avatar)}
                       className="w-full h-full rounded-full object-cover" alt="" />
@@ -222,7 +222,7 @@ export function FeedPage() {
                   </motion.button>
 
                   <button onClick={() => toggleComments(post._id)}
-                    className="flex items-center gap-1.5 text-sm text-white/40 hover:text-accent-cyan transition-colors">
+                    className="flex items-center gap-1.5 text-sm text-white/40 hover:text-accent-gold transition-colors">
                     <MessageCircle className="w-5 h-5" />
                     <span>{(post as any).comments?.length || 0}</span>
                   </button>
@@ -255,7 +255,7 @@ export function FeedPage() {
                             onKeyDown={(e) => e.key === 'Enter' && submitComment(post._id)}
                           />
                           <motion.button onClick={() => submitComment(post._id)}
-                            className="p-2 rounded-lg bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 transition-colors"
+                            className="p-2 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-colors"
                             whileTap={{ scale: 0.9 }}>
                             <Send className="w-3.5 h-3.5" />
                           </motion.button>
@@ -272,7 +272,7 @@ export function FeedPage() {
 
       {loading && (
         <div className="flex justify-center py-8">
-          <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -288,3 +288,4 @@ export function FeedPage() {
     </div>
   );
 }
+

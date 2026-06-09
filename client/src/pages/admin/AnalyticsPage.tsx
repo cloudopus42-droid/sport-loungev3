@@ -216,7 +216,7 @@ export function AnalyticsPage() {
   const fmt = (n: number) => n.toLocaleString('ru-RU') + ' ₽';
 
   if (loading) return (
-    <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" /></div>
+    <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" /></div>
   );
 
   return (
@@ -225,7 +225,7 @@ export function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-display font-bold text-white flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-accent-cyan" /> BI Центр Аналитики 3.0
+            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-accent-gold" /> BI Центр Аналитики 3.0
           </h1>
           <p className="text-xs sm:text-sm text-white/40">Сквозной LTV • Загруженность залов • Удержание гостей</p>
         </div>
@@ -233,13 +233,13 @@ export function AnalyticsPage() {
           {(['week', 'month', 'year'] as const).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
               className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-all ${
-                period === p ? 'bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30'
+                period === p ? 'bg-accent-gold/20 text-accent-gold border border-accent-gold/30'
                   : 'text-white/40 hover:text-white/60 border border-transparent'}`}>
               {p === 'week' ? 'Неделя' : p === 'month' ? 'Месяц' : 'Год'}
             </button>
           ))}
           <button onClick={() => setShowConfig(!showConfig)}
-            className="p-1.5 rounded-lg text-white/30 hover:text-accent-cyan border border-transparent hover:border-accent-cyan/20">
+            className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold border border-transparent hover:border-accent-gold/20">
             <Settings className="w-4 h-4" />
           </button>
         </div>
@@ -250,7 +250,7 @@ export function AnalyticsPage() {
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
           <GlassCard className="p-4 sm:p-5">
             <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-accent-cyan" /> Настройки расчётов
+              <Settings className="w-4 h-4 text-accent-gold" /> Настройки расчётов
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -263,13 +263,13 @@ export function AnalyticsPage() {
 
             {/* Glassmorphism settings */}
             <div className="border-t border-white/5 pt-3 mt-3 mb-4 space-y-4">
-              <p className="text-xs uppercase tracking-wider text-accent-cyan font-bold">Настройки Жидкого Стекла (Liquid Glass)</p>
+              <p className="text-xs uppercase tracking-wider text-accent-gold font-bold">Настройки Жидкого Стекла (Liquid Glass)</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="flex justify-between items-center mb-1 text-xs">
                     <span className="text-white/60">Размытие заднего фона (Blur)</span>
-                    <span className="text-accent-cyan font-mono">{blurVal}px</span>
+                    <span className="text-accent-gold font-mono">{blurVal}px</span>
                   </div>
                   <input 
                     type="range" 
@@ -277,14 +277,14 @@ export function AnalyticsPage() {
                     max="100" 
                     value={blurVal} 
                     onChange={(e) => handleBlurChange(Number(e.target.value))}
-                    className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-accent-gold bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
 
                 <div>
                   <div className="flex justify-between items-center mb-1 text-xs">
                     <span className="text-white/60">Прозрачность стекла (Opacity)</span>
-                    <span className="text-accent-cyan font-mono">{Math.round(opacityVal * 100)}%</span>
+                    <span className="text-accent-gold font-mono">{Math.round(opacityVal * 100)}%</span>
                   </div>
                   <input 
                     type="range" 
@@ -293,7 +293,7 @@ export function AnalyticsPage() {
                     step="0.01"
                     value={opacityVal} 
                     onChange={(e) => handleOpacityChange(Number(e.target.value))}
-                    className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-accent-gold bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
               </div>
@@ -315,7 +315,7 @@ export function AnalyticsPage() {
                 </div>
               ))}
               <button onClick={() => setExpenses([...expenses, { label: 'Новый расход', amount: 0 }])}
-                className="text-[10px] text-accent-cyan hover:underline">+ Добавить расход</button>
+                className="text-[10px] text-accent-gold hover:underline">+ Добавить расход</button>
             </div>
 
             <GlowButton size="sm" onClick={handleSaveSettings}>
@@ -348,7 +348,7 @@ export function AnalyticsPage() {
         {[
           { icon: DollarSign, label: 'Выручка', value: fmt(grossRevenue), sub: `${totalHookahs} шт кальянов`, color: 'text-green-400', bg: 'bg-green-500/10' },
           { icon: TrendingDown, label: 'Все расходы', value: fmt(totalExpenses), sub: 'Фермы+ЗП+Склад', color: 'text-red-400', bg: 'bg-red-500/10' },
-          { icon: Percent, label: 'Загруженность залов', value: `${occupancyRate}%`, sub: `из ${totalCapacitySlots} сеансов`, color: 'text-accent-cyan', bg: 'bg-accent-cyan/10' },
+          { icon: Percent, label: 'Загруженность залов', value: `${occupancyRate}%`, sub: `из ${totalCapacitySlots} сеансов`, color: 'text-accent-gold', bg: 'bg-accent-gold/10' },
           { icon: Repeat, label: 'Retention Rate', value: `${retentionRate}%`, sub: 'вернувшиеся гости', color: 'text-purple-400', bg: 'bg-purple-500/10' },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }}>
@@ -436,7 +436,7 @@ export function AnalyticsPage() {
               {[
                 { key: 'vip', label: '👑 VIP Кабинеты (PlayStation 5)', max: 4, color: 'bg-amber-500' },
                 { key: 'pro', label: '⚡ PRO Зона (600Hz Esports)', max: 4, color: 'bg-red-500' },
-                { key: 'hall', label: '🛋️ Общий зал лаунжа', max: 5, color: 'bg-accent-cyan' },
+                { key: 'hall', label: '🛋️ Общий зал лаунжа', max: 5, color: 'bg-accent-gold' },
               ].map(zone => {
                 const count = zoneCounts[zone.key] || 0;
                 const pct = Math.min(100, Math.round((count / (zone.max * daysInPeriod)) * 100));
@@ -464,7 +464,7 @@ export function AnalyticsPage() {
                       <span className="w-5 h-5 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center justify-center font-bold text-[9px]">#{idx + 1}</span>
                       <span className="font-semibold text-white/90">{seat.label} ({seat.zone.toUpperCase()})</span>
                     </div>
-                    <span className="font-mono text-accent-cyan font-bold">{seat.count} бронирований</span>
+                    <span className="font-mono text-accent-gold font-bold">{seat.count} бронирований</span>
                   </div>
                 ))}
               </div>
@@ -522,13 +522,13 @@ export function AnalyticsPage() {
 
         <GlassCard className="p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-display font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-accent-cyan" /> Детализация по сессиям
+            <Calendar className="w-4 h-4 text-accent-gold" /> Детализация по сессиям
           </h3>
           <div className="space-y-2.5">
             {[
               ['Всего сессий бронирования', `${totalOrders}`, 'text-white'],
               ['Количество кальянов заказано', `${totalHookahs}`, 'text-white'],
-              ['Средний чек сессии', totalOrders > 0 ? fmt(Math.round(grossRevenue / totalOrders)) : '—', 'text-accent-cyan'],
+              ['Средний чек сессии', totalOrders > 0 ? fmt(Math.round(grossRevenue / totalOrders)) : '—', 'text-accent-gold'],
               ['Среднее число гостей/заказ', totalOrders > 0 ? (totalGuests / totalOrders).toFixed(1) : '—', 'text-white'],
               ['Средняя выручка в день', fmt(Math.round(grossRevenue / daysInPeriod)), 'text-green-400'],
             ].map(([label, val, clr]) => (
@@ -649,3 +649,4 @@ export function AnalyticsPage() {
     </div>
   );
 }
+

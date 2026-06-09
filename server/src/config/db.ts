@@ -18,10 +18,11 @@ async function runDirectMigration() {
 
   console.log('🏁 Invoices table does not exist. Starting direct PG migration...');
   
-  const passwords = [
-    process.env.SUPABASE_KEY || 'sb_secret_V9gEDtPTvq8XlJuefmVPAg_PoO4pWp_',
-    'YaSmogu100'
-  ];
+  const password = process.env.SUPABASE_KEY || '';
+  if (!password) {
+    console.log('SUPABASE_KEY not set, skipping direct PG migration.');
+    return;
+  }
 
   const sql = `
   CREATE TABLE IF NOT EXISTS invoices (
@@ -102,9 +103,7 @@ async function runDirectMigration() {
   SET date = EXCLUDED.date, total_amount = EXCLUDED.total_amount, items = EXCLUDED.items;
   `;
 
-  for (const password of passwords) {
-    console.log(`🔑 Trying direct PG connection with password prefix ${password.substring(0, 5)}...`);
-    const client = new Client({
+  const client = new Client({
       host: 'db.haemdfhteicygsidftqp.supabase.co',
       port: 5432,
       database: 'postgres',
@@ -124,12 +123,11 @@ async function runDirectMigration() {
       await client.end();
       return;
     } catch (err: any) {
-      console.error(`❌ Connection with password prefix ${password.substring(0, 5)} failed:`, err.message);
+      console.error('❌ Direct PG connection failed:', err.message);
       try { await client.end(); } catch {}
     }
-  }
 
-  console.error('❌ Direct PG migration failed with all passwords. If running locally, this is expected due to network routes.');
+  console.error('❌ Direct PG migration failed. If running locally, this is expected.');
 }
 
 export async function connectDB(): Promise<void> {

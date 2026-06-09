@@ -26,6 +26,15 @@ export default defineConfig({
             if (id.includes('framer-motion')) {
               return 'vendor-framer';
             }
+            if (id.includes('react-dom') || id.includes('react/') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('socket.io') || id.includes('axios') || id.includes('zod') || id.includes('clsx') || id.includes('lucide-react')) {
+              return 'vendor-utils';
+            }
           }
         },
       },

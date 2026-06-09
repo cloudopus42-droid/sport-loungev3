@@ -1,7 +1,7 @@
 import { config } from '../config/env';
 
-const ORDER_BOT_TOKEN = '8569759144:AAEpmyJthuhgJ2qCAFt_jz63TN1lwlnYHIs'; // SPORT LOUNGE BOT (@hookahversebot) - Заказы
-const MANAGER_BOT_TOKEN = '8749256757:AAFdnrV4xMzsH_nsC6zBZu2bBfmD4vUTSyA'; // Menedher_bot (@llsportsmanager_bot) - Вызовы мастера
+const ORDER_BOT_TOKEN = process.env.ORDER_BOT_TOKEN || ''; // SPORT LOUNGE BOT (@hookahversebot) - Заказы
+const MANAGER_BOT_TOKEN = process.env.MANAGER_BOT_TOKEN || ''; // Menedher_bot (@llsportsmanager_bot) - Вызовы мастера
 
 const zoneLabels: Record<string, string> = {
   hall: '🖥 Общий зал',
