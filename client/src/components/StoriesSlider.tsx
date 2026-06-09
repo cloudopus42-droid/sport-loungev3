@@ -211,3 +211,4 @@ export function StoriesSlider({ stories, loading = false }: StoriesSliderProps) 
     </>
   );
 }
+

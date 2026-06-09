@@ -32,37 +32,19 @@ import membershipRoutes from './routes/memberships';
 import invoiceRoutes from './routes/invoices';
 import orderRoutes from './routes/orders';
 
-// Custom lightweight memory-based API Rate Limiter
-const rateLimits: Record<string, { count: number; resetTime: number }> = {};
+import rateLimit from 'express-rate-limit';
 
 function rateLimitMiddleware(limit: number, windowMs: number) {
-  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-    const now = Date.now();
-    
-    // Convert array-type header back to simple string if needed
-    const clientIp = Array.isArray(ip) ? ip[0] : ip;
-
-    if (!rateLimits[clientIp] || rateLimits[clientIp].resetTime <= now) {
-      rateLimits[clientIp] = {
-        count: 1,
-        resetTime: now + windowMs,
-      };
-      return next();
-    }
-    
-    rateLimits[clientIp].count++;
-    
-    if (rateLimits[clientIp].count > limit) {
-      res.status(429).json({
-        error: 'Слишком много запросов. Пожалуйста, попробуйте позже.',
-        status: 429,
-      });
-      return;
-    }
-    
-    next();
-  };
+  return rateLimit({
+    windowMs,
+    max: limit,
+    message: {
+      error: 'Слишком много запросов. Пожалуйста, попробуйте позже.',
+      status: 429,
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
 }
 
 const app = express();

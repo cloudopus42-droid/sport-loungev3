@@ -153,7 +153,7 @@ export function PostsPage() {
       key: 'likesCount',
       label: 'Лайки',
       render: (post: Post) => (
-        <span className="text-accent-cyan">{post.likes || 0}</span>
+        <span className="text-accent-gold">{post.likes || 0}</span>
       ),
     },
     {
@@ -214,7 +214,7 @@ export function PostsPage() {
       >
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <Table
@@ -287,3 +287,4 @@ export function PostsPage() {
     </div>
   );
 }
+

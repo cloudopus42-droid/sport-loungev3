@@ -52,8 +52,8 @@ function SortableItem({ id, children }: SortableItemProps) {
       style={style}
       className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
         isDragging
-          ? 'bg-accent-cyan/10 border-accent-cyan/30 shadow-glow-cyan'
-          : 'bg-glass-bg border-glass-border hover:border-accent-cyan/20'
+          ? 'bg-accent-gold/10 border-accent-gold/30 shadow-glow-gold'
+          : 'bg-glass-bg border-glass-border hover:border-accent-gold/20'
       }`}
     >
       <button
@@ -117,3 +117,4 @@ export function DragDropList<T extends { _id: string }>({
     </DndContext>
   );
 }
+

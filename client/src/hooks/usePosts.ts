@@ -65,3 +65,4 @@ export function usePosts(): UsePostsReturn {
 
   return { posts, loading, hasMore, fetchMore, refresh };
 }
+

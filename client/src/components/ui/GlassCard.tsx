@@ -37,3 +37,4 @@ export function GlassCard({ children, className, animate = true, onClick }: Glas
     </motion.div>
   );
 }
+

@@ -13,8 +13,8 @@ const envSchema = z.object({
   TELEGRAM_API_BASE_URL: z.string().default('https://api.telegram.org'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   SUPABASE_URL: z.string().default('https://haemdfhteicygsidftqp.supabase.co'),
-  SUPABASE_KEY: z.string().default('sb_secret_V9gEDtPTvq8XlJuefmVPAg_PoO4pWp_'),
-  SUPABASE_ANON_KEY: z.string().default('sb_publishable_hdjCkqf7FcWJekjombPjWg_OzILJPDE'),
+  SUPABASE_KEY: z.string().min(1, 'SUPABASE_KEY is required'),
+  SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
 });
 
 const parsed = envSchema.safeParse(process.env);

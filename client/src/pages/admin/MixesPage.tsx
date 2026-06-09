@@ -155,7 +155,7 @@ export function MixesPage() {
         <div className="flex items-center gap-2">
           <div className="w-20 h-1.5 bg-dark-bg rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-accent-cyan to-accent-blue rounded-full transition-all"
+              className="h-full bg-gradient-to-r from-accent-gold to-accent-gold rounded-full transition-all"
               style={{ width: `${(mix.strength / 10) * 100}%` }}
             />
           </div>
@@ -179,7 +179,7 @@ export function MixesPage() {
       render: (mix: Mix) => (
         <div className="flex items-center gap-1">
           <motion.button
-            className="p-1.5 rounded-lg text-white/30 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors"
+            className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors"
             onClick={(e) => { e.stopPropagation(); openEdit(mix); }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -223,7 +223,7 @@ export function MixesPage() {
       >
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <Table columns={columns} data={mixes} />
@@ -259,7 +259,7 @@ export function MixesPage() {
             <label className="block text-xs text-white/50 mb-1.5 font-medium">Вкусы</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {flavors.map((f) => (
-                <span key={f} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-accent-cyan/10 border border-accent-cyan/20 text-xs text-accent-cyan">
+                <span key={f} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-accent-gold/10 border border-accent-gold/20 text-xs text-accent-gold">
                   {f}
                   <button type="button" onClick={() => removeFlavor(f)} className="ml-0.5 hover:text-white">×</button>
                 </span>
@@ -289,7 +289,7 @@ export function MixesPage() {
               max={10}
               value={strength}
               onChange={(e) => setStrength(Number(e.target.value))}
-              className="w-full h-1.5 bg-dark-bg rounded-full appearance-none cursor-pointer accent-accent-cyan"
+              className="w-full h-1.5 bg-dark-bg rounded-full appearance-none cursor-pointer accent-accent-gold"
             />
             <div className="flex justify-between text-[10px] text-white/20 mt-1">
               <span>Лёгкий</span>
@@ -304,12 +304,12 @@ export function MixesPage() {
               type="button"
               onClick={() => setStatus(status === 'active' ? 'inactive' : 'active')}
               className={`relative w-11 h-6 rounded-full transition-colors ${
-                status === 'active' ? 'bg-accent-cyan/30' : 'bg-white/10'
+                status === 'active' ? 'bg-accent-gold/30' : 'bg-white/10'
               }`}
             >
               <div
                 className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${
-                  status === 'active' ? 'left-[22px] bg-accent-cyan shadow-glow-cyan' : 'left-0.5 bg-white/30'
+                  status === 'active' ? 'left-[22px] bg-accent-gold shadow-glow-gold' : 'left-0.5 bg-white/30'
                 }`}
               />
             </button>
@@ -335,3 +335,4 @@ export function MixesPage() {
     </div>
   );
 }
+

@@ -44,17 +44,17 @@ export function InvitationBanner({ invitation, onClose }: InvitationBannerProps)
           exit={{ y: -100, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         >
-          <div className="max-w-lg mx-auto bg-dark-surface/95 backdrop-blur-glass border border-accent-cyan/30 rounded-2xl shadow-glow-cyan overflow-hidden">
+          <div className="max-w-lg mx-auto bg-dark-surface/95 backdrop-blur-glass border border-accent-gold/30 rounded-2xl shadow-glow-gold overflow-hidden">
             <div className="flex items-start gap-3 p-4">
-              <div className="w-10 h-10 rounded-full bg-accent-cyan/20 flex items-center justify-center flex-shrink-0">
-                <PartyPopper className="w-5 h-5 text-accent-cyan" />
+              <div className="w-10 h-10 rounded-full bg-accent-gold/20 flex items-center justify-center flex-shrink-0">
+                <PartyPopper className="w-5 h-5 text-accent-gold" />
               </div>
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white mb-1">
                   Новое приглашение!
                 </p>
-                <p className="text-sm font-display text-accent-cyan truncate">
+                <p className="text-sm font-display text-accent-gold truncate">
                   {invitation.title}
                 </p>
 
@@ -81,10 +81,11 @@ export function InvitationBanner({ invitation, onClose }: InvitationBannerProps)
             </div>
 
             {/* Glow accent line */}
-            <div className="h-px bg-gradient-to-r from-transparent via-accent-cyan to-transparent" />
+            <div className="h-px bg-gradient-to-r from-transparent via-accent-gold to-transparent" />
           </div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
+

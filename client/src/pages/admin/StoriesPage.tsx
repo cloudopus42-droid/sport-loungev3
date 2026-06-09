@@ -134,7 +134,7 @@ export function StoriesPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : stories.length === 0 ? (
           <div className="text-center py-20">
@@ -152,8 +152,8 @@ export function StoriesPage() {
                 {/* Preview */}
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-dark-surface flex-shrink-0">
                   {story.mediaType === 'video' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-accent-purple/10">
-                      <Film className="w-6 h-6 text-accent-purple" />
+                    <div className="w-full h-full flex items-center justify-center bg-accent-gold/10">
+                      <Film className="w-6 h-6 text-accent-gold" />
                     </div>
                   ) : (
                     <img
@@ -179,11 +179,11 @@ export function StoriesPage() {
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleStoryActive(story); }}
                     className={`relative w-9 h-5 rounded-full transition-colors ${
-                      story.isActive ? 'bg-accent-cyan/30' : 'bg-white/10'
+                      story.isActive ? 'bg-accent-gold/30' : 'bg-white/10'
                     }`}
                   >
                     <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${
-                      story.isActive ? 'left-[18px] bg-accent-cyan' : 'left-0.5 bg-white/30'
+                      story.isActive ? 'left-[18px] bg-accent-gold' : 'left-0.5 bg-white/30'
                     }`} />
                   </button>
                   <motion.button
@@ -214,7 +214,7 @@ export function StoriesPage() {
               max={30}
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
-              className="w-full h-1.5 bg-dark-bg rounded-full appearance-none cursor-pointer accent-accent-cyan"
+              className="w-full h-1.5 bg-dark-bg rounded-full appearance-none cursor-pointer accent-accent-gold"
             />
             <div className="flex justify-between text-[10px] text-white/20 mt-1">
               <span>3с</span>
@@ -227,9 +227,9 @@ export function StoriesPage() {
             <button
               type="button"
               onClick={() => setStoryActive(!storyActive)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${storyActive ? 'bg-accent-cyan/30' : 'bg-white/10'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors ${storyActive ? 'bg-accent-gold/30' : 'bg-white/10'}`}
             >
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${storyActive ? 'left-[22px] bg-accent-cyan shadow-glow-cyan' : 'left-0.5 bg-white/30'}`} />
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${storyActive ? 'left-[22px] bg-accent-gold shadow-glow-gold' : 'left-0.5 bg-white/30'}`} />
             </button>
           </div>
 
@@ -252,3 +252,4 @@ export function StoriesPage() {
     </div>
   );
 }
+

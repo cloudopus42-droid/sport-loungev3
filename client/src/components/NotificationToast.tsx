@@ -22,13 +22,13 @@ export function showToast(message: string, variant: 'success' | 'error' | 'info'
   const icons = {
     success: <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />,
     error: <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />,
-    info: <Info className="w-5 h-5 text-accent-cyan flex-shrink-0" />,
+    info: <Info className="w-5 h-5 text-accent-gold flex-shrink-0" />,
   };
 
   const glowColors = {
     success: 'border-green-500/30 shadow-glow-green',
     error: 'border-red-500/30 shadow-glow-red',
-    info: 'border-accent-cyan/30 shadow-glow-cyan',
+    info: 'border-accent-gold/30 shadow-glow-gold',
   };
 
   toast.custom(
@@ -48,3 +48,4 @@ export function showToast(message: string, variant: 'success' | 'error' | 'info'
     }
   );
 }
+

@@ -90,20 +90,20 @@ const VIP_CARD_THEMES: Record<string, {
     icon: <Award className="w-5 h-5 text-amber-500" />
   },
   diamond: {
-    name: 'Diamond Nebula Passport',
-    gradient: 'from-sky-450 via-indigo-900 to-purple-950',
-    border: 'border-purple-400/50',
-    glow: 'shadow-[0_0_40px_rgba(192,132,252,0.55)]',
-    text: 'text-purple-100/90',
-    badge: 'bg-purple-900/40 text-purple-200 border-purple-450/40',
-    icon: <Sparkles className="w-5 h-5 text-cyan-300 animate-spin animate-duration-[4000ms]" />
+    name: 'Royal Burgundy Passport',
+    gradient: 'from-red-950 via-[#4A0010] to-stone-900',
+    border: 'border-red-800/50',
+    glow: 'shadow-[0_0_40px_rgba(128,0,32,0.6)]',
+    text: 'text-red-200/90',
+    badge: 'bg-red-900/40 text-red-300 border-red-800/40',
+    icon: <Sparkles className="w-5 h-5 text-accent-gold animate-spin animate-duration-[4000ms]" />
   }
 };
 const AVATAR_FRAMES = [
   { id: 'none', name: 'Без рамки', style: '' },
   { id: 'sovereign', name: 'Золотое Сияние', style: 'ring-4 ring-accent-gold shadow-[0_0_15px_rgba(212,175,55,0.6)] animate-pulse' },
-  { id: 'cyber', name: 'Кибер Неон', style: 'ring-4 ring-accent-cyan shadow-[0_0_20px_rgba(0,242,254,0.6)] animate-pulse' },
-  { id: 'amethyst', name: 'Аметист VIP', style: 'ring-4 ring-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.6)] animate-pulse animate-duration-[3000ms]' },
+  { id: 'burgundy', name: 'Бургунди', style: 'ring-4 ring-accent-burgundy shadow-[0_0_20px_rgba(128,0,32,0.6)] animate-pulse' },
+  { id: 'goldburst', name: 'Золотой Всплеск', style: 'ring-4 ring-yellow-400 shadow-[0_0_20px_rgba(255,215,0,0.6)] animate-pulse animate-duration-[3000ms]' },
   { id: 'ruby', name: 'Рубиновый Дым', style: 'ring-4 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)]' }
 ];
 
@@ -503,7 +503,7 @@ export function ProfilePage() {
             <span className="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold">Закрытый клуб VIP Resident</span>
             <button 
               onClick={() => setIsFlipped(!isFlipped)} 
-              className="text-[10px] text-accent-cyan hover:text-white transition-all bg-white/5 border border-glass-border/30 px-2.5 py-0.5 rounded-full"
+              className="text-[10px] text-accent-gold hover:text-white transition-all bg-white/5 border border-glass-border/30 px-2.5 py-0.5 rounded-full"
             >
               {isFlipped ? 'Показать Карту' : 'Привилегии'}
             </button>
@@ -618,7 +618,7 @@ export function ProfilePage() {
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-white/40 font-mono">{membership.points} XP / {xpProgress.max} XP</span>
               {xpProgress.remaining > 0 ? (
-                <span className="text-accent-cyan font-bold">Осталось {xpProgress.remaining} XP до повышения</span>
+                <span className="text-accent-gold font-bold">Осталось {xpProgress.remaining} XP до повышения</span>
               ) : (
                 <span className="text-accent-gold font-bold">Уровень максимален! 👑</span>
               )}
@@ -645,8 +645,8 @@ export function ProfilePage() {
             {/* Avatar circle */}
             <div className="relative mb-4">
               {uploadingAvatar ? (
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-accent-cyan animate-pulse">
-                  <div className="w-6 h-6 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-accent-gold animate-pulse">
+                  <div className="w-6 h-6 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : user?.avatar ? (
                 <img 
@@ -702,12 +702,12 @@ export function ProfilePage() {
                   {editPhone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {editPhone}</span>}
                 </div>
                 <div className="flex items-center justify-center gap-2 mt-2">
-                  <Badge text={user.role === 'admin' ? 'Админ' : 'Пользователь'} color={user.role === 'admin' ? 'cyan' : 'gray'} size="sm" />
+                  <Badge text={user.role === 'admin' ? 'Админ' : 'Пользователь'} color={user.role === 'admin' ? 'gold' : 'gray'} size="sm" />
                   <span className="text-[10px] text-white/20">с {new Date(user.createdAt).toLocaleDateString('ru-RU')}</span>
                 </div>
                 <div className="flex gap-2 mt-4 justify-center">
                   <button onClick={() => setEditing(true)}
-                    className="px-4 py-1.5 rounded-lg text-xs text-accent-cyan border border-accent-cyan/20 hover:bg-accent-cyan/5 transition-all flex items-center gap-1.5">
+                    className="px-4 py-1.5 rounded-lg text-xs text-accent-gold border border-accent-gold/20 hover:bg-accent-gold/5 transition-all flex items-center gap-1.5">
                     <Edit3 className="w-3 h-3" /> Редактировать
                   </button>
                   <button onClick={() => setShowSettings(!showSettings)}
@@ -761,7 +761,7 @@ export function ProfilePage() {
                   }}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all border ${
                       selectedFrameId === f.id
-                        ? 'bg-accent-cyan/15 text-accent-cyan border-accent-cyan/45 shadow-[0_0_8px_rgba(0,242,254,0.15)]'
+                        ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45 shadow-[0_0_8px_rgba(0,242,254,0.15)]'
                         : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -793,7 +793,7 @@ export function ProfilePage() {
               <div>
                 <div className="flex justify-between items-center mb-1 text-xs">
                   <span className="text-white/60">Размытие заднего фона (Blur)</span>
-                  <span className="text-accent-cyan font-mono">{blurVal}px</span>
+                  <span className="text-accent-gold font-mono">{blurVal}px</span>
                 </div>
                 <input 
                   type="range" 
@@ -801,14 +801,14 @@ export function ProfilePage() {
                   max="100" 
                   value={blurVal} 
                   onChange={(e) => handleBlurChange(Number(e.target.value))}
-                  className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-accent-gold bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1 text-xs">
                   <span className="text-white/60">Прозрачность стекла (Opacity)</span>
-                  <span className="text-accent-cyan font-mono">{Math.round(opacityVal * 100)}%</span>
+                  <span className="text-accent-gold font-mono">{Math.round(opacityVal * 100)}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -817,7 +817,7 @@ export function ProfilePage() {
                   step="0.01"
                   value={opacityVal} 
                   onChange={(e) => handleOpacityChange(Number(e.target.value))}
-                  className="w-full accent-accent-cyan bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-accent-gold bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
             </div>
@@ -923,7 +923,7 @@ export function ProfilePage() {
       {/* My Orders / Bookings */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <h3 className="text-base sm:text-lg font-display font-semibold text-white mb-3 flex items-center gap-2">
-          <Flame className="w-4 h-4 text-accent-cyan" /> Мои визиты и заказы
+          <Flame className="w-4 h-4 text-accent-gold" /> Мои визиты и заказы
         </h3>
 
         {/* Tab Selection */}
@@ -932,7 +932,7 @@ export function ProfilePage() {
             onClick={() => setActiveTab('visits')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
               activeTab === 'visits'
-                ? 'bg-accent-cyan/15 text-accent-cyan border-accent-cyan/45 shadow-[0_0_12px_rgba(0,242,254,0.15)]'
+                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45 shadow-[0_0_12px_rgba(0,242,254,0.15)]'
                 : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
             }`}
           >
@@ -951,7 +951,7 @@ export function ProfilePage() {
         </div>
 
         {loadingBookings ? (
-          <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" /></div>
         ) : (
           <div>
             {activeTab === 'visits' ? (
@@ -1478,3 +1478,4 @@ export function ProfilePage() {
     </div>
   );
 }
+

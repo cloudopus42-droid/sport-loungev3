@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Crown, AlertCircle, Eye, EyeOff, User } from 'lucide-react';
-import { GlowButton } from '@/components/ui/GlowButton';
 import { useAuth } from '@/hooks/useAuth';
 
 export function RegisterPage() {
@@ -20,19 +19,15 @@ export function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     if (password !== confirmPassword) {
       setError('Пароли не совпадают');
       return;
     }
-
     if (password.length < 6) {
       setError('Пароль должен содержать минимум 6 символов');
       return;
     }
-
     setLoading(true);
-
     try {
       await register(email, password, name);
       navigate('/', { replace: true });
@@ -46,19 +41,10 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          className="absolute top-1/4 -left-20 w-72 h-72 bg-accent-purple/10 rounded-full blur-[120px]"
-          animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 -right-20 w-72 h-72 bg-accent-cyan/10 rounded-full blur-[120px]"
-          animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </div>
+
+      <div className="float-orb-1" />
+      <div className="float-orb-2" />
+      <div className="float-orb-3" />
 
       <motion.div
         className="w-full max-w-sm relative"
@@ -73,11 +59,11 @@ export function RegisterPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-accent-purple to-accent-cyan flex items-center justify-center shadow-glow-cyan mb-4">
-            <Crown className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-accent-gold via-yellow-500 to-accent-burgundy flex items-center justify-center shadow-glow-gold mb-4 border border-yellow-200/20">
+            <Crown className="w-8 h-8 text-black" />
           </div>
-          <h1 className="text-2xl font-display font-bold gradient-text">SPORT LOUNGE</h1>
-          <p className="text-sm text-white/40 mt-1">Создать аккаунт</p>
+          <h1 className="text-2xl font-heading font-bold text-white tracking-wide">SPORT LOUNGE</h1>
+          <p className="text-sm text-white/40 mt-1">Регистрация аккаунта</p>
         </motion.div>
 
         {/* Form */}
@@ -89,7 +75,6 @@ export function RegisterPage() {
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <div className="space-y-4">
-            {/* Name */}
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Имя</label>
               <div className="relative">
@@ -106,7 +91,6 @@ export function RegisterPage() {
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Email</label>
               <div className="relative">
@@ -123,7 +107,6 @@ export function RegisterPage() {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Пароль</label>
               <div className="relative">
@@ -135,8 +118,8 @@ export function RegisterPage() {
                   placeholder="Минимум 6 символов"
                   className="glass-input pl-10 pr-10"
                   required
-                  minLength={6}
                   autoComplete="new-password"
+                  minLength={6}
                 />
                 <button
                   type="button"
@@ -149,7 +132,6 @@ export function RegisterPage() {
               </div>
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Подтвердите пароль</label>
               <div className="relative">
@@ -161,7 +143,6 @@ export function RegisterPage() {
                   placeholder="Повторите пароль"
                   className="glass-input pl-10 pr-10"
                   required
-                  minLength={6}
                   autoComplete="new-password"
                 />
                 <button
@@ -176,7 +157,6 @@ export function RegisterPage() {
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <motion.div
               className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
@@ -188,22 +168,21 @@ export function RegisterPage() {
             </motion.div>
           )}
 
-          {/* Submit */}
-          <GlowButton
+          <button
             type="submit"
-            size="lg"
-            loading={loading}
-            className="w-full"
+            disabled={loading}
+            className="gold-btn w-full py-2.5 text-sm font-heading font-bold"
           >
-            Зарегистрироваться
-          </GlowButton>
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto" />
+            ) : 'Зарегистрироваться'}
+          </button>
 
-          {/* Login Link */}
-          <p className="text-center text-sm text-white/40">
+          <p className="text-center text-sm text-white/40 pt-2">
             Уже есть аккаунт?{' '}
             <Link
               to="/login"
-              className="text-accent-cyan hover:text-accent-cyan/80 transition-colors font-medium"
+              className="text-accent-gold hover:text-accent-gold/80 transition-colors font-medium"
             >
               Войти
             </Link>

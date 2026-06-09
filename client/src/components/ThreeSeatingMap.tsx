@@ -362,3 +362,4 @@ export function ThreeSeatingMap({ selectedSeat, setSelectedSeat, isSeatBooked }:
 }
 
 export default ThreeSeatingMap;
+

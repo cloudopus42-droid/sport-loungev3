@@ -101,7 +101,7 @@ export function AdminBookingsPage() {
       {/* Filters */}
       <GlassCard className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Filter className="w-4 h-4 text-accent-cyan" />
+          <Filter className="w-4 h-4 text-accent-gold" />
           <span className="text-sm font-medium text-white">Фильтры</span>
         </div>
         <div className="flex gap-3 flex-wrap">
@@ -128,7 +128,7 @@ export function AdminBookingsPage() {
           <h3 className="text-lg font-display font-semibold text-white">Входящие заказы</h3>
           {loading ? (
             <div className="flex justify-center py-10">
-              <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
             </div>
           ) : bookings.length === 0 ? (
             <GlassCard className="p-8 text-center">
@@ -257,3 +257,4 @@ export function AdminBookingsPage() {
     </div>
   );
 }
+

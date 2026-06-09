@@ -90,7 +90,7 @@ export function AdminShowcasePage() {
       {/* List */}
       {loading ? (
         <div className="flex justify-center py-10">
-          <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
         </div>
       ) : items.length === 0 ? (
         <GlassCard className="p-8 text-center">
@@ -111,7 +111,7 @@ export function AdminShowcasePage() {
                   <p className="text-xs text-white/40 truncate">{item.description}</p>
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => startEdit(item)} className="p-2 rounded-lg text-white/30 hover:text-accent-cyan hover:bg-accent-cyan/10">
+                  <button onClick={() => startEdit(item)} className="p-2 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10">
                     <Edit3 className="w-4 h-4" />
                   </button>
                   <button onClick={() => handleDelete(item._id)} className="p-2 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10">
@@ -126,3 +126,4 @@ export function AdminShowcasePage() {
     </div>
   );
 }
+

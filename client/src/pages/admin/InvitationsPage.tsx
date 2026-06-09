@@ -179,7 +179,7 @@ export function AdminInvitationsPage() {
       key: 'participants',
       label: 'Участники',
       render: (inv: Invitation) => (
-        <span className="text-accent-cyan">{inv.currentParticipants || 0}</span>
+        <span className="text-accent-gold">{inv.currentParticipants || 0}</span>
       ),
     },
     {
@@ -209,7 +209,7 @@ export function AdminInvitationsPage() {
             </motion.button>
           )}
           <motion.button
-            className="p-1.5 rounded-lg text-white/30 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors"
+            className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors"
             onClick={(e) => { e.stopPropagation(); openEdit(inv); }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -249,7 +249,7 @@ export function AdminInvitationsPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <Table columns={columns} data={invitations} />
@@ -323,3 +323,4 @@ export function AdminInvitationsPage() {
     </div>
   );
 }
+

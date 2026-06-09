@@ -48,7 +48,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border">
               <h2 className="text-lg font-display font-semibold text-white">{title}</h2>
               <motion.button
-                className="p-1.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-cyan/40 transition-colors"
+                className="p-1.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-gold/40 transition-colors"
                 onClick={onClose}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -67,3 +67,4 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     </AnimatePresence>
   );
 }
+
