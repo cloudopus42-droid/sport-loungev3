@@ -13,8 +13,8 @@ const envSchema = z.object({
   TELEGRAM_API_BASE_URL: z.string().default('https://api.telegram.org'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   SUPABASE_URL: z.string().default('https://haemdfhteicygsidftqp.supabase.co'),
-  SUPABASE_KEY: z.string().default('sb_secret_V9gEDtPTvq8XlJuefmVPAg_PoO4pWp_'),
-  SUPABASE_ANON_KEY: z.string().default('sb_publishable_hdjCkqf7FcWJekjombPjWg_OzILJPDE'),
+  SUPABASE_KEY: z.string().default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZW1kZmh0ZWljeWdzaWRmdHFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDE3NDMxNSwiZXhwIjoyMDk1NzUwMzE1fQ.324lSMx1tWN-SeCJdFFs-dQCroBwhLqT75EvKH2O2vk'),
+  SUPABASE_ANON_KEY: z.string().default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZW1kZmh0ZWljeWdzaWRmdHFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNzQzMTUsImV4cCI6MjA5NTc1MDMxNX0.-SG7eaWU6nO3GBEWc9UBWug7GcqfnDeMAxkYq5k86Rs'),
 });
 
 const parsed = envSchema.safeParse(process.env);

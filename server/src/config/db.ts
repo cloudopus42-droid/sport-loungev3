@@ -19,7 +19,7 @@ async function runDirectMigration() {
   console.log('🏁 Invoices table does not exist. Starting direct PG migration...');
   
   const passwords = [
-    process.env.SUPABASE_KEY || 'sb_secret_V9gEDtPTvq8XlJuefmVPAg_PoO4pWp_',
+    process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZW1kZmh0ZWljeWdzaWRmdHFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDE3NDMxNSwiZXhwIjoyMDk1NzUwMzE1fQ.324lSMx1tWN-SeCJdFFs-dQCroBwhLqT75EvKH2O2vk',
     'YaSmogu100'
   ];
 
