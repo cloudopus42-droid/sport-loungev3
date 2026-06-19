@@ -33,3 +33,9 @@ server/uploads/*
 
 # Secret tokens
 github-token.txt
+
+# Opencode internal config
+.opencode/
+
+# Scratch scripts
+*.ps1

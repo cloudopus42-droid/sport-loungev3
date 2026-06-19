@@ -83,7 +83,8 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 3000,
-        MONGO_URI: "mongodb://127.0.0.1:27017/sport_lounge",
+        SUPABASE_URL: "https://your-project.supabase.co",
+        SUPABASE_KEY: "your-service-role-key",
         ALLOWED_ORIGINS: "https://sportlounge.ru,https://www.sportlounge.ru"
       },
       error_file: "./logs/pm2-error.log",

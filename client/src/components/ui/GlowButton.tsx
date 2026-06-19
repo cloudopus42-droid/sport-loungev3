@@ -18,9 +18,9 @@ const variantStyles = {
 };
 
 const sizeStyles = {
-  sm: 'px-4 py-1.5 text-xs rounded-full',
-  md: 'px-6 py-2.5 text-sm rounded-full',
-  lg: 'px-8 py-3 text-base rounded-full',
+  sm: 'px-4 py-1.5 text-xs rounded',
+  md: 'px-6 py-2.5 text-sm rounded',
+  lg: 'px-8 py-3 text-base rounded',
 };
 
 export function GlowButton({

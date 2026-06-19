@@ -19,7 +19,6 @@ import { showToast } from '@/components/NotificationToast';
 type Mix = any;
 
 const bookingFormSchema = z.object({
-  seatLabel: z.string().min(1, 'Укажите стол'),
   liquidBase: z.string().min(1, 'Укажите базу'),
   specialNotes: z.string().max(500, 'Максимум 500 символов').optional(),
 });
@@ -33,9 +32,28 @@ const LIQUID_BASES = [
   { id: 'wine', name: 'На вине', price: 450, desc: 'Изысканная винная ароматика' },
 ];
 
-const TABLE_OPTIONS = [
-  'Стол 1', 'Стол 2', 'Стол 3', 'VIP Кабинет 1', 'Игровая Зона 1'
+const HOOKAH_FLAVORS = [
+  { name: 'Двойное яблоко', category: 'Фрукты', emoji: '🍏' },
+  { name: 'Манго-Маракуйя', category: 'Фрукты', emoji: '🥭' },
+  { name: 'Персик-Лайм', category: 'Фрукты', emoji: '🍑' },
+  { name: 'Грейпфрут-Мята', category: 'Фрукты', emoji: '🍊' },
+  { name: 'Арбуз-Дыня', category: 'Фрукты', emoji: '🍉' },
+  { name: 'Виноград-Ягоды', category: 'Фрукты', emoji: '🍇' },
+  { name: 'Клубника-Мята', category: 'Ягоды', emoji: '🍓' },
+  { name: 'Черника-Ежевика', category: 'Ягоды', emoji: '🫐' },
+  { name: 'Малина-Личи', category: 'Ягоды', emoji: '🫐' },
+  { name: 'Банан-Шоколад', category: 'Десерт', emoji: '🍌' },
+  { name: 'Кокос-Ваниль', category: 'Десерт', emoji: '🥥' },
+  { name: 'Лимон-Имбирь', category: 'Пряные', emoji: '🍋' },
+  { name: 'Мята-Айс', category: 'Свежие', emoji: '🧊' },
+  { name: 'Кактус-Фрост', category: 'Свежие', emoji: '🌵' },
+  { name: 'Ледяной грейпфрут', category: 'Свежие', emoji: '❄️' },
+  { name: 'Sport Mix (авторский)', category: 'Авторские', emoji: '🔥' },
+  { name: 'Чебоксарский закат', category: 'Авторские', emoji: '🌅' },
+  { name: 'Lounge Premium', category: 'Авторские', emoji: '💎' },
 ];
+
+const FLAVOR_CATEGORIES = ['Все', 'Фрукты', 'Ягоды', 'Десерт', 'Пряные', 'Свежие', 'Авторские'];
 
 export function BookingPage() {
   const navigate = useNavigate();
@@ -48,11 +66,14 @@ export function BookingPage() {
   
   const [selectedMix, setSelectedMix] = useState<any | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showMixBuilder, setShowMixBuilder] = useState(false);
+  const [hookahMix, setHookahMix] = useState<string[]>([]);
+  const [mixPercentages, setMixPercentages] = useState<Record<string, number>>({});
+  const [flavorCategory, setFlavorCategory] = useState('Все');
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
-      seatLabel: TABLE_OPTIONS[0],
       liquidBase: 'water',
       specialNotes: '',
     }
@@ -63,10 +84,37 @@ export function BookingPage() {
   const [timeText, setTimeText] = useState('15:00');
   const timerIntervalRef = useRef<any>(null);
 
-  useEffect(() => {
+  const updateMixFlavors = (name: string) => {
+    let nextMix = [...hookahMix];
+    if (nextMix.includes(name)) {
+      nextMix = nextMix.filter(n => n !== name);
+    } else {
+      if (nextMix.length >= 4) return;
+      nextMix.push(name);
+    }
+    const count = nextMix.length;
+    const newPercentages: Record<string, number> = {};
+    if (count > 0) {
+      const share = Math.floor(100 / count);
+      nextMix.forEach((n, idx) => {
+        newPercentages[n] = idx === count - 1 ? 100 - share * (count - 1) : share;
+      });
+    }
+    setHookahMix(nextMix);
+    setMixPercentages(newPercentages);
+  };
+
+  const saveCustomMix = () => {
+    if (hookahMix.length === 0) return;
+    const mixData = { hookahMix, mixPercentages, bowlType: 'clay', liquidBase: 'water', hookahStrength: 'medium', comment: '' };
+    localStorage.setItem('my_saved_mix', JSON.stringify(mixData));
+    localStorage.setItem('prefilled_mix', JSON.stringify(mixData));
+    setShowMixBuilder(false);
+    loadMixes(); // reload to show the custom mix in list
+  };
+
+  const loadMixes = () => {
     setLoading(true);
-    
-    // Load local custom mix first if available
     let localCustomMix: any = null;
     try {
       const saved = localStorage.getItem('my_saved_mix') || localStorage.getItem('prefilled_mix');
@@ -83,9 +131,7 @@ export function BookingPage() {
           };
         }
       }
-    } catch (e) {
-      console.warn('Failed to parse saved custom mix:', e);
-    }
+    } catch (e) {}
 
     setMixes(localCustomMix ? [localCustomMix] : []);
 
@@ -99,6 +145,10 @@ export function BookingPage() {
         showToast('Сеть недоступна, показано локальное меню', 'error');
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadMixes();
 
     const savedOrderId = localStorage.getItem('current_order_id');
     if (savedOrderId && isAuthenticated) {
@@ -195,9 +245,6 @@ export function BookingPage() {
         mix_id: isCustom ? null : selectedMix.id,
         liquid_id: data.liquidBase,
         notes: finalNotes,
-        seat_id: data.seatLabel.replace(/\s+/g, '-').toLowerCase(),
-        seat_label: data.seatLabel,
-        seat_zone: 'hall',
       });
       setActiveOrder(res.data);
       localStorage.setItem('current_order_id', res.data.id);
@@ -269,7 +316,15 @@ export function BookingPage() {
           <section className="lg:col-span-7 space-y-6">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">Доступные Миксы</h2>
-              <span className="text-xs text-white/40">{mixes.length} вариантов</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowMixBuilder(true)}
+                  className="px-3 py-1 rounded-lg border border-accent-gold/30 text-[10px] font-bold text-accent-gold hover:bg-accent-gold/10 transition-all"
+                >
+                  + Собрать свой
+                </button>
+                <span className="text-xs text-white/40">{mixes.length} вариантов</span>
+              </div>
             </div>
             
             {loading && mixes.length === 0 ? (
@@ -346,8 +401,8 @@ export function BookingPage() {
                       <h4 className="text-3xl font-mono font-bold tracking-tight text-white">{timeText}</h4>
                     </div>
                     <div className="text-right">
-                      <p className="text-[9px] text-white/40 uppercase tracking-wider font-semibold mb-1">Ваш Стол</p>
-                      <p className="text-xs font-bold text-accent-gold uppercase bg-[#d4af37]/10 px-2.5 py-1 rounded-lg border border-[#d4af37]/20">{activeOrder.seatLabel}</p>
+                      <p className="text-[9px] text-white/40 uppercase tracking-wider font-semibold mb-1">Заказ</p>
+                      <p className="text-xs font-bold text-accent-gold uppercase bg-[#d4af37]/10 px-2.5 py-1 rounded-lg border border-[#d4af37]/20">#{activeOrder.id?.slice(0, 8)}</p>
                     </div>
                   </div>
 
@@ -410,15 +465,6 @@ export function BookingPage() {
               
               <form onSubmit={handleSubmit(onOrderSubmit)} className="space-y-5">
                 
-                {/* Table Choice */}
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-wider font-extrabold text-white/50 flex items-center gap-1">Выберите стол</label>
-                  <select {...register('seatLabel')} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:border-[#d4af37] focus:outline-none transition-colors">
-                    {TABLE_OPTIONS.map(opt => <option key={opt} value={opt} className="bg-[#0e0c12]">{opt}</option>)}
-                  </select>
-                  {errors.seatLabel && <p className="text-red-400 text-[10px] mt-1">{errors.seatLabel.message}</p>}
-                </div>
-
                 {/* Base choice */}
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-wider font-extrabold text-white/50 flex items-center gap-1">База для колбы</label>
@@ -468,6 +514,86 @@ export function BookingPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Mix Builder Modal */}
+      <AnimatePresence>
+        {showMixBuilder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-lg bg-[#0e0c12] border border-[#d4af37]/30 rounded-3xl p-6 shadow-lg relative overflow-hidden max-h-[90vh] overflow-y-auto"
+            >
+              <h3 className="text-lg font-bold text-white mb-4">Собрать свой микс</h3>
+
+              <div className="space-y-3">
+                <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-2">
+                  {FLAVOR_CATEGORIES.map(cat => (
+                    <button key={cat} type="button" onClick={() => setFlavorCategory(cat)}
+                      className={`px-3 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all border ${
+                        flavorCategory === cat
+                          ? 'bg-accent-gold text-black border-accent-gold/20'
+                          : 'text-white/50 hover:text-white bg-white/5 border-transparent'
+                      }`}>{cat}</button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[240px] overflow-y-auto scrollbar-hide pr-1">
+                  {HOOKAH_FLAVORS
+                    .filter(f => flavorCategory === 'Все' || f.category === flavorCategory)
+                    .map(flavor => {
+                      const selected = hookahMix.includes(flavor.name);
+                      return (
+                        <button key={flavor.name} type="button"
+                          onClick={() => updateMixFlavors(flavor.name)}
+                          className={`px-3 py-2 rounded-xl text-xs text-left transition-all flex items-center gap-1.5 ${
+                            selected
+                              ? 'bg-accent-gold/15 border border-accent-gold/45 text-accent-gold'
+                              : 'bg-white/5 border border-white/10 text-white/60 hover:border-accent-gold/30'
+                          }`}>
+                          <span>{flavor.emoji}</span>
+                          <span className="truncate">{flavor.name}</span>
+                          {selected && <span className="ml-auto text-accent-gold text-[10px]">✓</span>}
+                        </button>
+                      );
+                  })}
+                </div>
+
+                {hookahMix.length > 0 && (
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                    <p className="text-[10px] text-accent-gold font-bold uppercase tracking-wider">Ваш микс ({hookahMix.length}/4)</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {hookahMix.map(name => (
+                        <span key={name} className="px-2 py-0.5 rounded-full bg-accent-gold/10 border border-accent-gold/30 text-[10px] text-accent-gold flex items-center gap-1">
+                          {name}
+                          <button onClick={() => updateMixFlavors(name)} className="hover:text-white">&times;</button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-4 mt-4 border-t border-white/10">
+                <button
+                  onClick={() => { setShowMixBuilder(false); setHookahMix([]); setMixPercentages({}); }}
+                  className="flex-1 py-2.5 rounded-xl border border-white/10 text-[10px] font-bold text-white/60 hover:text-white transition-all"
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={saveCustomMix}
+                  disabled={hookahMix.length === 0}
+                  className="flex-1 py-2.5 rounded-xl bg-accent-gold text-black text-[10px] font-bold disabled:opacity-50 hover:bg-accent-gold/90 transition-all"
+                >
+                  Сохранить и выбрать
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

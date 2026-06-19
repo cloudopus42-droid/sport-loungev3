@@ -9,7 +9,8 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 // Lazily load route components
 const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.HomePage })));
 const BookingPage = lazy(() => import('@/pages/BookingPage').then(m => ({ default: m.BookingPage })));
-const MixologistPage = lazy(() => import('@/pages/MixologistPage').then(m => ({ default: m.MixologistPage })));
+const TobaccoPage = lazy(() => import('@/pages/TobaccoPage').then(m => ({ default: m.TobaccoPage })));
+const KnowledgeGraphPage = lazy(() => import('@/pages/KnowledgeGraphPage').then(m => ({ default: m.KnowledgeGraphPage })));
 const FeedPage = lazy(() => import('@/pages/FeedPage').then(m => ({ default: m.FeedPage })));
 const InvitationsPage = lazy(() => import('@/pages/InvitationsPage').then(m => ({ default: m.InvitationsPage })));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
@@ -27,6 +28,7 @@ const AdminBookingsPage = lazy(() => import('@/pages/admin/BookingsPage').then(m
 const AdminShowcasePage = lazy(() => import('@/pages/admin/ShowcasePage').then(m => ({ default: m.AdminShowcasePage })));
 const AnalyticsPage = lazy(() => import('@/pages/admin/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const OrdersAdmin = lazy(() => import('@/pages/admin/OrdersAdmin').then(m => ({ default: m.OrdersAdmin })));
+const TobaccoAdmin = lazy(() => import('@/pages/admin/TobaccoAdmin').then(m => ({ default: m.TobaccoAdmin })));
 
 export default function App() {
   return (
@@ -42,7 +44,8 @@ export default function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<HomePage />} />
               <Route path="booking" element={<BookingPage />} />
-              <Route path="mixologist" element={<MixologistPage />} />
+              <Route path="tobacco" element={<TobaccoPage />} />
+              <Route path="knowledge" element={<KnowledgeGraphPage />} />
               <Route path="feed" element={<FeedPage />} />
               <Route path="invitations" element={<InvitationsPage />} />
               <Route path="profile" element={<ProfilePage />} />
@@ -62,6 +65,7 @@ export default function App() {
               <Route path="promos" element={<PromosPage />} />
               <Route path="invitations" element={<AdminInvitationsPage />} />
               <Route path="orders" element={<OrdersAdmin />} />
+              <Route path="tobacco" element={<TobaccoAdmin />} />
             </Route>
 
             <Route path="/404" element={<NotFound />} />

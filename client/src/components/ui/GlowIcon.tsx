@@ -11,7 +11,7 @@ interface GlowIconProps {
 }
 
 const colorMap: Record<string, { stroke: string; glow: string }> = {
-  gold: { stroke: '#D4AF37', glow: 'rgba(212, 175, 55, 0.45)' },
+  gold: { stroke: '#FFBF00', glow: 'rgba(255, 191, 0, 0.45)' },
   burgundy: { stroke: '#8B1A1A', glow: 'rgba(139, 26, 26, 0.45)' },
   white: { stroke: '#ffffff', glow: 'rgba(255, 255, 255, 0.3)' },
 };

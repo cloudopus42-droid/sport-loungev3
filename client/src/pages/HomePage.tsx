@@ -1,8 +1,9 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { Flame, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Flame, Sparkles, ChevronRight } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { MixCarousel3D } from '@/components/MixCarousel3D';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
@@ -12,51 +13,19 @@ import { GlowIcon } from '@/components/ui/GlowIcon';
 
 const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
 
-
-// Predefined luxury zones with background images matching reference design
-const PREMIUM_ZONES = [
-  {
-    id: 'hookah-lounge',
-    title: 'Hookah Lounge',
-    subtitle: 'Премиум лаунж-зона',
-    images: [
-      'https://images.unsplash.com/photo-1527661591475-527312dd65f5?q=60&w=480&auto=format&fit=crop&fm=webp',
-      'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=60&w=480&auto=format&fit=crop&fm=webp',
-      'https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?q=60&w=480&auto=format&fit=crop&fm=webp'
-    ],
-    description: 'Уютные приватные VIP-комнаты с мягкими диванами и премиальным выбором табаков.',
-  },
-  {
-    id: 'restaurant',
-    title: 'Restaurant',
-    subtitle: 'Ресторанная зона',
-    images: [
-      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=60&w=480&auto=format&fit=crop&fm=webp',
-      'https://images.unsplash.com/photo-1552566626-52f8b828add9?q=60&w=480&auto=format&fit=crop&fm=webp',
-      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=60&w=480&auto=format&fit=crop&fm=webp'
-    ],
-    description: 'Изысканная кухня и авторские миксы, созданные нашими кальянными мастерами.',
-  },
-  {
-    id: 'terrace',
-    title: 'Terrace',
-    subtitle: 'Открытая терраса',
-    images: [
-      'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?q=60&w=480&auto=format&fit=crop&fm=webp',
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=60&w=480&auto=format&fit=crop&fm=webp',
-      'https://images.unsplash.com/photo-1515516969-d4008cc6241a?q=60&w=480&auto=format&fit=crop&fm=webp'
-    ],
-    description: 'Прекрасная открытая терраса на крыше с панорамным видом на город.',
-  },
-];
+type ShowcaseItem = {
+  id: string;
+  title: string;
+  description?: string;
+  image_url?: string;
+  link_url?: string;
+  sort_order: number;
+  is_active: boolean;
+};
 
 export function HomePage() {
   const [promos, setPromos] = useState<Promo[]>([]);
-  const [activeZoneSlide, setActiveZoneSlide] = useState<Record<string, number>>({
-    'hookah-lounge': 0,
-    'restaurant': 0,
-    'terrace': 0,
-  });
+  const [showcaseItems, setShowcaseItems] = useState<ShowcaseItem[]>([]);
 
   const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null);
   const [cardCoords, setCardCoords] = useState({ x: 0, y: 0 });
@@ -71,36 +40,15 @@ export function HomePage() {
 
   useEffect(() => {
     api.get<Promo[]>('/api/promos')
-      .then((res) => {
-        setPromos(res.data);
-      })
-      .catch(err => {
-        console.error('Error fetching homepage promos:', err);
-      });
+      .then((res) => setPromos(res.data))
+      .catch(() => {});
+    api.get<ShowcaseItem[]>('/api/showcases')
+      .then((res) => setShowcaseItems(res.data?.filter(s => s.is_active) || []))
+      .catch(() => {});
   }, []);
 
   const handleAddressClick = () => {
     window.open('https://yandex.ru/maps/-/CDT1Z-pC', '_blank');
-  };
-
-
-
-  const handleNextSlide = (zoneId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setActiveZoneSlide(prev => ({
-      ...prev,
-      [zoneId]: (prev[zoneId] + 1) % 3, // Cycle 3 mock sub-slides
-    }));
-  };
-
-  const handlePrevSlide = (zoneId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setActiveZoneSlide(prev => ({
-      ...prev,
-      [zoneId]: (prev[zoneId] - 1 + 3) % 3,
-    }));
   };
 
   return (
@@ -113,45 +61,17 @@ export function HomePage() {
     >
       {/* Centered Hero Section with Neon Globe Backdrop */}
       <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
-        {/* Glow Spheres & Vector Dotted Globe Map */}
-        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
-          <div className="absolute w-[400px] h-[400px] sm:w-[620px] sm:h-[620px] bg-accent-gold/10 rounded-full blur-[140px] opacity-70" />
-          <div className="absolute w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] bg-accent-amber/5 rounded-full blur-[120px] opacity-50" />
-          
-          {/* Vector Map Globe */}
-          <svg className="absolute w-[360px] h-[360px] sm:w-[580px] sm:h-[580px] text-purple-500/20 opacity-80" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.4">
-            <circle cx="100" cy="100" r="95" stroke="rgba(168, 85, 247, 0.25)" strokeWidth="1" className="animate-pulse" />
-            <path d="M5 100 A 95 45 0 0 1 195 100" strokeDasharray="2,2" stroke="rgba(168, 85, 247, 0.2)" />
-            <path d="M5 100 A 95 95 0 0 1 195 100" strokeDasharray="3,3" stroke="rgba(168, 85, 247, 0.15)" />
-            <path d="M100 5 A 45 95 0 0 1 100 195" strokeDasharray="2,2" stroke="rgba(168, 85, 247, 0.2)" />
-            
-            {/* North America dots */}
-            <circle cx="50" cy="80" r="1.2" className="fill-purple-500/60" />
-            <circle cx="60" cy="75" r="1.2" className="fill-purple-500/60" />
-            <circle cx="55" cy="85" r="0.8" className="fill-purple-500/40" />
-            <circle cx="45" cy="70" r="1.2" className="fill-purple-400/60" />
-            <circle cx="70" cy="78" r="1.5" className="fill-purple-500/80 animate-pulse" />
-            <circle cx="65" cy="90" r="0.8" className="fill-purple-500/40" />
-            
-            {/* Europe / Asia dots */}
-            <circle cx="120" cy="70" r="1.2" className="fill-purple-500/60" />
-            <circle cx="130" cy="65" r="1.8" className="fill-purple-400/80 animate-pulse" />
-            <circle cx="125" cy="75" r="1.2" className="fill-purple-500/60" />
-            <circle cx="140" cy="70" r="0.8" className="fill-purple-500/40" />
-            <circle cx="135" cy="80" r="1.2" className="fill-purple-500/60" />
-            <circle cx="150" cy="75" r="1.8" className="fill-purple-400/70" />
-            <circle cx="145" cy="88" r="1.2" className="fill-purple-500/60" />
-            <circle cx="160" cy="85" r="0.8" className="fill-purple-500/40" />
-            
-            {/* Nodes */}
-            <circle cx="125" cy="75" r="2.5" className="fill-indigo-400 animate-ping" />
-            <circle cx="125" cy="75" r="1.5" className="fill-white" />
-            <circle cx="132" cy="78" r="3.5" className="fill-purple-400 animate-ping" />
-            <circle cx="132" cy="78" r="2.2" className="fill-white" />
-            <circle cx="58" cy="76" r="3" className="fill-cyan-400 animate-ping" />
-            <circle cx="58" cy="76" r="1.8" className="fill-white" />
-          </svg>
-        </div>
+        {/* Video Background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          src="/кальянhhs.mp4"
+        />
+        {/* Dark blur gradient at bottom of video */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/70 via-black/30 to-transparent backdrop-blur-[2px] z-0" />
 
         <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8">
           {/* Subtitle Telemetry header */}
@@ -204,7 +124,7 @@ export function HomePage() {
                 <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
               </motion.button>
             </NavLink>
-            <NavLink to="/mixologist" className="w-full sm:w-auto">
+            <NavLink to="/booking" className="w-full sm:w-auto">
               <motion.button
                 className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white bg-transparent text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all"
                 whileHover={{ scale: 1.02 }}
@@ -331,91 +251,33 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Grid Zone Layout matching reference image perfectly */}
-      <section id="menu" className="relative pt-8">
-        <div className="text-center space-y-2 mb-10 select-none">
+      <section id="carousel" className="relative pt-8">
+        <div className="text-center space-y-2 mb-6 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">
-            <Flame className="w-3.5 h-3.5 inline mr-1 text-accent-gold animate-pulse" /> НАШИ ЗОНЫ
+            <Flame className="w-3.5 h-3.5 inline mr-1 text-accent-gold animate-pulse" /> НАША КОЛЛЕКЦИЯ
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
-            Выберите <span className="gradient-text font-semibold italic">атмосферу</span>
+            Выберите <span className="gradient-text font-semibold italic">свой вкус</span>
           </h2>
         </div>
 
-        <div className="flex items-center gap-6 relative">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
-            {PREMIUM_ZONES.map((zone, index) => (
-              <motion.div
-                key={zone.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.15, duration: 0.6 }}
-                className="relative group rounded-3xl overflow-hidden aspect-[4/5] shadow-lg border border-glass-border/30 cursor-pointer"
-              >
-                {/* Main Zone Image Background */}
-                <div className="absolute inset-0 z-0">
-                  <img
-                    src={zone.images[activeZoneSlide[zone.id]]}
-                    alt={zone.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  {/* Black gradient mask matching reference image */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/70 group-hover:via-black/25 transition-colors duration-300" />
-                </div>
-
-                {/* Card content aligned top-left matching reference design */}
-                <div className="absolute top-6 left-6 right-6 z-10 flex flex-col justify-start items-start">
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-white leading-none uppercase tracking-wide group-hover:text-accent-gold transition-colors duration-300">
-                    {zone.title}
-                  </h3>
-                  <p className="text-[10px] text-accent-gold/85 font-semibold mt-1 uppercase tracking-[0.2em]">
-                    {zone.subtitle}
-                  </p>
-                </div>
-
-                {/* Card description overlay displayed on hover */}
-                <div className="absolute bottom-16 left-6 right-6 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-[11px] text-white/70 leading-relaxed font-light">
-                    {zone.description}
-                  </p>
-                </div>
-
-                {/* Detail link bottom-left matching reference */}
-                <div className="absolute bottom-6 left-6 z-20 flex items-center gap-1.5 text-xs text-white/50 group-hover:text-accent-gold transition-colors font-medium">
-                  <span>Подробнее</span>
-                  <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
-                </div>
-
-                {/* Sub-slide navigation arrow toggles */}
-                <div className="absolute bottom-6 right-6 z-20 flex items-center gap-1">
-                  <button
-                    onClick={(e) => handlePrevSlide(zone.id, e)}
-                    className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center bg-black/45 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => handleNextSlide(zone.id, e)}
-                    className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center bg-black/45 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Vertical scroll/navigation chevrons on the right */}
-          <div className="hidden md:flex flex-col gap-3 justify-center items-center">
-            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#0c0816]/90 border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
-              <ChevronLeft className="w-4 h-4 rotate-90" />
-            </button>
-            <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#0c0816]/90 border border-white/5 text-white/50 hover:border-accent-gold hover:text-accent-gold transition-all">
-              <ChevronRight className="w-4 h-4 rotate-90" />
-            </button>
-          </div>
-        </div>
+        <MixCarousel3D
+          items={showcaseItems.length > 0 ? showcaseItems.map(s => ({
+            id: s.id,
+            title: s.title,
+            subtitle: s.description,
+            imageUrl: s.image_url ? resolveImageUrl(s.image_url) : undefined,
+            linkUrl: s.link_url,
+          })) : [
+            { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' },
+            { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #2d1b69 0%, #1a1a2e 100%)' },
+            { id: '3', title: 'VIP-залы', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #3d1f00 0%, #1a1a2e 100%)' },
+          ]}
+          onItemClick={(item) => {
+            if (item.linkUrl) window.open(item.linkUrl, '_blank');
+            else if (item.id.length < 5) window.location.href = '/booking';
+          }}
+        />
       </section>
 
       {/* Why Guests Choose Us Section */}
@@ -508,7 +370,7 @@ export function HomePage() {
               </div>
 
               <div className="pt-6 z-10">
-                <NavLink to="/mixologist">
+                <NavLink to="/booking">
                   <motion.button
                     className="px-8 py-3.5 rounded-full border border-[#a855f7]/40 text-white bg-gradient-to-r from-[#6d28d9] to-[#311082] hover:from-[#7c3aed] hover:to-[#4c1d95] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(168,85,247,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
                     whileHover={{ scale: 1.02 }}

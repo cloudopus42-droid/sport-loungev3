@@ -15,9 +15,6 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS bookings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  seat_id VARCHAR(50) NOT NULL,
-  seat_label VARCHAR(50) NOT NULL,
-  seat_zone VARCHAR(50) NOT NULL,
   date VARCHAR(10) NOT NULL, -- YYYY-MM-DD
   time VARCHAR(5) NOT NULL, -- HH:mm
   guests_count INTEGER DEFAULT 1,
@@ -129,19 +126,66 @@ CREATE TABLE IF NOT EXISTS stories (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Таблица конфигурации столов (карта зала)
-CREATE TABLE IF NOT EXISTS seat_configs (
+-- Таблица учёта табака (остатки, движения)
+CREATE TABLE IF NOT EXISTS tobacco_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  seats JSONB NOT NULL DEFAULT '[]',
-  updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  mix_id UUID REFERENCES mixes(id) ON DELETE SET NULL,
+  type VARCHAR(50) NOT NULL CHECK (type IN ('purchase', 'consumption', 'write-off', 'replacement', 'adjustment')),
+  quantity DECIMAL(10,2) NOT NULL,
+  unit VARCHAR(20) DEFAULT 'gram',
+  price DECIMAL(10,2),
+  booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+  notes TEXT DEFAULT '',
+  performed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Таблица замены колбы
+CREATE TABLE IF NOT EXISTS hookah_replacements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  old_mix_id UUID REFERENCES mixes(id) ON DELETE SET NULL,
+  new_mix_id UUID NOT NULL REFERENCES mixes(id) ON DELETE SET NULL,
+  replacement_reason VARCHAR(50) NOT NULL CHECK (replacement_reason IN ('burnout', 'flavor-change', 'guest-request', 'quality-issue')),
+  price DECIMAL(10,2) NOT NULL DEFAULT 0,
+  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'completed')),
+  performed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Таблица узлов графа знаний (Obsidian sync)
+CREATE TABLE IF NOT EXISTS knowledge_nodes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  content TEXT DEFAULT '',
+  path TEXT,
+  node_type VARCHAR(50) DEFAULT 'note' CHECK (node_type IN ('note', 'tag', 'concept', 'product', 'recipe')),
+  tags TEXT[] DEFAULT '{}',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Таблица связей графа знаний
+CREATE TABLE IF NOT EXISTS knowledge_edges (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_id UUID NOT NULL REFERENCES knowledge_nodes(id) ON DELETE CASCADE,
+  target_id UUID NOT NULL REFERENCES knowledge_nodes(id) ON DELETE CASCADE,
+  relationship VARCHAR(100) DEFAULT 'related',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(source_id, target_id, relationship)
 );
 
 -- Индексы для оптимизации
 CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(date);
 CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_bookings_seat_availability ON bookings (seat_id, date, time) WHERE status != 'cancelled';
+CREATE INDEX IF NOT EXISTS idx_bookings_date_status ON bookings (date, status);
+CREATE INDEX IF NOT EXISTS idx_tobacco_transactions_mix ON tobacco_transactions (mix_id);
+CREATE INDEX IF NOT EXISTS idx_knowledge_nodes_type ON knowledge_nodes (node_type);
+CREATE INDEX IF NOT EXISTS idx_knowledge_edges_source ON knowledge_edges (source_id);
+CREATE INDEX IF NOT EXISTS idx_knowledge_edges_target ON knowledge_edges (target_id);
 
 -- Вставка дефолтного админа (пароль 'admin123', зашифрованный с помощью bcrypt - $2a$12$R.S4Z3N2l/J3G4WpQ7T3kO.BaeU4p.G/O9.YOmOyeCj8O7L5w7t0K)
 -- Вы можете поменять его при первом входе
