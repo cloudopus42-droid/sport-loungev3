@@ -20,6 +20,7 @@ jobs:
         run: |
           cd client
           npm run build
+          cp dist/index.html dist/404.html
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -27,3 +28,4 @@ jobs:
           publish_dir: ./client/dist
           publish_branch: gh-pages
           force_orphan: true
+          enable_jekyll: false
