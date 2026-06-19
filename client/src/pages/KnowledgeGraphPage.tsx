@@ -110,7 +110,7 @@ export function KnowledgeGraphPage() {
       }
 
       ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      ctx.font = '9px Inter, sans-serif';
+      ctx.font = '9px Geist, sans-serif';
       ctx.fillText(node.title, pos.x + radius + 4, pos.y + 3);
     });
   }, [data, selectedNode]);

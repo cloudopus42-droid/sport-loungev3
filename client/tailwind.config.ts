@@ -28,9 +28,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        heading: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Geist', 'system-ui', 'sans-serif'],
+        heading: ['Geist', 'system-ui', 'sans-serif'],
+        display: ['Geist', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       boxShadow: {
@@ -54,13 +54,17 @@ const config: Config = {
         'stitch-lg': '0.75rem',
       },
       animation: {
-        fadeInUp: 'fadeInUp 0.6s ease-out forwards',
-        glowPulse: 'glowPulse 2s ease-in-out infinite',
-        slideInRight: 'slideInRight 0.5s ease-out forwards',
+        fadeInUp: 'fadeInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        glowPulse: 'glowPulse 2s cubic-bezier(0.77, 0, 0.175, 1) infinite',
+        slideInRight: 'slideInRight 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards',
         shimmer: 'shimmer 2s linear infinite',
-        accentFloat: 'accentFloat 6s ease-in-out infinite',
+        accentFloat: 'accentFloat 6s cubic-bezier(0.77, 0, 0.175, 1) infinite',
         revealCard: 'revealCard 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        countUp: 'countUp 2s ease-out forwards',
+        countUp: 'countUp 2s cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        drawerIn: 'drawerIn 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards',
+        springIn: 'springIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        pressPop: 'pressPop 0.15s cubic-bezier(0.23, 1, 0.32, 1)',
+        staggerFade: 'staggerFade 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards',
       },
       keyframes: {
         fadeInUp: {
@@ -89,6 +93,23 @@ const config: Config = {
         },
         countUp: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        drawerIn: {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        springIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        pressPop: {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.97)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        staggerFade: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },

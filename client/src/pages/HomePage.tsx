@@ -229,8 +229,8 @@ export function HomePage() {
             {/* Widget 3: Live lounge sound system */}
             <GlassCard className="p-5 sm:col-span-2 flex items-center justify-between gap-4 border border-glass-border/20 bg-[#0c0816]/90 select-none">
               <div className="flex items-center gap-3 truncate">
-                <div className="w-9 h-9 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center text-lg flex-shrink-0 animate-pulse">
-                  📻
+                <div className="w-9 h-9 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
                 </div>
                 <div className="truncate">
                   <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold">Аудиосистема заведения</span>
@@ -254,7 +254,7 @@ export function HomePage() {
       <section id="carousel" className="relative pt-8">
         <div className="text-center space-y-2 mb-6 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">
-            <Flame className="w-3.5 h-3.5 inline mr-1 text-accent-gold animate-pulse" /> НАША КОЛЛЕКЦИЯ
+            <Flame className="w-3.5 h-3.5 inline mr-1 text-accent-gold animate-pressPop" /> НАША КОЛЛЕКЦИЯ
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
             Выберите <span className="gradient-text font-semibold italic">свой вкус</span>
@@ -291,12 +291,12 @@ export function HomePage() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 relative">
+        <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 relative">
           {[
-            { title: 'Премиальное качество', desc: 'Только отборные табаки и качественные смеси', iconName: 'award' as const },
-            { title: 'Идеальная крепость', desc: 'Готовим на 4 углях под баней без перегрева и горечи', iconName: 'flame' as const },
-            { title: 'Круглосуточно 24/7', desc: 'Мы работаем для вас в любое время суток', iconName: 'clock' as const },
-            { title: 'Комфорт и атмосфера', desc: 'Стильный интерьер и уютная атмосфера для отдыха', iconName: 'compass' as const },
+            { title: 'Премиальное качество', desc: 'Только отборные табаки и качественные смеси', iconName: 'award' as const, span: 'lg:col-span-4' },
+            { title: 'Идеальная крепость', desc: 'Готовим на 4 углях под баней без перегрева и горечи', iconName: 'flame' as const, span: 'lg:col-span-3' },
+            { title: 'Круглосуточно 24/7', desc: 'Мы работаем для вас в любое время суток', iconName: 'clock' as const, span: 'lg:col-span-3' },
+            { title: 'Комфорт и атмосфера', desc: 'Стильный интерьер и уютная атмосфера для отдыха', iconName: 'compass' as const, span: 'lg:col-span-2' },
           ].map((item, index) => (
             <motion.div
               key={item.title}
@@ -306,7 +306,7 @@ export function HomePage() {
               onMouseMove={(e) => handleCardMouseMove(e)}
               onMouseEnter={() => setHoveredCardIndex(index)}
               onMouseLeave={() => setHoveredCardIndex(null)}
-              className="relative rounded-[28px] overflow-hidden group"
+              className={`relative rounded-[28px] overflow-hidden group ${item.span}`}
             >
               {/* Dynamic spotlight glow that follows coordinates cursor relative */}
               {hoveredCardIndex === index && (
@@ -359,7 +359,7 @@ export function HomePage() {
               
               <div className="space-y-4 max-w-xl z-10">
                 <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold font-semibold flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-pulse" /> КОНСТРУКТОР ВКУСОВ
+                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-pressPop" /> КОНСТРУКТОР ВКУСОВ
                 </span>
                 <h3 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider leading-none">
                   Создайте идеальный <span className="gradient-text font-semibold italic">микс</span>
@@ -373,10 +373,10 @@ export function HomePage() {
                 <NavLink to="/booking">
                   <motion.button
                     className="px-8 py-3.5 rounded-full border border-[#a855f7]/40 text-white bg-gradient-to-r from-[#6d28d9] to-[#311082] hover:from-[#7c3aed] hover:to-[#4c1d95] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(168,85,247,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, transition: { type: 'spring', duration: 0.4, bounce: 0.2 } }}
+                    whileTap={{ scale: 0.97, transition: { type: 'spring', duration: 0.12, bounce: 0 } }}
                   >
-                    <Flame className="w-4 h-4 text-accent-gold animate-pulse" /> Открыть конструктор
+                    <Flame className="w-4 h-4 text-accent-gold animate-pressPop" /> Открыть конструктор
                   </motion.button>
                 </NavLink>
               </div>
@@ -394,7 +394,7 @@ export function HomePage() {
               
               <div className="space-y-4 z-10 mt-4">
                 <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold/90 font-bold block">Закрытый Клуб</span>
-                <h4 className="text-5xl font-display font-bold text-accent-gold tracking-widest animate-pulse">VIP</h4>
+                <h4 className="text-5xl font-display font-bold text-accent-gold tracking-widest animate-glowPulse">VIP</h4>
                 <p className="text-xs text-white font-medium uppercase tracking-wider mt-4">VIP-комната</p>
                 <p className="text-[11px] text-white/45 font-light leading-normal">
                   для особых гостей
