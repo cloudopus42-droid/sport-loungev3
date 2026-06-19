@@ -26,7 +26,7 @@ type GraphData = {
 };
 
 const NODE_COLORS: Record<string, string> = {
-  note: '#a78bfa',
+  note: '#d4af37',
   tag: '#22c55e',
   concept: '#3b82f6',
   product: '#f59e0b',
@@ -85,7 +85,7 @@ export function KnowledgeGraphPage() {
       ctx.beginPath();
       ctx.moveTo(source.x, source.y);
       ctx.lineTo(target.x, target.y);
-      ctx.strokeStyle = 'rgba(167, 139, 250, 0.15)';
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)';
       ctx.lineWidth = 1;
       ctx.stroke();
     });
@@ -94,7 +94,7 @@ export function KnowledgeGraphPage() {
       const pos = nodePositions[node.id];
       if (!pos) return;
       const radius = node.id === selectedNode?.id ? 8 : 5;
-      const color = NODE_COLORS[node.node_type] || '#a78bfa';
+      const color = NODE_COLORS[node.node_type] || '#d4af37';
 
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
@@ -104,7 +104,7 @@ export function KnowledgeGraphPage() {
       if (node.id === selectedNode?.id) {
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, radius + 4, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(167, 139, 250, 0.5)';
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
         ctx.lineWidth = 2;
         ctx.stroke();
       }
@@ -212,7 +212,7 @@ export function KnowledgeGraphPage() {
               <div className="flex items-center gap-2">
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: NODE_COLORS[node.node_type] || '#a78bfa' }}
+                  style={{ backgroundColor: NODE_COLORS[node.node_type] || '#d4af37' }}
                 />
                 <p className="text-xs font-semibold text-white truncate">{node.title}</p>
               </div>
@@ -229,7 +229,7 @@ export function KnowledgeGraphPage() {
               <div className="flex items-center gap-2">
                 <span
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: NODE_COLORS[selectedNode.node_type] || '#a78bfa' }}
+                  style={{ backgroundColor: NODE_COLORS[selectedNode.node_type] || '#d4af37' }}
                 />
                 <h3 className="text-lg font-bold text-white">{selectedNode.title}</h3>
               </div>

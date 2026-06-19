@@ -292,7 +292,7 @@ export function BookingPage() {
       </div>
 
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#d4af37] opacity-[0.05] blur-[130px] rounded-full pointer-events-none z-0"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#a855f7] opacity-[0.05] blur-[120px] rounded-full pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#d4af37] opacity-[0.05] blur-[120px] rounded-full pointer-events-none z-0"></div>
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 lg:p-12 z-10 relative flex flex-col h-full">

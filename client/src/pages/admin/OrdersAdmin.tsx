@@ -176,7 +176,7 @@ export function OrdersAdmin() {
               const statusColors: Record<string, string> = {
                 accepted: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
                 preparing: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-                roasting: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                roasting: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
                 delivering: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
               };
 
@@ -272,7 +272,7 @@ export function OrdersAdmin() {
                           {order.status === 'preparing' && (
                             <button
                               onClick={() => handleUpdateStatus(order.id, 'roasting')}
-                              className="flex-1 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
+                              className="flex-1 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
                             >
                               <Flame className="w-3 h-3" /> Угли
                             </button>

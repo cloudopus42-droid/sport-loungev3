@@ -163,7 +163,7 @@ function SingleHelix({ categoryName, share, color, emoji, xPosition, isSelected,
 
 const CATEGORY_ITEMS = [
   { name: 'Фрукты', emoji: '🍊', color: '#f97316' },
-  { name: 'Ягоды', emoji: '🫐', color: '#a855f7' },
+  { name: 'Ягоды', emoji: '🫐', color: '#d4af37' },
   { name: 'Десерт', emoji: '🧁', color: '#f472b6' },
   { name: 'Свежие', emoji: '❄️', color: '#38bdf8' },
   { name: 'Пряные', emoji: '🌶️', color: '#ca8a04' },

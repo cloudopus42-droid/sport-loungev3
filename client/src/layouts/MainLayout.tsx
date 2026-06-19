@@ -57,10 +57,9 @@ export function MainLayout() {
   }, [socket, user]);
 
   const handleNavClick = (anchor: string) => {
-    const basePath = import.meta.env.BASE_URL;
-    const isHomePage = window.location.pathname === basePath || window.location.pathname === basePath.slice(0, -1) || window.location.pathname === '/';
+    const isHomePage = window.location.pathname === '/' || window.location.pathname === import.meta.env.BASE_URL || window.location.pathname === import.meta.env.BASE_URL.replace(/\/$/, '');
     if (!isHomePage) {
-      navigate('/' + anchor);
+      window.location.href = import.meta.env.BASE_URL + anchor;
     } else {
       const el = document.querySelector(anchor);
       if (el) el.scrollIntoView({ behavior: 'smooth' });

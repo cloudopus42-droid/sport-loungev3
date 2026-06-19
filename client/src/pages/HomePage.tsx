@@ -117,14 +117,14 @@ export function HomePage() {
           >
             <NavLink to="/booking" className="w-full sm:w-auto">
               <motion.button
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#050308] border-none font-bold text-sm shadow-[0_4px_24px_rgba(168,85,247,0.35)] flex items-center justify-center gap-1.5 transition-all"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#080605] border-none font-bold text-sm shadow-[0_4px_24px_rgba(212,175,55,0.35)] flex items-center justify-center gap-1.5 transition-all"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
               </motion.button>
             </NavLink>
-            <NavLink to="/booking" className="w-full sm:w-auto">
+            <NavLink to="/mixologist" className="w-full sm:w-auto">
               <motion.button
                 className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white bg-transparent text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all"
                 whileHover={{ scale: 1.02 }}
@@ -175,7 +175,7 @@ export function HomePage() {
                 <img 
                   src={premiumHookah} 
                   alt="Sport Lounge Premium Hookah" 
-                  className="max-h-[190px] w-auto object-contain filter drop-shadow-[0_12px_40px_rgba(168,85,247,0.22)] z-10 animate-breathe-image"
+                  className="max-h-[190px] w-auto object-contain filter drop-shadow-[0_12px_40px_rgba(212,175,55,0.22)] z-10 animate-breathe-image"
                 />
               </div>
               <div className="text-center pt-2">
@@ -315,7 +315,7 @@ export function HomePage() {
                   style={{
                     width: '320px',
                     height: '320px',
-                    background: 'radial-gradient(120px circle at var(--x) var(--y), rgba(168, 85, 247, 0.15), transparent 80%)',
+                    background: 'radial-gradient(120px circle at var(--x) var(--y), rgba(212, 175, 55, 0.15), transparent 80%)',
                     left: `${cardCoords.x - 160}px`,
                     top: `${cardCoords.y - 160}px`,
                     mixBlendMode: 'screen',
@@ -372,7 +372,7 @@ export function HomePage() {
               <div className="pt-6 z-10">
                 <NavLink to="/booking">
                   <motion.button
-                    className="px-8 py-3.5 rounded-full border border-[#a855f7]/40 text-white bg-gradient-to-r from-[#6d28d9] to-[#311082] hover:from-[#7c3aed] hover:to-[#4c1d95] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(168,85,247,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
+                    className="px-8 py-3.5 rounded-full border border-[#d4af37]/40 text-white bg-gradient-to-r from-[#b8962e] to-[#8a6d1b] hover:from-[#c9a032] hover:to-[#5c1818] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
                     whileHover={{ scale: 1.02, transition: { type: 'spring', duration: 0.4, bounce: 0.2 } }}
                     whileTap={{ scale: 0.97, transition: { type: 'spring', duration: 0.12, bounce: 0 } }}
                   >

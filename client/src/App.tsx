@@ -11,6 +11,7 @@ const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.H
 const BookingPage = lazy(() => import('@/pages/BookingPage').then(m => ({ default: m.BookingPage })));
 const TobaccoPage = lazy(() => import('@/pages/TobaccoPage').then(m => ({ default: m.TobaccoPage })));
 const KnowledgeGraphPage = lazy(() => import('@/pages/KnowledgeGraphPage').then(m => ({ default: m.KnowledgeGraphPage })));
+const MixologistPage = lazy(() => import('@/pages/MixologistPage').then(m => ({ default: m.MixologistPage })));
 const FeedPage = lazy(() => import('@/pages/FeedPage').then(m => ({ default: m.FeedPage })));
 const InvitationsPage = lazy(() => import('@/pages/InvitationsPage').then(m => ({ default: m.InvitationsPage })));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
@@ -36,7 +37,7 @@ export default function App() {
       <SocketProvider>
         <Suspense fallback={
           <div className="min-h-screen bg-[#080605] flex flex-col items-center justify-center text-white font-sans">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#a855f7] to-[#4c1d95] flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)] animate-spin mb-4" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8962e] flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.5)] animate-spin mb-4" />
             <span className="text-xs uppercase tracking-[0.25em] text-white/50 animate-pulse">Initializing System...</span>
           </div>
         }>
@@ -46,6 +47,7 @@ export default function App() {
               <Route path="booking" element={<BookingPage />} />
               <Route path="tobacco" element={<TobaccoPage />} />
               <Route path="knowledge" element={<KnowledgeGraphPage />} />
+              <Route path="mixologist" element={<MixologistPage />} />
               <Route path="feed" element={<FeedPage />} />
               <Route path="invitations" element={<InvitationsPage />} />
               <Route path="profile" element={<ProfilePage />} />
