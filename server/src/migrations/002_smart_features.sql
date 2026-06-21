@@ -23,5 +23,8 @@ INSERT INTO smart_features (feature_key, name, description, enabled, is_public) 
   ('auto_restock', 'Авто-заказ табака', 'Автоматическое создание заявок на пополнение табака', false, false),
   ('telegram_notifications', 'Telegram-уведомления', 'Уведомления о заказах через Telegram-бота', false, false),
   ('concierge_chat', 'Консьерж-чат', 'Чат с поддержкой в реальном времени', false, true),
-  ('dynamic_pricing', 'Динамическое ценообразование', 'Автоматическая корректировка цен', false, false)
+  ('dynamic_pricing', 'Динамическое ценообразование', 'Автоматическая корректировка цен', false, false),
+  ('ai_sommelier', 'ИИ-Сомелье', 'Рекомендации напитков к кальяну на основе вкусовых предпочтений', false, true),
+  ('auto_discount_night', 'Ночная скидка', 'Автоматическое применение скидки 15% на заказы после 23:00', false, false),
+  ('qr_menu', 'QR-меню', 'Гости сканируют QR-код на столе для просмотра меню и заказа', true, true)
 ON CONFLICT (feature_key) DO NOTHING;

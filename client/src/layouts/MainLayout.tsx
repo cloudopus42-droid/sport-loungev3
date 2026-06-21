@@ -305,6 +305,7 @@ export function MainLayout() {
               className="lg:hidden p-2 text-white/60 hover:text-accent-gold transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
               aria-label="Открыть меню"
               aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
               whileTap={{ scale: 0.9 }}
             >
               <MenuIcon className="w-5 h-5" />
@@ -330,6 +331,7 @@ export function MainLayout() {
             />
             <motion.div
               className="absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] bg-dark-surface/95 backdrop-blur-xl border-l border-glass-border shadow-2xl flex flex-col"
+              id="mobile-menu"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -350,7 +352,7 @@ export function MainLayout() {
                 </motion.button>
               </div>
 
-              <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+              <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Мобильное меню">
                 {desktopNavItems.map((item) => {
                   if (item.to) {
                     const to = item.to === '/profile' && !isAuthenticated ? '/login' : item.to;
@@ -470,7 +472,7 @@ export function MainLayout() {
                   key={tab.label}
                   to={to}
                   end={tab.to === '/'}
-                  className="relative flex-1 flex items-center justify-center"
+                  className="relative flex-1 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 rounded-lg"
                   aria-label={tab.label}
                 >
                   {({ isActive }) => (

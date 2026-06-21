@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 import { showToast } from '@/components/NotificationToast';
+import Tooltip from '@/components/ui/Tooltip';
 
 interface SidebarItem {
   path: string;
@@ -185,7 +186,7 @@ export function AdminLayout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
+        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto overflow-x-hidden" aria-label="Admin navigation">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -195,57 +196,68 @@ export function AdminLayout() {
                 end={item.end}
                 onClick={() => { setSidebarOpen(false); if (item.path === '/admin/orders' || item.path === '/admin/bookings') clearNewOrders(); }}
                 className="block relative"
+                onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
+                  if (e.key === ' ') {
+                    e.preventDefault();
+                    navigate(item.path);
+                  }
+                }}
               >
-                {({ isActive }) => (
-                  <div className={clsx(
-                    'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 overflow-hidden',
-                    isActive
-                      ? 'text-accent-gold bg-accent-gold/10'
-                      : 'text-white/50 hover:text-white/80 hover:bg-glass-bg'
-                  )}
-                    style={{ willChange: 'transform' }}
-                  >
-                    <div className="relative flex items-center gap-3 min-w-0 w-full">
-                      <div className="relative flex-shrink-0">
-                        <Icon className="w-[18px] h-[18px]" />
-                        {(item.path === '/admin/orders' || item.path === '/admin/bookings') && hasNewOrders && (
-                          <motion.span
-                            className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-dark-surface"
-                            animate={{ scale: [1, 1.3, 1] }}
-                            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                          />
-                        )}
+                {({ isActive }) => {
+                  const linkContent = (
+                    <div className={clsx(
+                      'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 overflow-hidden',
+                      isActive
+                        ? 'text-accent-gold bg-accent-gold/10'
+                        : 'text-white/50 hover:text-white/80 hover:bg-glass-bg'
+                    )}
+                      style={{ willChange: 'transform' }}
+                    >
+                      <div className="relative flex items-center gap-3 min-w-0 w-full">
+                        <div className="relative flex-shrink-0">
+                          <Icon className="w-[18px] h-[18px]" />
+                          {(item.path === '/admin/orders' || item.path === '/admin/bookings') && hasNewOrders && (
+                            <motion.span
+                              className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-dark-surface"
+                              animate={{ scale: [1, 1.3, 1] }}
+                              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                            />
+                          )}
+                        </div>
+                        <AnimatePresence mode="wait">
+                          {!collapsed && (
+                            <motion.span
+                              className="truncate"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: prefersReducedMotion ? 0.01 : 0.15 }}
+                            >
+                              {item.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
                       </div>
-                      <AnimatePresence mode="wait">
-                        {!collapsed && (
-                          <motion.span
-                            className="truncate"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: prefersReducedMotion ? 0.01 : 0.15 }}
-                          >
-                            {item.label}
-                          </motion.span>
+
+                      {/* Active indicator: gold left border */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            className="absolute left-0 top-2 bottom-2 w-[2px] bg-accent-gold rounded-r-full"
+                            initial={{ scaleY: 0, opacity: 0 }}
+                            animate={{ scaleY: 1, opacity: 1 }}
+                            exit={{ scaleY: 0, opacity: 0 }}
+                            transition={{ duration: prefersReducedMotion ? 0.01 : 0.2, ease: 'easeOut' }}
+                            style={{ originY: 0.5 }}
+                          />
                         )}
                       </AnimatePresence>
                     </div>
-
-                    {/* Active indicator: gold left border */}
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.div
-                          className="absolute left-0 top-2 bottom-2 w-[2px] bg-accent-gold rounded-r-full"
-                          initial={{ scaleY: 0, opacity: 0 }}
-                          animate={{ scaleY: 1, opacity: 1 }}
-                          exit={{ scaleY: 0, opacity: 0 }}
-                          transition={{ duration: prefersReducedMotion ? 0.01 : 0.2, ease: 'easeOut' }}
-                          style={{ originY: 0.5 }}
-                        />
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
+                  );
+                  return collapsed ? (
+                    <Tooltip content={item.label}>{linkContent}</Tooltip>
+                  ) : linkContent;
+                }}
               </NavLink>
             );
           })}
@@ -337,7 +349,7 @@ export function AdminLayout() {
                 to={tab.path}
                 end={tab.end}
                 onClick={() => { if (tab.path === '/admin/orders' || tab.path === '/admin/bookings') clearNewOrders(); }}
-                className="relative flex-1 flex items-center justify-center"
+                className="relative flex-1 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 rounded-lg"
                 aria-label={tab.label}
               >
                 {({ isActive }) => (
