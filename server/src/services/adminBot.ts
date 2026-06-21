@@ -3,6 +3,9 @@ import { supabase } from '../config/supabase';
 const ADMIN_BOT_TOKEN = process.env.ADMIN_BOT_TOKEN || '';
 const TELEGRAM_API = `https://api.telegram.org/bot${ADMIN_BOT_TOKEN}`;
 const ALLOWED_ADMIN_IDS = (process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
+const ADMIN_USERNAMES = (process.env.ADMIN_TELEGRAM_USERNAMES || '').split(',').map(s => s.trim().toLowerCase().replace('@', '')).filter(Boolean);
+
+const knownAdminChatIds: Set<number> = new Set(ALLOWED_ADMIN_IDS.map(Number).filter(n => !isNaN(n)));
 
 const statusIcons: Record<string, string> = {
   accepted: '📥',
@@ -78,14 +81,22 @@ async function getUpdates(offset: number, timeout = 30): Promise<any[]> {
   }
 }
 
-async function isAdminUser(telegramId: number): Promise<boolean> {
+async function isAdminUser(telegramId: number, username?: string): Promise<boolean> {
   if (ALLOWED_ADMIN_IDS.includes(String(telegramId))) return true;
+  if (username) {
+    const clean = username.toLowerCase().replace('@', '');
+    if (ADMIN_USERNAMES.includes(clean)) return true;
+  }
   const { data } = await supabase
     .from('users')
     .select('id')
     .eq('telegram_id', telegramId)
     .maybeSingle();
   return !!data;
+}
+
+function ensureAdminChatId(chatId: number) {
+  knownAdminChatIds.add(chatId);
 }
 
 function orderDetailText(order: any, userName?: string, phone?: string): string {
@@ -231,6 +242,13 @@ async function handleCommand(chatId: number, text: string) {
     });
     return;
   }
+
+  // Respond to any unrecognized message with a helpful hint
+  await callTelegramApi('sendMessage', {
+    chat_id: chatId,
+    text: '⚠️ Неизвестная команда. Используйте /start для меню или /orders для списка заказов.',
+    parse_mode: 'HTML',
+  });
 }
 
 async function sendOrderList(chatId: number) {
@@ -329,7 +347,6 @@ async function handleCallback(chatId: number, callbackId: string, data: string) 
     return;
   }
 
-  // Pattern: admin_status:<orderId>:<newStatus>
   const statusMatch = data.match(/^admin_status:(.+?):(.+)$/);
   if (statusMatch) {
     const orderId = statusMatch[1];
@@ -385,7 +402,6 @@ async function handleCallback(chatId: number, callbackId: string, data: string) 
     return;
   }
 
-  // Pattern: admin_cancel:<orderId>
   const cancelMatch = data.match(/^admin_cancel:(.+)$/);
   if (cancelMatch) {
     const orderId = cancelMatch[1];
@@ -418,35 +434,30 @@ async function handleCallback(chatId: number, callbackId: string, data: string) 
     return;
   }
 
-  // Pattern: admin_detail:<orderId>
   const detailMatch = data.match(/^admin_detail:(.+)$/);
   if (detailMatch) {
     await sendOrderDetail(chatId, detailMatch[1]);
     return;
   }
 
-  // Pattern: admin_refresh:<orderId>
   const refreshMatch = data.match(/^admin_refresh:(.+)$/);
   if (refreshMatch) {
     await sendOrderDetail(chatId, refreshMatch[1]);
     return;
   }
 
-  // Pattern: admin_replace:<orderId>
   const replaceMatch = data.match(/^admin_replace:(.+)$/);
   if (replaceMatch) {
     await startReplacementFlow(chatId, replaceMatch[1]);
     return;
   }
 
-  // Pattern: admin_replace_confirm:<orderId>:<mixId>
   const replaceConfirmMatch = data.match(/^admin_replace_confirm:(.+?):(.+)$/);
   if (replaceConfirmMatch) {
     await confirmReplacement(chatId, replaceConfirmMatch[1], replaceConfirmMatch[2]);
     return;
   }
 
-  // Pattern: admin_replace_cancel:<orderId>
   const replaceCancelMatch = data.match(/^admin_replace_cancel:(.+)$/);
   if (replaceCancelMatch) {
     await sendOrderDetail(chatId, replaceCancelMatch[1]);
@@ -578,11 +589,12 @@ async function handleUpdate(update: any) {
 
     if (!user) return;
 
-    if (!(await isAdminUser(user.id))) {
+    if (!(await isAdminUser(user.id, user.username))) {
       console.log(`⛔ [Admin Bot] Unauthorized access attempt from user ${user.id} (${user.first_name})`);
       return;
     }
 
+    ensureAdminChatId(chatId);
     console.log(`👤 [Admin Bot] Command from ${user.first_name} (${chatId}): "${text}"`);
     await handleCommand(chatId, text);
   }
@@ -595,11 +607,12 @@ async function handleUpdate(update: any) {
 
     if (!user) return;
 
-    if (!(await isAdminUser(user.id))) {
+    if (!(await isAdminUser(user.id, user.username))) {
       console.log(`⛔ [Admin Bot] Unauthorized callback from user ${user.id}`);
       return;
     }
 
+    ensureAdminChatId(chatId);
     console.log(`🖱️ [Admin Bot] Callback from ${user.first_name}: "${data}"`);
     await handleCallback(chatId, cq.id, data);
   }
@@ -654,9 +667,6 @@ export async function adminNotifyNewOrder(
 ): Promise<void> {
   if (!ADMIN_BOT_TOKEN) return;
 
-  const chatIds = ALLOWED_ADMIN_IDS;
-  if (chatIds.length === 0) return;
-
   const time = new Date(promisedTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
   const text = [
@@ -668,16 +678,16 @@ export async function adminNotifyNewOrder(
     `🕐 <b>Обещан:</b> ${time}`,
   ].join('\n');
 
-  for (const adminId of chatIds) {
+  for (const adminChatId of knownAdminChatIds) {
     try {
       await callTelegramApi('sendMessage', {
-        chat_id: Number(adminId),
+        chat_id: adminChatId,
         text,
         parse_mode: 'HTML',
         reply_markup: statusKeyboard(orderId),
       });
     } catch (err: any) {
-      console.warn(`⚠️ [Admin Bot] Failed to notify admin ${adminId}: ${err.message}`);
+      console.warn(`⚠️ [Admin Bot] Failed to notify admin ${adminChatId}: ${err.message}`);
     }
   }
 }
@@ -690,9 +700,6 @@ export async function adminNotifyMasterCall(
 ): Promise<void> {
   if (!ADMIN_BOT_TOKEN) return;
 
-  const chatIds = ALLOWED_ADMIN_IDS;
-  if (chatIds.length === 0) return;
-
   const text = [
     '🚨 <b>ВЫЗОВ КАЛЬЯННОГО МАЭСТРО!</b>',
     '',
@@ -700,16 +707,16 @@ export async function adminNotifyMasterCall(
     `📱 <b>Телефон:</b> ${escapeHtml(phone)}`,
   ].join('\n');
 
-  for (const adminId of chatIds) {
+  for (const adminChatId of knownAdminChatIds) {
     try {
       await callTelegramApi('sendMessage', {
-        chat_id: Number(adminId),
+        chat_id: adminChatId,
         text,
         parse_mode: 'HTML',
         reply_markup: statusKeyboard(orderId),
       });
     } catch (err: any) {
-      console.warn(`⚠️ [Admin Bot] Failed to notify admin ${adminId}: ${err.message}`);
+      console.warn(`⚠️ [Admin Bot] Failed to notify admin ${adminChatId}: ${err.message}`);
     }
   }
 }
