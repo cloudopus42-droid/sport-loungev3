@@ -15,6 +15,7 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().default('https://haemdfhteicygsidftqp.supabase.co'),
   SUPABASE_KEY: z.string().min(1, 'SUPABASE_KEY is required'),
   SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
+  SUPABASE_DB_PASSWORD: z.string().default(''),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -36,4 +37,5 @@ export const config = {
   supabaseUrl: parsed.data.SUPABASE_URL,
   supabaseKey: parsed.data.SUPABASE_KEY,
   supabaseAnonKey: parsed.data.SUPABASE_ANON_KEY,
+  supabaseDbPassword: parsed.data.SUPABASE_DB_PASSWORD,
 };

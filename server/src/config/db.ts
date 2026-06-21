@@ -1,30 +1,78 @@
 import { supabase } from './supabase';
+import { config } from './env';
 import { Client } from 'pg';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 5000;
 
 async function runDirectMigration() {
-  try {
-    // Check if invoices table already exists first using supabase client
-    const { error } = await supabase.from('invoices').select('id').limit(1);
-    if (!error || error.code !== 'PGRST205') {
-      console.log('✅ Invoices table already exists. Skipping database migration.');
-      return;
-    }
-  } catch (err) {
-    // Continue to migrate if we fail to check
-  }
-
-  console.log('🏁 Invoices table does not exist. Starting direct PG migration...');
-  
-  const password = process.env.SUPABASE_KEY || '';
+  const password = config.supabaseDbPassword;
   if (!password) {
-    console.log('SUPABASE_KEY not set, skipping direct PG migration.');
+    console.log('SUPABASE_DB_PASSWORD not set, skipping direct PG migration.');
     return;
   }
 
+  try {
+    const { error } = await supabase.from('invoices').select('id').limit(1);
+    if (!error || error.code !== 'PGRST205') {
+      console.log('✅ Invoices table already exists. Skipping invoices migration.');
+    } else {
+      await runMigrationSql();
+    }
+  } catch (err) {
+    await runMigrationSql();
+  }
+}
+
+async function runMigrationSql() {
+  const password = config.supabaseDbPassword;
+  if (!password) return;
+
+  console.log('🏁 Running database migrations via direct PG connection...');
+
   const sql = `
+  CREATE TABLE IF NOT EXISTS smart_features (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    feature_key VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    enabled BOOLEAN DEFAULT false,
+    is_public BOOLEAN DEFAULT false,
+    config JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  INSERT INTO smart_features (feature_key, name, description, enabled, is_public) VALUES
+    ('ai_recommendations', 'ИИ-рекомендации', 'Персонализированные рекомендации на основе ИИ', false, true),
+    ('loyalty_program', 'Программа лояльности', 'Баллы, уровни и привилегии для постоянных клиентов', false, true),
+    ('push_notifications', 'Push-уведомления', 'Уведомления о статусе заказа и акциях', false, false),
+    ('referral_system', 'Реферальная система', 'Приглашайте друзей и получайте бонусы', false, true),
+    ('birthday_bonus', 'Именинный бонус', 'Автоматический бонус в день рождения', false, true),
+    ('advanced_analytics', 'Расширенная аналитика', 'Детальная статистика и отчёты для администратора', false, false),
+    ('auto_restock', 'Авто-заказ табака', 'Автоматическое создание заявок на пополнение табака', false, false),
+    ('telegram_notifications', 'Telegram-уведомления', 'Уведомления о заказах через Telegram-бота', false, false),
+    ('concierge_chat', 'Консьерж-чат', 'Чат с поддержкой в реальном времени', false, true),
+    ('dynamic_pricing', 'Динамическое ценообразование', 'Автоматическая корректировка цен', false, false)
+  ON CONFLICT (feature_key) DO NOTHING;
+
+  ALTER TABLE mixes ADD COLUMN IF NOT EXISTS min_stock_threshold INTEGER DEFAULT 5;
+  ALTER TABLE mixes ADD COLUMN IF NOT EXISTS auto_reorder_enabled BOOLEAN DEFAULT false;
+
+  CREATE TABLE IF NOT EXISTS restock_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tobacco_id UUID REFERENCES mixes(id) ON DELETE CASCADE,
+    tobacco_name VARCHAR(255),
+    quantity INTEGER NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'completed', 'rejected')),
+    notes TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_restock_requests_status ON restock_requests (status);
+  CREATE INDEX IF NOT EXISTS idx_restock_requests_tobacco ON restock_requests (tobacco_id);
+
   CREATE TABLE IF NOT EXISTS invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     invoice_number VARCHAR(50) UNIQUE NOT NULL,
