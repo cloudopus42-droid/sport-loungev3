@@ -11,12 +11,16 @@ import { connectDB } from './config/db';
 import { initSocket } from './socket';
 import { startSupportBot } from './services/supportBot';
 import { startOrderScheduler } from './services/orderScheduler';
+import { seedSmartFeatures } from './routes/smartFeatures';
 
 async function bootstrap(): Promise<void> {
   // 1. Connect to Database
   await connectDB();
 
-  // 2. Create HTTP server and init Socket.IO
+  // 2. Seed smart features
+  await seedSmartFeatures();
+
+  // 3. Create HTTP server and init Socket.IO
   const server = http.createServer(app);
   initSocket(server);
 

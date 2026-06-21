@@ -1,7 +1,24 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
+import { uploadSingle, uploadToSupabase, deleteFromSupabase } from '../middleware/upload';
 import { supabase } from '../config/supabase';
+
+const createTobaccoSchema = z.object({
+  name: z.string().min(1),
+  brand: z.string().optional(),
+  flavor: z.string().optional(),
+  description: z.string().optional(),
+  image_url: z.string().optional(),
+  price: z.coerce.number().optional(),
+  stock_quantity: z.coerce.number().int().min(0).default(0),
+  unit: z.string().optional(),
+  is_active: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional(),
+  status: z.string().optional(),
+  min_stock_threshold: z.coerce.number().int().min(0).default(5),
+  auto_reorder_enabled: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional(),
+});
 
 const router = Router();
 
@@ -9,7 +26,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data, error } = await supabase
       .from('mixes')
-      .select('id, name, brand, flavor, description, image_url, price, stock_quantity, unit, is_active, status')
+      .select('id, name, brand, flavor, description, image_url, price, stock_quantity, unit, is_active, status, min_stock_threshold, auto_reorder_enabled')
       .order('name');
 
     if (error) { res.status(500).json({ error: error.message }); return; }
@@ -137,6 +154,176 @@ router.post('/adjust', auth, isAdmin, async (req: Request, res: Response, next: 
       .eq('id', mix_id);
     if (updateError) { res.status(500).json({ error: updateError.message }); return; }
 
+    res.json({ success: true });
+  } catch (e) { next(e); }
+});
+
+router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = createTobaccoSchema.parse(req.body);
+    let imageUrl = data.image_url;
+    if (req.file) {
+      imageUrl = await uploadToSupabase(req.file, 'tobacco');
+    }
+
+    const { data: item, error } = await supabase
+      .from('mixes')
+      .insert({
+        name: data.name,
+        brand: data.brand || null,
+        flavor: data.flavor || null,
+        description: data.description || '',
+        image_url: imageUrl || null,
+        price: data.price || 0,
+        stock_quantity: data.stock_quantity,
+        unit: data.unit || 'gram',
+        is_active: data.is_active ?? true,
+        status: data.status || 'active',
+        min_stock_threshold: data.min_stock_threshold,
+        auto_reorder_enabled: data.auto_reorder_enabled ?? false,
+      })
+      .select()
+      .single();
+
+    if (error || !item) {
+      res.status(500).json({ error: 'Не удалось создать: ' + error?.message });
+      return;
+    }
+    res.status(201).json(item);
+  } catch (e) { next(e); }
+});
+
+router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = createTobaccoSchema.partial().parse(req.body);
+    const updateData: Record<string, unknown> = {};
+
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.brand !== undefined) updateData.brand = data.brand || null;
+    if (data.flavor !== undefined) updateData.flavor = data.flavor || null;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.stock_quantity !== undefined) updateData.stock_quantity = data.stock_quantity;
+    if (data.unit !== undefined) updateData.unit = data.unit;
+    if (data.is_active !== undefined) updateData.is_active = data.is_active;
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.min_stock_threshold !== undefined) updateData.min_stock_threshold = data.min_stock_threshold;
+    if (data.auto_reorder_enabled !== undefined) updateData.auto_reorder_enabled = data.auto_reorder_enabled;
+
+    if (req.file) {
+      const { data: oldItem } = await supabase
+        .from('mixes')
+        .select('image_url')
+        .eq('id', req.params.id)
+        .maybeSingle();
+
+      if (oldItem?.image_url) {
+        await deleteFromSupabase(oldItem.image_url);
+      }
+      updateData.image_url = await uploadToSupabase(req.file, 'tobacco');
+    } else if (data.image_url !== undefined) {
+      updateData.image_url = data.image_url || null;
+    }
+
+    updateData.updated_at = new Date().toISOString();
+
+    const { data: item, error } = await supabase
+      .from('mixes')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error || !item) {
+      res.status(404).json({ error: 'Не найдено' });
+      return;
+    }
+    res.json(item);
+  } catch (e) { next(e); }
+});
+
+router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data: item, error: fetchError } = await supabase
+      .from('mixes')
+      .select('image_url')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (fetchError || !item) {
+      res.status(404).json({ error: 'Не найдено' });
+      return;
+    }
+
+    if (item.image_url) {
+      await deleteFromSupabase(item.image_url);
+    }
+
+    const { error: deleteError } = await supabase
+      .from('mixes')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (deleteError) {
+      res.status(500).json({ error: deleteError.message });
+      return;
+    }
+    res.json({ message: 'Удалено' });
+  } catch (e) { next(e); }
+});
+
+router.get('/stock', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data, error } = await supabase
+      .from('mixes')
+      .select('id, name, brand, flavor, stock_quantity, min_stock_threshold, auto_reorder_enabled')
+      .order('name');
+
+    if (error) { res.status(500).json({ error: error.message }); return; }
+    res.json(data || []);
+  } catch (e) { next(e); }
+});
+
+router.put('/:id/stock', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { quantity } = req.body;
+    if (quantity === undefined || typeof quantity !== 'number' || quantity < 0) {
+      res.status(400).json({ error: 'quantity must be a non-negative number' });
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from('mixes')
+      .update({ stock_quantity: quantity, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id);
+
+    if (updateError) { res.status(500).json({ error: updateError.message }); return; }
+    res.json({ success: true });
+  } catch (e) { next(e); }
+});
+
+router.put('/:id/threshold', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { min_stock_threshold, auto_reorder_enabled } = req.body;
+    if (min_stock_threshold === undefined || typeof min_stock_threshold !== 'number' || min_stock_threshold < 0) {
+      res.status(400).json({ error: 'min_stock_threshold must be a non-negative number' });
+      return;
+    }
+
+    const updateData: Record<string, unknown> = {
+      min_stock_threshold,
+      updated_at: new Date().toISOString(),
+    };
+    if (typeof auto_reorder_enabled === 'boolean') {
+      updateData.auto_reorder_enabled = auto_reorder_enabled;
+    }
+
+    const { error: updateError } = await supabase
+      .from('mixes')
+      .update(updateData)
+      .eq('id', req.params.id);
+
+    if (updateError) { res.status(500).json({ error: updateError.message }); return; }
     res.json({ success: true });
   } catch (e) { next(e); }
 });

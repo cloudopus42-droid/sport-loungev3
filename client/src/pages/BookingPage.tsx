@@ -305,7 +305,7 @@ export function BookingPage() {
   ];
 
   return (
-    <div className="relative min-h-[85vh] bg-[#07050a]/90 text-white overflow-hidden rounded-[2rem] border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.1)] flex flex-col mb-20 font-sans backdrop-blur-xl">
+    <div className="relative min-h-[85vh] bg-nocturnal text-white overflow-hidden rounded-[2rem] border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.1)] flex flex-col mb-20 font-sans backdrop-blur-xl bg-warm-glow">
       
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
@@ -343,7 +343,7 @@ export function BookingPage() {
           {/* Left Column: Mixes List / AI Recommendations */}
           <section className="lg:col-span-7 space-y-6">
             {/* Tab Switcher */}
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/5 w-fit">
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/5 w-fit liquid-glass rounded-xl">
               <button
                 onClick={() => setActiveTab('mixes')}
                 className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -367,7 +367,7 @@ export function BookingPage() {
             </div>
 
             {activeTab === 'mixes' ? (
-              <>
+              <div className="liquid-glass rounded-2xl p-6">
                 <div className="flex items-center justify-between border-b border-white/10 pb-3">
                   <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">Доступные Миксы</h2>
                   <div className="flex items-center gap-2">
@@ -400,7 +400,7 @@ export function BookingPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.05 }}
                         whileHover={{ y: -3, scale: 1.01 }}
-                        className="group relative p-5 rounded-2xl bg-[#120e1a]/40 border border-[#d4af37]/10 hover:border-[#d4af37]/40 transition-all cursor-pointer backdrop-blur-md overflow-hidden"
+                        className="group relative p-5 rounded-2xl liquid-glass-gold border border-[#d4af37]/10 hover:border-[#d4af37]/40 transition-all cursor-pointer"
                         onClick={() => handleMixSelect(mix)}
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -425,9 +425,9 @@ export function BookingPage() {
                     ))}
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-6 liquid-glass rounded-2xl p-6">
                 <div className="border-b border-white/10 pb-3">
                   <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">ИИ-Миксолог</h2>
                   <p className="text-xs text-white/40 mt-1">Расскажите, что вы любите — ИИ подберёт идеальный микс</p>
@@ -510,8 +510,7 @@ export function BookingPage() {
               <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">Статус заказа</h2>
             </div>
             
-            <div className="p-6 rounded-3xl bg-[#120e1a]/60 border border-[#d4af37]/15 relative overflow-hidden backdrop-blur-md">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.08),transparent_70%)] pointer-events-none"></div>
+            <div className="liquid-glass rounded-3xl p-6">
 
               {!activeOrder ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">

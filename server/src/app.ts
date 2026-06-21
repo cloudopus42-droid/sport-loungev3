@@ -32,6 +32,8 @@ import knowledgeGraphRoutes from './routes/knowledge-graph';
 import membershipRoutes from './routes/memberships';
 import invoiceRoutes from './routes/invoices';
 import orderRoutes from './routes/orders';
+import restockRoutes from './routes/restock';
+import smartFeaturesRoutes from './routes/smartFeatures';
 
 import rateLimit from 'express-rate-limit';
 
@@ -100,6 +102,8 @@ app.use('/api/knowledge-graph', knowledgeGraphRoutes);
 app.use('/api/memberships', membershipRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/restock', restockRoutes);
+app.use('/api/smart-features', smartFeaturesRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

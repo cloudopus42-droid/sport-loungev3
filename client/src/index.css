@@ -473,4 +473,118 @@
   box-shadow: 0 6px 20px rgba(112, 32, 32, 0.3);
 }
 
+/* === LIQUID GLASS SYSTEM === */
+@layer components {
+  .liquid-glass {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(212, 175, 55, 0.03) 100%
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  .liquid-glass-gold {
+    background: linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.05) 0%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(212, 175, 55, 0.02) 100%
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(212, 175, 55, 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-glass-heavy {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(212, 175, 55, 0.04) 100%
+    );
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  @keyframes shimmer {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+  }
+
+  .liquid-glass-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(212, 175, 55, 0.03) 50%,
+      transparent 100%
+    );
+    animation: shimmer 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .liquid-glass-shimmer::after {
+      animation: none;
+      display: none;
+    }
+  }
+}
+
+/* === BACKGROUND SYSTEM === */
+@layer components {
+  .bg-nocturnal {
+    background: linear-gradient(
+      135deg,
+      #0a0a0f 0%,
+      #0d0d15 25%,
+      #0f0f1a 50%,
+      #0d0d15 75%,
+      #0a0a0f 100%
+    );
+  }
+
+  .bg-nocturnal-soft {
+    background: linear-gradient(
+      180deg,
+      #0a0a0f 0%,
+      #0d0d15 30%,
+      #0f0f1a 60%,
+      #0d0d15 100%
+    );
+  }
+
+  .bg-warm-glow {
+    background: radial-gradient(
+      ellipse at 50% 0%,
+      rgba(212, 175, 55, 0.03) 0%,
+      transparent 70%
+    );
+  }
+}
+
 

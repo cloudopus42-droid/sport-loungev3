@@ -67,7 +67,7 @@ export function HomePage() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
       transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
-      className="space-y-12 pb-16 overflow-x-hidden"
+      className="space-y-12 pb-16 overflow-x-hidden bg-nocturnal bg-warm-glow"
     >
       {/* Centered Hero Section with Neon Globe Backdrop */}
       <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
@@ -83,7 +83,7 @@ export function HomePage() {
         {/* Dark blur gradient at bottom of video */}
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/70 via-black/30 to-transparent backdrop-blur-[2px] z-0" />
 
-        <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8">
+        <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8 liquid-glass rounded-2xl p-8">
           {/* Subtitle Telemetry header */}
           <motion.div 
             className="flex items-center justify-center gap-2"

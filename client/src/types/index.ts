@@ -104,3 +104,39 @@ export interface ApiError {
   status: number;
 }
 
+export interface RestockRequest {
+  _id: string;
+  tobacco_id: string;
+  tobacco_name?: string;
+  quantity: number;
+  status: 'pending' | 'approved' | 'completed' | 'rejected';
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TobaccoWithStock {
+  _id: string;
+  name: string;
+  brand?: string;
+  flavor?: string;
+  strength?: string;
+  current_stock: number;
+  min_stock_threshold: number;
+  auto_reorder_enabled: boolean;
+}
+
+export interface SmartFeature {
+  id: string;
+  feature_key: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  is_public: boolean;
+  config: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export type FeatureStatusMap = Record<string, { enabled: boolean; config: Record<string, unknown> }>;
+

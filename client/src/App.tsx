@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SocketProvider } from '@/contexts/SocketContext';
+import { FeatureProvider } from '@/contexts/FeatureContext';
 import { MainLayout } from '@/layouts/MainLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 
@@ -29,56 +30,60 @@ const AdminShowcasePage = lazy(() => import('@/pages/admin/ShowcasePage').then(m
 const AnalyticsPage = lazy(() => import('@/pages/admin/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const OrdersAdmin = lazy(() => import('@/pages/admin/OrdersAdmin').then(m => ({ default: m.OrdersAdmin })));
 const TobaccoAdmin = lazy(() => import('@/pages/admin/TobaccoAdmin').then(m => ({ default: m.TobaccoAdmin })));
+const SmartFeaturesPage = lazy(() => import('@/pages/admin/SmartFeaturesPage').then(m => ({ default: m.SmartFeaturesPage })));
 
 export default function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <Suspense fallback={
-          <div className="min-h-screen bg-[#080605] flex flex-col items-center justify-center text-white font-sans">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8962e] flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.5)] animate-spin mb-4" />
-            <span className="text-xs uppercase tracking-[0.25em] text-white/50 animate-pulse">Initializing System...</span>
-          </div>
-        }>
-          <Routes>
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="booking" element={<BookingPage />} />
-              <Route path="mixologist" element={<Navigate to="/booking" replace />} />
-              <Route path="order" element={<Navigate to="/booking" replace />} />
-              <Route path="tobacco" element={<TobaccoPage />} />
-              <Route path="knowledge" element={<KnowledgeGraphPage />} />
-              <Route path="feed" element={<FeedPage />} />
-              <Route path="invitations" element={<InvitationsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-            </Route>
+        <FeatureProvider>
+          <Suspense fallback={
+            <div className="min-h-screen bg-[#080605] flex flex-col items-center justify-center text-white font-sans">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8962e] flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.5)] animate-spin mb-4" />
+              <span className="text-xs uppercase tracking-[0.25em] text-white/50 animate-pulse">Initializing System...</span>
+            </div>
+          }>
+            <Routes>
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="booking" element={<BookingPage />} />
+                <Route path="mixologist" element={<Navigate to="/booking" replace />} />
+                <Route path="order" element={<Navigate to="/booking" replace />} />
+                <Route path="tobacco" element={<TobaccoPage />} />
+                <Route path="knowledge" element={<KnowledgeGraphPage />} />
+                <Route path="feed" element={<FeedPage />} />
+                <Route path="invitations" element={<InvitationsPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+              </Route>
 
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/login/callback" element={<LoginCallbackPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login/callback" element={<LoginCallbackPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="bookings" element={<AdminBookingsPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="showcases" element={<AdminShowcasePage />} />
-              <Route path="posts" element={<PostsPage />} />
-              <Route path="mixes" element={<MixesPage />} />
-              <Route path="promos" element={<PromosPage />} />
-              <Route path="invitations" element={<AdminInvitationsPage />} />
-              <Route path="orders" element={<OrdersAdmin />} />
-              <Route path="tobacco" element={<TobaccoAdmin />} />
-            </Route>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="bookings" element={<AdminBookingsPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="showcases" element={<AdminShowcasePage />} />
+                <Route path="posts" element={<PostsPage />} />
+                <Route path="mixes" element={<MixesPage />} />
+                <Route path="promos" element={<PromosPage />} />
+                <Route path="invitations" element={<AdminInvitationsPage />} />
+                <Route path="orders" element={<OrdersAdmin />} />
+                <Route path="tobacco" element={<TobaccoAdmin />} />
+                <Route path="smart-features" element={<SmartFeaturesPage />} />
+              </Route>
 
-            <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<Navigate to="/404" replace />} />
-          </Routes>
-        </Suspense>
+              <Route path="/404" element={<NotFound />} />
+              <Route path="*" element={<Navigate to="/404" replace />} />
+            </Routes>
+          </Suspense>
 
-        <Toaster position="top-right" toastOptions={{ duration: 4000, style: {
-          background: '#12121A', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '12px', backdropFilter: 'blur(20px)',
-        }}} />
+          <Toaster position="top-right" toastOptions={{ duration: 4000, style: {
+            background: '#12121A', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '12px', backdropFilter: 'blur(20px)',
+          }}} />
+        </FeatureProvider>
       </SocketProvider>
     </AuthProvider>
   );

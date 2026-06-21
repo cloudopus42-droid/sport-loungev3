@@ -158,11 +158,12 @@ export async function connectDB(): Promise<void> {
       );
 
       if (retries >= MAX_RETRIES) {
-        console.error('❌ Max retries reached. Exiting...');
-        process.exit(1);
+        console.warn('⚠️ Supabase unavailable. Server will start with limited functionality.');
+        console.warn('   Frontend will work. Backend API calls will fail until Supabase is configured.');
+        return;
       }
 
-      console.log(`⏳ Retrying in ${RETRY_DELAY_MS / 1000}s...`);
+      console.log(`⏳ Retrying in 5s...`);
       await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
     }
   }

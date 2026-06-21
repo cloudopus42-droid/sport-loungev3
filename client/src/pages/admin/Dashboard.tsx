@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp, DollarSign, Bell, Sparkles, Users, Radio, Flame, Award } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { StatCardSkeleton } from '@/components/ui/Skeleton';
+import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 import { useSocket } from '@/hooks/useSocket';
 
@@ -125,6 +126,7 @@ export function Dashboard() {
 
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
+      showToast('Не удалось загрузить данные панели', 'error');
     } finally {
       setLoading(false);
     }
@@ -187,7 +189,7 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 bg-nocturnal bg-warm-glow">
       
       {/* Header Panel */}
       <motion.div
@@ -374,7 +376,7 @@ export function Dashboard() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.1 }}
                 >
-                  <GlassCard className="p-4 flex flex-col justify-between hover:border-accent-gold/25 transition-all group border-glass-border/30">
+                  <GlassCard className="p-4 flex flex-col justify-between hover:border-accent-gold/25 transition-all group border-glass-border/30 liquid-glass">
                     <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 border border-accent-gold/20 shadow-md group-hover:shadow-[0_0_12px_rgba(212,175,55,0.3)]">
                       <kpi.icon className="w-4 h-4 text-accent-gold" />
                     </div>

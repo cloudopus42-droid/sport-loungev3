@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { LogOut, Crown, Menu, X } from 'lucide-react';
+import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import {
+  Crown, LogOut, Menu, X, Home, CalendarCheck, FlaskConical,
+  BookOpen, User, Sparkles, ChevronRight
+} from 'lucide-react';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { SEO } from '@/components/SEO';
@@ -14,18 +17,53 @@ import { showToast } from '@/components/NotificationToast';
 
 const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
 
-const navItems = [
-  { path: '/', label: 'Главная' },
-  { path: '/booking', label: 'Заказ' },
-  { path: '/profile', label: 'Профиль' },
+interface DesktopNavItem {
+  label: string;
+  to?: string;
+  hash?: string;
+}
+
+const desktopNavItems: DesktopNavItem[] = [
+  { label: 'Главная', to: '/' },
+  { label: 'Меню', hash: '#menu' },
+  { label: 'Заказ', to: '/booking' },
+  { label: 'ИИ-Миксолог', to: '/booking' },
+  { label: 'Зоны', hash: '#zones' },
+  { label: 'Контакты', hash: '#contacts' },
+];
+
+interface MobileTab {
+  label: string;
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const mobileTabs: MobileTab[] = [
+  { label: 'Главная', to: '/', icon: Home },
+  { label: 'Заказ', to: '/booking', icon: CalendarCheck },
+  { label: 'Миксолог', to: '/booking', icon: FlaskConical },
+  { label: 'База', to: '/knowledge', icon: BookOpen },
+  { label: 'Профиль', to: '/profile', icon: User },
 ];
 
 export function MainLayout() {
   const { socket } = useSocket();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
+
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const ft = prefersReducedMotion ? { duration: 0.01 } : undefined;
+  const springFast = prefersReducedMotion
+    ? { duration: 0.01 }
+    : { type: 'spring' as const, stiffness: 380, damping: 30 };
+  const springGentle = prefersReducedMotion
+    ? { duration: 0.01 }
+    : { type: 'spring' as const, stiffness: 300, damping: 25 };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
@@ -54,7 +92,7 @@ export function MainLayout() {
     return () => { socket.off('booking:updated', handleHookahReady); };
   }, [socket, user]);
 
-  const handleNavClick = (anchor: string) => {
+  const handleNavClick = useCallback((anchor: string) => {
     const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const currentPath = window.location.pathname;
     const isHomePage = currentPath === base || currentPath === base + '/' || currentPath === '/';
@@ -64,7 +102,7 @@ export function MainLayout() {
       const el = document.querySelector(anchor);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, [navigate]);
 
   const handleNewInvitation = useCallback((data: Invitation) => { setInvitation(data); }, []);
 
@@ -89,7 +127,68 @@ export function MainLayout() {
     } catch {}
   }, []);
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
+  const handleLogout = useCallback(() => { logout(); navigate('/'); }, [logout, navigate]);
+
+  const renderDesktopNavLink = (item: DesktopNavItem) => {
+    if (item.to) {
+      return (
+        <NavLink
+          key={item.label}
+          to={item.to}
+          end={item.to === '/'}
+          className={({ isActive }) => clsx(
+            'relative px-3 py-2 text-xs font-medium tracking-wide transition-all duration-300',
+            isActive ? 'text-accent-gold' : 'text-white/60 hover:text-accent-gold hover:scale-[1.02]'
+          )}
+        >
+          {({ isActive }) => (
+            <>
+              <span className="relative z-10">{item.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="nav-underline"
+                  className="absolute bottom-0 left-2 right-2 h-[2px] bg-accent-gold rounded-full"
+                  transition={springFast}
+                />
+              )}
+            </>
+          )}
+        </NavLink>
+      );
+    }
+    return (
+      <button
+        key={item.label}
+        onClick={(e) => { e.preventDefault(); handleNavClick(item.hash!); }}
+        className="relative px-3 py-2 text-xs font-medium tracking-wide text-white/60 hover:text-accent-gold hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+      >
+        {item.label}
+      </button>
+    );
+  };
+
+  const getMobileTabTo = (tab: MobileTab) => {
+    if (tab.to === '/profile' && !isAuthenticated) return '/login';
+    return tab.to;
+  };
+
+  const pageTransition = prefersReducedMotion
+    ? { initial: {}, animate: {}, exit: {}, transition: { duration: 0.01 } }
+    : {
+        initial: { opacity: 0, y: 12 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -12 },
+        transition: { duration: 0.35, ease: 'easeOut' },
+      };
 
   return (
     <div className="min-h-screen pb-16 lg:pb-0 relative bg-dark-bg text-[#F5F0E8]">
@@ -106,114 +205,297 @@ export function MainLayout() {
       <ConciergeChat />
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
-      {/* Glass header */}
+      {/* Desktop & Mobile Header */}
       <header className="sticky top-0 z-50">
-        <div className="absolute inset-0 bg-dark-bg/70 backdrop-blur-glass border-b border-glass-border" />
+        <div className="absolute inset-0 bg-dark-bg/70 backdrop-blur-xl border-b border-glass-border" />
         <div className="relative max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-3 gap-4">
 
-          {/* Logo */}
-          <NavLink to="/" className="flex items-center gap-1.5 flex-shrink-0 select-none group">
-            <span className="text-sm font-heading font-extrabold tracking-[0.2em] text-white">SPORT</span>
-            <span className="text-sm font-heading font-extrabold tracking-[0.2em] text-accent-gold">LOUNGE</span>
+          {/* Logo with pulse */}
+          <NavLink
+            to="/"
+            className="flex items-center gap-1.5 flex-shrink-0 select-none group"
+            aria-label="На главную"
+          >
+            <span className="text-sm font-heading font-extrabold tracking-[0.2em] text-white group-hover:text-accent-gold transition-colors duration-300">SPORT</span>
+            <motion.span
+              className="text-sm font-heading font-extrabold tracking-[0.2em] text-accent-gold"
+              whileHover={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 0.6, ease: 'easeInOut' }}
+            >
+              LOUNGE
+            </motion.span>
           </NavLink>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-8 flex-1 justify-center">
-            <a onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); }} className="text-xs font-medium text-white/60 hover:text-accent-gold transition-all tracking-wide cursor-pointer">Меню</a>
-            <NavLink to="/booking" className={({ isActive }) => clsx("text-xs font-medium transition-all tracking-wide", isActive ? "text-accent-gold font-bold" : "text-white/60 hover:text-accent-gold")}>Сделать заказ</NavLink>
-            <NavLink to="/booking" className={({ isActive }) => clsx("text-xs font-medium transition-all tracking-wide", isActive ? "text-accent-gold font-bold" : "text-white/60 hover:text-accent-gold")}>ИИ-Миксолог</NavLink>
-            <a onClick={(e) => { e.preventDefault(); handleNavClick('#zones'); }} className="text-xs font-medium text-white/60 hover:text-accent-gold transition-all tracking-wide cursor-pointer">Зоны</a>
-            <a onClick={(e) => { e.preventDefault(); handleNavClick('#contacts'); }} className="text-xs font-medium text-white/60 hover:text-accent-gold transition-all tracking-wide cursor-pointer">Контакты</a>
+          <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center" aria-label="Основная навигация">
+            {desktopNavItems.map(renderDesktopNavLink)}
             {user?.role === 'admin' && (
-              <NavLink to="/admin" className={({ isActive }) => clsx("text-xs font-bold transition-all tracking-wide flex items-center gap-1", isActive ? "text-accent-gold" : "text-accent-gold/80 hover:text-accent-gold")}>
-                <Crown className="w-3 h-3" /> Панель админа
+              <NavLink
+                to="/admin"
+                className={({ isActive }) => clsx(
+                  'relative flex items-center gap-1 px-3 py-2 text-xs font-bold tracking-wide transition-all duration-300',
+                  isActive ? 'text-accent-gold' : 'text-accent-gold/80 hover:text-accent-gold hover:scale-[1.02]'
+                )}
+              >
+                <Crown className="w-3 h-3" />
+                <span>Админ</span>
               </NavLink>
             )}
           </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {isAuthenticated ? (
               <>
-                <NavLink to="/profile" className="hidden sm:flex items-center gap-2 text-xs font-semibold text-white/60 hover:text-accent-gold transition-all">
+                <NavLink
+                  to="/profile"
+                  className="group hidden sm:flex items-center gap-2 text-xs font-semibold text-white/60 hover:text-accent-gold transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg px-2 py-1"
+                  aria-label="Профиль"
+                >
                   {user?.avatar ? (
-                    <img src={resolveImageUrl(user.avatar)} alt={user.name} className="w-5 h-5 rounded-full object-cover ring-1 ring-accent-gold/30" />
+                    <img
+                      src={resolveImageUrl(user.avatar)}
+                      alt={user.name}
+                      className="w-6 h-6 rounded-full object-cover ring-1 ring-accent-gold/30 group-hover:ring-accent-gold/60 transition-all"
+                    />
                   ) : (
-                    <div className="w-5 h-5 rounded-full bg-accent-gold/20 flex items-center justify-center text-accent-gold text-[10px] font-bold">S</div>
+                    <div className="w-6 h-6 rounded-full bg-accent-gold/20 flex items-center justify-center text-accent-gold text-[10px] font-bold">
+                      {user?.name?.[0]?.toUpperCase() || 'U'}
+                    </div>
                   )}
-                  <span>{user?.name || 'Профиль'}</span>
+                  <span className="hidden xl:inline">{user?.name || 'Профиль'}</span>
                 </NavLink>
-                <button onClick={handleLogout} className="p-2 rounded-full hover:bg-accent-burgundy/20 text-white/40 hover:text-accent-gold transition-all" title="Выйти">
+                <motion.button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full hover:bg-accent-burgundy/20 text-white/40 hover:text-accent-gold transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
+                  title="Выйти"
+                  aria-label="Выйти"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={springFast}
+                >
                   <LogOut className="w-4 h-4" />
-                </button>
+                </motion.button>
               </>
             ) : (
-              <NavLink to="/login" className="text-xs font-semibold text-white/60 hover:text-accent-gold transition-all">Sign In</NavLink>
+              <NavLink
+                to="/login"
+                className="text-xs font-semibold text-white/60 hover:text-accent-gold transition-all duration-300 px-3 py-1.5 focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
+              >
+                Sign In
+              </NavLink>
             )}
 
-            <NavLink to="/booking">
+            <NavLink to="/booking" aria-label="Сделать заказ">
               <motion.button
-                className="gold-btn px-5 py-2 text-xs font-heading font-bold"
+                className="accent-btn px-5 py-2 text-xs font-heading font-bold rounded-xl flex items-center gap-1.5"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
+                transition={springFast}
               >
-                Сделать заказ
+                <Sparkles className="w-3.5 h-3.5" />
+                Заказ
               </motion.button>
             </NavLink>
 
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 text-white/60 hover:text-accent-gold transition-all">
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+            <motion.button
+              ref={menuButtonRef}
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 text-white/60 hover:text-accent-gold transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
+              aria-label="Открыть меню"
+              aria-expanded={mobileMenuOpen}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Menu className="w-5 h-5" />
+            </motion.button>
           </div>
         </div>
-
-        {/* Mobile menu dropdown */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:hidden bg-dark-surface/95 backdrop-blur-glass border-b border-glass-border"
-          >
-            <div className="px-4 py-4 space-y-3">
-              {navItems.map(item => {
-                const to = item.path === '/profile' && !isAuthenticated ? '/login' : item.path;
-                return (
-                  <NavLink key={item.path} to={to} end={item.path === '/'} onClick={() => setMobileMenuOpen(false)}
-                    className={({ isActive }) => clsx("block px-4 py-2.5 rounded-xl text-sm font-medium transition-all", isActive ? "text-accent-gold bg-accent-gold/5" : "text-white/60 hover:text-white hover:bg-white/5")}>
-                    {item.label}
-                  </NavLink>
-                );
-              })}
-              <div className="gold-divider my-2" />
-              <a onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); setMobileMenuOpen(false); }} className="block px-4 py-2.5 rounded-xl text-sm text-white/60 hover:text-white transition-all cursor-pointer">Меню</a>
-              <a onClick={(e) => { e.preventDefault(); handleNavClick('#zones'); setMobileMenuOpen(false); }} className="block px-4 py-2.5 rounded-xl text-sm text-white/60 hover:text-white transition-all cursor-pointer">Зоны</a>
-              <a onClick={(e) => { e.preventDefault(); handleNavClick('#contacts'); setMobileMenuOpen(false); }} className="block px-4 py-2.5 rounded-xl text-sm text-white/60 hover:text-white transition-all cursor-pointer">Контакты</a>
-            </div>
-          </motion.div>
-        )}
       </header>
 
-      {/* Main content */}
+      {/* Mobile slide-in overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            className="fixed inset-0 z-[60] lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={ft || { duration: 0.2 }}
+          >
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.div
+              className="absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] bg-dark-surface/95 backdrop-blur-xl border-l border-glass-border shadow-2xl flex flex-col"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={springGentle}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Навигация"
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-glass-border">
+                <span className="text-sm font-heading font-bold tracking-wider text-accent-gold">Навигация</span>
+                <motion.button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 text-white/60 hover:text-accent-gold transition-colors focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
+                  aria-label="Закрыть меню"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <X className="w-5 h-5" />
+                </motion.button>
+              </div>
+
+              <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                {desktopNavItems.map((item) => {
+                  if (item.to) {
+                    const to = item.to === '/profile' && !isAuthenticated ? '/login' : item.to;
+                    return (
+                      <NavLink
+                        key={item.label}
+                        to={to}
+                        end={item.to === '/'}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={({ isActive }) => clsx(
+                          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                          isActive
+                            ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/20'
+                            : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                        )}
+                      >
+                        <ChevronRight className={clsx('w-3.5 h-3.5 transition-all', 'opacity-0 -ml-1')} />
+                        {item.label}
+                      </NavLink>
+                    );
+                  }
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => { handleNavClick(item.hash!); setMobileMenuOpen(false); }}
+                      className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all border border-transparent text-left"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-1" />
+                      {item.label}
+                    </button>
+                  );
+                })}
+
+                {user?.role === 'admin' && (
+                  <>
+                    <div className="h-px bg-gradient-to-r from-transparent via-accent-gold/20 to-transparent my-2" />
+                    <NavLink
+                      to="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => clsx(
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all',
+                        isActive
+                          ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/20'
+                          : 'text-accent-gold/80 hover:text-accent-gold hover:bg-accent-gold/5 border border-transparent'
+                      )}
+                    >
+                      <Crown className="w-4 h-4" />
+                      Панель админа
+                    </NavLink>
+                  </>
+                )}
+              </nav>
+
+              <div className="px-3 py-4 border-t border-glass-border">
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    {user?.avatar ? (
+                      <img src={resolveImageUrl(user.avatar)} alt="" className="w-8 h-8 rounded-full object-cover ring-1 ring-accent-gold/30" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-accent-gold/20 flex items-center justify-center text-accent-gold text-xs font-bold">
+                        {user?.name?.[0]?.toUpperCase() || 'U'}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{user?.name}</p>
+                      <p className="text-[10px] text-white/40 truncate">{user?.email}</p>
+                    </div>
+                    <button onClick={handleLogout} className="p-1.5 text-white/30 hover:text-red-400 transition-colors" aria-label="Выйти">
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <NavLink
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-accent-gold/10 border border-accent-gold/25 text-accent-gold text-sm font-semibold hover:bg-accent-gold/20 transition-all"
+                  >
+                    <User className="w-4 h-4" />
+                    Sign In
+                  </NavLink>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main content with page transitions */}
       <main className="max-w-6xl mx-auto px-4 lg:px-8 py-6 relative z-10">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            {...pageTransition}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
-        <div className="bg-dark-surface/90 backdrop-blur-glass border-t border-glass-border">
-          <div className="max-w-lg mx-auto flex items-center justify-around px-2 py-1.5">
-            {navItems.map((item) => {
-              const to = item.path === '/profile' && !isAuthenticated ? '/login' : item.path;
+      {/* Mobile bottom navigation */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden"
+        aria-label="Мобильная навигация"
+      >
+        <motion.div
+          className="bg-dark-surface/90 backdrop-blur-xl border-t border-glass-border"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={springGentle}
+        >
+          <div className="max-w-lg mx-auto flex items-center justify-around px-1 py-1">
+            {mobileTabs.map((tab) => {
+              const to = getMobileTabTo(tab);
+              const Icon = tab.icon;
               return (
-                <NavLink key={item.path} to={to} end={item.path === '/'} className="relative">
+                <NavLink
+                  key={tab.label}
+                  to={to}
+                  end={tab.to === '/'}
+                  className="relative flex-1 flex items-center justify-center"
+                  aria-label={tab.label}
+                >
                   {({ isActive }) => (
                     <motion.div
-                      className={clsx('flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-colors', isActive ? 'text-accent-gold' : 'text-white/40 hover:text-white/60')}
-                      whileTap={{ scale: 0.9 }}
+                      className={clsx(
+                        'flex flex-col items-center justify-center gap-0.5 min-h-[48px] min-w-[48px] rounded-xl transition-colors',
+                        isActive ? 'text-accent-gold' : 'text-white/40 hover:text-white/60'
+                      )}
+                      whileTap={{ scale: 0.88 }}
+                      transition={springFast}
                     >
-                      <span className={clsx("text-[10px] font-heading font-semibold", isActive ? "text-accent-gold" : "")}>{item.label}</span>
+                      <div className="relative">
+                        <Icon className={clsx('w-5 h-5', isActive && 'drop-shadow-[0_0_6px_rgba(212,175,55,0.5)]')} />
+                      </div>
+                      <span className={clsx(
+                        'text-[9px] font-heading font-semibold tracking-tight',
+                        isActive ? 'text-accent-gold' : 'text-white/40'
+                      )}>
+                        {tab.label}
+                      </span>
                       {isActive && (
-                        <motion.div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-accent-gold" layoutId="activeNavDot" transition={{ type: 'spring', stiffness: 380, damping: 30 }} />
+                        <motion.div
+                          className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold shadow-[0_0_4px_rgba(212,175,55,0.6)]"
+                          layoutId="mobileNavDot"
+                          transition={springFast}
+                        />
                       )}
                     </motion.div>
                   )}
@@ -221,7 +503,7 @@ export function MainLayout() {
               );
             })}
           </div>
-        </div>
+        </motion.div>
       </nav>
     </div>
   );
