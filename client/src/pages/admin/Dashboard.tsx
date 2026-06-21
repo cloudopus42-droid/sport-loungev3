@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, Bell, Sparkles, Users, Radio, Flame, Award } from 'lucide-react';
+import { DollarSign, Award } from 'lucide-react';
+import { AnalyticsIcon, BellIcon, UserIcon, PlusIcon } from '@/components/icons';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { StatCardSkeleton } from '@/components/ui/Skeleton';
 import { showToast } from '@/components/NotificationToast';
@@ -197,9 +198,9 @@ export function Dashboard() {
 
   const statKPIs = [
     { label: 'Выручка (руб)', value: stats?.totalRevenue ?? 0, icon: DollarSign, prefix: '₽' },
-    { label: 'Всего заказов', value: stats?.totalOrders ?? 0, icon: TrendingUp, prefix: '' },
-    { label: 'Клиентская база', value: tasteStats?.totalUsers ?? 0, icon: Users, prefix: '' },
-    { label: 'Активные акции', value: stats?.activePromos ?? 0, icon: Sparkles, prefix: '' },
+    { label: 'Всего заказов', value: stats?.totalOrders ?? 0, icon: AnalyticsIcon, prefix: '' },
+    { label: 'Клиентская база', value: tasteStats?.totalUsers ?? 0, icon: UserIcon, prefix: '' },
+    { label: 'Активные акции', value: stats?.activePromos ?? 0, icon: PlusIcon, prefix: '' },
   ];
 
   return (
@@ -218,7 +219,7 @@ export function Dashboard() {
         <div className="flex gap-2">
           {/* Live indicator tag */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/35 text-xs text-emerald-400 font-semibold">
-            <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-400" />
+            <BellIcon className="w-3.5 h-3.5 animate-pulse text-emerald-400" dot />
             <span>Соединение Live</span>
           </div>
         </div>
@@ -301,7 +302,7 @@ export function Dashboard() {
           <GlassCard className="p-5 border-glass-border/40">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-white/95 flex items-center gap-1.5">
-                <Flame className="w-4 h-4 text-accent-gold" />
+                <PlusIcon className="w-4 h-4 text-accent-gold" />
                 <span>Очередь приготовления кальянов</span>
               </h3>
               <span className="px-2.5 py-0.5 rounded-full bg-accent-gold/15 border border-accent-gold/25 text-[9px] font-bold text-accent-gold">
@@ -410,7 +411,7 @@ export function Dashboard() {
           <GlassCard className="p-5 border-glass-border/40">
             <div className="flex justify-between items-center mb-3 border-b border-glass-border/10 pb-3">
               <h3 className="text-sm font-semibold text-white/95 flex items-center gap-2">
-                <Users className="w-4 h-4 text-accent-gold" />
+                <UserIcon className="w-4 h-4 text-accent-gold" />
                 <span>Активность онлайн</span>
               </h3>
               <span className="flex h-2.5 w-2.5 relative">
@@ -457,7 +458,7 @@ export function Dashboard() {
                 <div key={idx} className="flex items-center justify-between gap-3 border-b border-glass-border/5 pb-2.5 last:border-b-0 last:pb-0">
                   <div className="flex gap-2 items-center">
                     <div className="w-6 h-6 rounded-full bg-white/5 border border-glass-border/20 flex items-center justify-center flex-shrink-0">
-                      <Bell className="w-3.5 h-3.5 text-accent-gold" />
+                      <BellIcon className="w-3.5 h-3.5 text-accent-gold" />
                     </div>
                     <div>
                       <p className="text-xs text-white/80 font-medium leading-none">{feed.title}</p>

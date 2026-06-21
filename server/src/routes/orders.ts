@@ -117,7 +117,35 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
         .catch(err => console.warn('⚠️ TG Order notification error:', err.message));
     }
 
-    // 6. Broadcast via Socket.IO
+    // 6. Auto-decrement tobacco stock and check for restock
+    if (data.mix_id) {
+      const { data: mix } = await supabase
+        .from('mixes')
+        .select('stock_quantity, min_stock_threshold, auto_reorder_enabled, name')
+        .eq('id', data.mix_id)
+        .single();
+
+      if (mix) {
+        const newStock = Math.max(0, (mix.stock_quantity || 0) - 1);
+        await supabase
+          .from('mixes')
+          .update({ stock_quantity: newStock, updated_at: new Date().toISOString() })
+          .eq('id', data.mix_id);
+
+        if (newStock <= (mix.min_stock_threshold ?? 5) && mix.auto_reorder_enabled) {
+          await supabase
+            .from('restock_requests')
+            .insert({
+              tobacco_id: data.mix_id,
+              tobacco_name: mix.name,
+              quantity: Math.max(10, (mix.min_stock_threshold ?? 5) * 2),
+              status: 'pending',
+            });
+        }
+      }
+    }
+
+    // 7. Broadcast via Socket.IO
     try {
       const io = getIO();
       io.emit('order:created', mapOrderToFrontend(order));

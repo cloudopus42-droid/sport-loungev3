@@ -1,5 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase';
+import { captureError, getRecentErrors } from '../services/errorMonitor';
+import { auth } from '../middleware/auth';
 
 const router = Router();
 const startTime = Date.now();
@@ -33,6 +35,24 @@ router.get('/health', async (_req: Request, res: Response, next: NextFunction) =
   } catch (err) {
     next(err);
   }
+});
+
+// GET /api/monitoring/errors — recent in-memory errors
+router.get('/errors', auth, async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.json(getRecentErrors());
+  } catch (err) { next(err); }
+});
+
+// POST /api/monitoring/capture — accept error data from client
+router.post('/capture', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { message, stack, route } = req.body;
+    const error = new Error(message || 'Client-reported error');
+    if (stack) error.stack = stack;
+    captureError(error, { route, isCritical: false });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
 });
 
 function formatUptime(seconds: number): string {

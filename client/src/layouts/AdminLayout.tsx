@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  LayoutDashboard, Image, Blend, Tags, Mail, Armchair, LayoutGrid,
-  BarChart3, LogOut, Menu, X, Crown, Flame, Settings, ChevronLeft
+  Image, Blend, Mail, Armchair, LogOut, Crown, Flame
 } from 'lucide-react';
+import { DashboardIcon, ShowcaseIcon, PromoIcon, AnalyticsIcon, SettingsIcon, MenuIcon, CloseIcon, ChevronLeftIcon } from '@/components/icons';
 import clsx from 'clsx';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
@@ -18,24 +18,24 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { path: '/admin', icon: LayoutDashboard, label: 'Дашборд', end: true },
+  { path: '/admin', icon: DashboardIcon, label: 'Дашборд', end: true },
   { path: '/admin/bookings', icon: Armchair, label: 'Заказы', end: false },
-  { path: '/admin/analytics', icon: BarChart3, label: 'Аналитика', end: false },
-  { path: '/admin/showcases', icon: LayoutGrid, label: 'Витрина', end: false },
+  { path: '/admin/analytics', icon: AnalyticsIcon, label: 'Аналитика', end: false },
+  { path: '/admin/showcases', icon: ShowcaseIcon, label: 'Витрина', end: false },
   { path: '/admin/posts', icon: Image, label: 'Посты', end: false },
   { path: '/admin/mixes', icon: Blend, label: 'Миксы', end: false },
-  { path: '/admin/promos', icon: Tags, label: 'Акции', end: false },
+  { path: '/admin/promos', icon: PromoIcon, label: 'Акции', end: false },
   { path: '/admin/invitations', icon: Mail, label: 'Приглашения', end: false },
   { path: '/admin/orders', icon: Flame, label: 'Очередь', end: false },
-  { path: '/admin/smart-features', icon: Settings, label: 'Smart Features', end: false },
+  { path: '/admin/smart-features', icon: SettingsIcon, label: 'Smart Features', end: false },
 ];
 
 const mobileTabItems: SidebarItem[] = [
-  { path: '/admin', icon: LayoutDashboard, label: 'Дашборд', end: true },
+  { path: '/admin', icon: DashboardIcon, label: 'Дашборд', end: true },
   { path: '/admin/bookings', icon: Armchair, label: 'Заказы', end: false },
   { path: '/admin/orders', icon: Flame, label: 'Очередь', end: false },
-  { path: '/admin/analytics', icon: BarChart3, label: 'Аналитика', end: false },
-  { path: '/admin/smart-features', icon: Settings, label: 'Smart', end: false },
+  { path: '/admin/analytics', icon: AnalyticsIcon, label: 'Аналитика', end: false },
+  { path: '/admin/smart-features', icon: SettingsIcon, label: 'Smart', end: false },
 ];
 
 export function AdminLayout() {
@@ -172,14 +172,14 @@ export function AdminLayout() {
               aria-expanded={!collapsed}
               whileTap={{ scale: 0.9 }}
             >
-              <ChevronLeft className={clsx('w-4 h-4 transition-transform duration-300', collapsed && 'rotate-180')} />
+              <ChevronLeftIcon className={clsx('w-4 h-4 transition-transform duration-300', collapsed && 'rotate-180')} />
             </motion.button>
             <button
               className="lg:hidden p-1 text-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
               onClick={() => setSidebarOpen(false)}
               aria-label="Закрыть панель"
             >
-              <X className="w-5 h-5" />
+              <CloseIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -301,7 +301,7 @@ export function AdminLayout() {
             whileTap={{ scale: 0.9 }}
             aria-label="Открыть меню"
           >
-            <Menu className="w-5 h-5" />
+            <MenuIcon className="w-5 h-5" />
           </motion.button>
           <h1 className="text-sm font-display font-semibold text-white tracking-wide">SPORT LOUNGE</h1>
           <div className="w-9" />

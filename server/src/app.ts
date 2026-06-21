@@ -15,6 +15,7 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument } from './config/swagger';
 
 import { errorHandler } from './middleware/errorHandler';
+import { errorMonitor } from './middleware/errorMonitor';
 import { requestLogger } from './middleware/requestLogger';
 import { rateLimiter } from './middleware/rateLimiter';
 
@@ -131,6 +132,9 @@ if (fs.existsSync(indexHtmlPath)) {
     res.sendFile(indexHtmlPath);
   });
 }
+
+// Error monitor middleware (captures errors before final handler)
+app.use(errorMonitor);
 
 // Error handler middleware (must be last)
 app.use(errorHandler);

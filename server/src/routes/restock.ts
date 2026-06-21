@@ -126,6 +126,44 @@ router.put('/requests/:id', auth, isAdmin, async (req: Request, res: Response, n
   } catch (e) { next(e); }
 });
 
+// POST /api/restock/check — Auto-check stock and create restock requests
+router.post('/check', auth, async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data, error } = await supabase
+      .from('mixes')
+      .select('id, name, stock_quantity, min_stock_threshold, auto_reorder_enabled');
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+
+    const lowStock = (data || []).filter(
+      (item) => item.stock_quantity <= (item.min_stock_threshold ?? 5) && item.auto_reorder_enabled === true
+    );
+
+    let createdCount = 0;
+    if (lowStock.length > 0) {
+      const requests = lowStock.map((item) => ({
+        tobacco_id: item.id,
+        tobacco_name: item.name,
+        quantity: Math.max(10, (item.min_stock_threshold ?? 5) * 2),
+        status: 'pending' as const,
+      }));
+
+      const { error: insertError } = await supabase
+        .from('restock_requests')
+        .insert(requests);
+
+      if (!insertError) {
+        createdCount = requests.length;
+      }
+    }
+
+    res.json({ created: createdCount, total_low_stock: lowStock.length });
+  } catch (e) { next(e); }
+});
+
 router.get('/low-stock', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data, error } = await supabase

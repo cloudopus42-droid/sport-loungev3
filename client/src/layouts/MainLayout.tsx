@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  Crown, LogOut, Menu, X, Home, CalendarCheck, FlaskConical,
-  BookOpen, User, Sparkles, ChevronRight
+  Crown, LogOut, CalendarCheck, FlaskConical,
+  BookOpen, Sparkles
 } from 'lucide-react';
+import { HomeIcon, MenuIcon, UserIcon, CloseIcon, ChevronRightIcon } from '@/components/icons';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { SEO } from '@/components/SEO';
@@ -39,11 +40,11 @@ interface MobileTab {
 }
 
 const mobileTabs: MobileTab[] = [
-  { label: 'Главная', to: '/', icon: Home },
+  { label: 'Главная', to: '/', icon: HomeIcon },
   { label: 'Заказ', to: '/booking', icon: CalendarCheck },
   { label: 'Миксолог', to: '/booking', icon: FlaskConical },
   { label: 'База', to: '/knowledge', icon: BookOpen },
-  { label: 'Профиль', to: '/profile', icon: User },
+  { label: 'Профиль', to: '/profile', icon: UserIcon },
 ];
 
 export function MainLayout() {
@@ -306,7 +307,7 @@ export function MainLayout() {
               aria-expanded={mobileMenuOpen}
               whileTap={{ scale: 0.9 }}
             >
-              <Menu className="w-5 h-5" />
+              <MenuIcon className="w-5 h-5" />
             </motion.button>
           </div>
         </div>
@@ -345,7 +346,7 @@ export function MainLayout() {
                   aria-label="Закрыть меню"
                   whileTap={{ scale: 0.9 }}
                 >
-                  <X className="w-5 h-5" />
+                  <CloseIcon className="w-5 h-5" />
                 </motion.button>
               </div>
 
@@ -366,7 +367,7 @@ export function MainLayout() {
                             : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
                         )}
                       >
-                        <ChevronRight className={clsx('w-3.5 h-3.5 transition-all', 'opacity-0 -ml-1')} />
+                        <ChevronRightIcon className={clsx('w-3.5 h-3.5 transition-all', 'opacity-0 -ml-1')} />
                         {item.label}
                       </NavLink>
                     );
@@ -377,7 +378,7 @@ export function MainLayout() {
                       onClick={() => { handleNavClick(item.hash!); setMobileMenuOpen(false); }}
                       className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all border border-transparent text-left"
                     >
-                      <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-1" />
+                      <ChevronRightIcon className="w-3.5 h-3.5 opacity-0 -ml-1" />
                       {item.label}
                     </button>
                   );
@@ -427,7 +428,7 @@ export function MainLayout() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-accent-gold/10 border border-accent-gold/25 text-accent-gold text-sm font-semibold hover:bg-accent-gold/20 transition-all"
                   >
-                    <User className="w-4 h-4" />
+                    <UserIcon className="w-4 h-4" />
                     Sign In
                   </NavLink>
                 )}

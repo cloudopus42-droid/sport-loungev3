@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit2, RefreshCw, X, Settings } from 'lucide-react';
+import { Edit2, RefreshCw } from 'lucide-react';
+import { SettingsIcon, CloseIcon } from '@/components/icons';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
@@ -178,7 +179,7 @@ export function SmartFeaturesPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <Settings className="w-12 h-12 mb-3 opacity-30" />
+          <SettingsIcon className="w-12 h-12 mb-3 opacity-30" />
           <p className="text-sm">Нет доступных функций</p>
         </motion.div>
       ) : (
@@ -251,7 +252,7 @@ export function SmartFeaturesPage() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <X className="w-4 h-4" />
+                  <CloseIcon className="w-4 h-4" />
                 </motion.button>
               </div>
               <div className="px-6 py-5 space-y-4">
