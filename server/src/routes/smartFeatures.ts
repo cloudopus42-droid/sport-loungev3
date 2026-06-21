@@ -113,6 +113,20 @@ const FEATURES = [
 
 export async function seedSmartFeatures(): Promise<void> {
   try {
+    const { data: existing, error: checkError } = await supabase
+      .from('smart_features')
+      .select('feature_key')
+      .limit(1);
+
+    if (checkError) {
+      console.warn(`⚠️ Cannot seed smart_features: ${checkError.message}`);
+      return;
+    }
+
+    if (existing && existing.length > 0) {
+      return;
+    }
+
     for (const feature of FEATURES) {
       const { error } = await supabase
         .from('smart_features')
@@ -121,11 +135,10 @@ export async function seedSmartFeatures(): Promise<void> {
           { onConflict: 'feature_key' }
         );
 
-      if (error) {
+      if (error && !error.message.includes('row-level security')) {
         console.warn(`⚠️ Failed to seed feature "${feature.feature_key}":`, error.message);
       }
     }
-    console.log('✅ Smart features seeded');
   } catch (err: any) {
     console.error('❌ Failed to seed smart features:', err.message);
   }
