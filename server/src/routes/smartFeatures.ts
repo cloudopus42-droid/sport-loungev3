@@ -118,19 +118,23 @@ export async function seedSmartFeatures(): Promise<void> {
   try {
     const { data: existing, error: checkError } = await supabase
       .from('smart_features')
-      .select('feature_key')
-      .limit(1);
+      .select('feature_key');
 
     if (checkError) {
       console.warn(`⚠️ Cannot seed smart_features: ${checkError.message}`);
       return;
     }
 
-    if (existing && existing.length > 0) {
+    const existingKeys = new Set((existing || []).map((f: any) => f.feature_key));
+    const missing = FEATURES.filter((f) => !existingKeys.has(f.feature_key));
+
+    if (missing.length === 0) {
       return;
     }
 
-    for (const feature of FEATURES) {
+    console.log(`➕ Seeding ${missing.length} new smart features...`);
+
+    for (const feature of missing) {
       const { error } = await supabase
         .from('smart_features')
         .upsert(
