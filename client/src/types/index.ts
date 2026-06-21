@@ -86,17 +86,6 @@ export interface Booking {
   createdAt: string;
 }
 
-export interface Seat {
-  id: string;
-  label: string;
-  zone: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  capacity: number;
-}
-
 export interface AuthResponse {
   token: string;
   user: User;

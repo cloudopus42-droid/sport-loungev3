@@ -6,20 +6,6 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 import { supabase } from './config/supabase';
 
-const DEFAULT_SEATS = [
-  { id: 'vip-1', label: 'VIP 1', zone: 'vip', x: 5, y: 12, width: 22, height: 18, capacity: 8 },
-  { id: 'vip-2', label: 'VIP 2', zone: 'vip', x: 5, y: 40, width: 22, height: 18, capacity: 6 },
-  { id: 'vip-3', label: 'VIP 3', zone: 'vip', x: 5, y: 68, width: 22, height: 18, capacity: 6 },
-  { id: 'table-1', label: 'Стол 1', zone: 'regular', x: 35, y: 10, width: 14, height: 14, capacity: 4 },
-  { id: 'table-2', label: 'Стол 2', zone: 'regular', x: 54, y: 10, width: 14, height: 14, capacity: 4 },
-  { id: 'table-3', label: 'Стол 3', zone: 'regular', x: 35, y: 32, width: 14, height: 14, capacity: 4 },
-  { id: 'table-4', label: 'Стол 4', zone: 'regular', x: 54, y: 32, width: 14, height: 14, capacity: 4 },
-  { id: 'table-5', label: 'Стол 5', zone: 'regular', x: 35, y: 55, width: 14, height: 14, capacity: 2 },
-  { id: 'table-6', label: 'Стол 6', zone: 'regular', x: 54, y: 55, width: 14, height: 14, capacity: 2 },
-  { id: 'bar-1', label: 'Бар 1', zone: 'bar', x: 76, y: 20, width: 18, height: 12, capacity: 2 },
-  { id: 'bar-2', label: 'Бар 2', zone: 'bar', x: 76, y: 45, width: 18, height: 12, capacity: 2 },
-];
-
 async function retryDb<T>(fn: () => any, attempts: number = 4): Promise<T> {
   let lastError: any = null;
   for (let i = 1; i <= attempts; i++) {
@@ -266,17 +252,6 @@ async function seed(): Promise<void> {
       .select('id')
     );
     console.log(`  ✅ Created ${invitations?.length} invitations`);
-
-    // 8. Создаем дефолтную карту столов
-    console.log('🗺️  Creating default seat layout...');
-    await retryDb(() => supabase
-      .from('seat_configs')
-      .insert({
-        seats: DEFAULT_SEATS,
-        updated_by: admin.id,
-      })
-    );
-    console.log('  ✅ Seating map configuration created');
 
     console.log('\n🎉 Supabase Database Seeded Successfully!');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

@@ -13,11 +13,9 @@ import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
 
 const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
-const LuxuryMusicPlayer = lazy(() => import('@/components/ui/LuxuryMusicPlayer').then(m => ({ default: m.LuxuryMusicPlayer })));
 
 const navItems = [
   { path: '/', label: 'Главная' },
-  { path: '/mixologist', label: 'Миксолог' },
   { path: '/booking', label: 'Заказ' },
   { path: '/profile', label: 'Профиль' },
 ];
@@ -57,9 +55,11 @@ export function MainLayout() {
   }, [socket, user]);
 
   const handleNavClick = (anchor: string) => {
-    const isHomePage = window.location.pathname === '/' || window.location.pathname === import.meta.env.BASE_URL || window.location.pathname === import.meta.env.BASE_URL.replace(/\/$/, '');
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+    const currentPath = window.location.pathname;
+    const isHomePage = currentPath === base || currentPath === base + '/' || currentPath === '/';
     if (!isHomePage) {
-      window.location.href = import.meta.env.BASE_URL + anchor;
+      navigate('/' + anchor);
     } else {
       const el = document.querySelector(anchor);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -104,9 +104,6 @@ export function MainLayout() {
       </Suspense>
 
       <ConciergeChat />
-      <Suspense fallback={null}>
-        <LuxuryMusicPlayer />
-      </Suspense>
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Glass header */}
@@ -124,7 +121,7 @@ export function MainLayout() {
           <nav className="hidden lg:flex items-center gap-8 flex-1 justify-center">
             <a onClick={(e) => { e.preventDefault(); handleNavClick('#menu'); }} className="text-xs font-medium text-white/60 hover:text-accent-gold transition-all tracking-wide cursor-pointer">Меню</a>
             <NavLink to="/booking" className={({ isActive }) => clsx("text-xs font-medium transition-all tracking-wide", isActive ? "text-accent-gold font-bold" : "text-white/60 hover:text-accent-gold")}>Сделать заказ</NavLink>
-            <NavLink to="/mixologist" className={({ isActive }) => clsx("text-xs font-medium transition-all tracking-wide", isActive ? "text-accent-gold font-bold" : "text-white/60 hover:text-accent-gold")}>ИИ-Миксолог</NavLink>
+            <NavLink to="/booking" className={({ isActive }) => clsx("text-xs font-medium transition-all tracking-wide", isActive ? "text-accent-gold font-bold" : "text-white/60 hover:text-accent-gold")}>ИИ-Миксолог</NavLink>
             <a onClick={(e) => { e.preventDefault(); handleNavClick('#zones'); }} className="text-xs font-medium text-white/60 hover:text-accent-gold transition-all tracking-wide cursor-pointer">Зоны</a>
             <a onClick={(e) => { e.preventDefault(); handleNavClick('#contacts'); }} className="text-xs font-medium text-white/60 hover:text-accent-gold transition-all tracking-wide cursor-pointer">Контакты</a>
             {user?.role === 'admin' && (

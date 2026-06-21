@@ -11,7 +11,6 @@ const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.H
 const BookingPage = lazy(() => import('@/pages/BookingPage').then(m => ({ default: m.BookingPage })));
 const TobaccoPage = lazy(() => import('@/pages/TobaccoPage').then(m => ({ default: m.TobaccoPage })));
 const KnowledgeGraphPage = lazy(() => import('@/pages/KnowledgeGraphPage').then(m => ({ default: m.KnowledgeGraphPage })));
-const MixologistPage = lazy(() => import('@/pages/MixologistPage').then(m => ({ default: m.MixologistPage })));
 const FeedPage = lazy(() => import('@/pages/FeedPage').then(m => ({ default: m.FeedPage })));
 const InvitationsPage = lazy(() => import('@/pages/InvitationsPage').then(m => ({ default: m.InvitationsPage })));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
@@ -45,9 +44,10 @@ export default function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<HomePage />} />
               <Route path="booking" element={<BookingPage />} />
+              <Route path="mixologist" element={<Navigate to="/booking" replace />} />
+              <Route path="order" element={<Navigate to="/booking" replace />} />
               <Route path="tobacco" element={<TobaccoPage />} />
               <Route path="knowledge" element={<KnowledgeGraphPage />} />
-              <Route path="mixologist" element={<MixologistPage />} />
               <Route path="feed" element={<FeedPage />} />
               <Route path="invitations" element={<InvitationsPage />} />
               <Route path="profile" element={<ProfilePage />} />

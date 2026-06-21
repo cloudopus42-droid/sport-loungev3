@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -6,7 +6,9 @@ import {
   Flame, 
   Clock, 
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Bot,
+  ThumbsUp
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,6 +72,32 @@ export function BookingPage() {
   const [hookahMix, setHookahMix] = useState<string[]>([]);
   const [mixPercentages, setMixPercentages] = useState<Record<string, number>>({});
   const [flavorCategory, setFlavorCategory] = useState('Все');
+  const [activeTab, setActiveTab] = useState<'mixes' | 'ai'>('mixes');
+  const [aiMood, setAiMood] = useState<string[]>([]);
+
+  const AI_MOODS = [
+    { id: 'sweet', label: 'Сладкий', emoji: '🍯', desc: 'Фруктовые и десертные ноты' },
+    { id: 'strong', label: 'Крепкий', emoji: '💪', desc: 'Насыщенный дым и крепость' },
+    { id: 'fresh', label: 'Свежий', emoji: '🌿', desc: 'Мятные и цитрусовые оттенки' },
+    { id: 'berry', label: 'Ягодный', emoji: '🫐', desc: 'Лесные и садовые ягоды' },
+    { id: 'exotic', label: 'Экзотика', emoji: '🌴', desc: 'Тропические сочетания' },
+    { id: 'classic', label: 'Классика', emoji: '🏆', desc: 'Проверенные временем вкусы' },
+  ];
+
+  const aiRecommendations = useMemo(() => {
+    if (aiMood.length === 0) return [];
+    const moodFlavorMap: Record<string, string[]> = {
+      sweet: ['Манго-Маракуйя', 'Персик-Лайм', 'Клубника-Мята', 'Банан-Шоколад', 'Кокос-Ваниль'],
+      strong: ['Двойное яблоко', 'Sport Mix (авторский)', 'Грейпфрут-Мята', 'Lounge Premium'],
+      fresh: ['Мята-Айс', 'Ледяной грейпфрут', 'Кактус-Фрост', 'Грейпфрут-Мята', 'Лимон-Имбирь'],
+      berry: ['Клубника-Мята', 'Черника-Ежевика', 'Малина-Личи', 'Виноград-Ягоды'],
+      exotic: ['Манго-Маракуйя', 'Кактус-Фрост', 'Арбуз-Дыня', 'Кокос-Ваниль', 'Чебоксарский закат'],
+      classic: ['Двойное яблоко', 'Мята-Айс', 'Виноград-Ягоды', 'Lounge Premium'],
+    };
+    const matchedFlavors = aiMood.flatMap(m => moodFlavorMap[m] || []);
+    const unique = [...new Set(matchedFlavors)];
+    return unique.slice(0, 6);
+  }, [aiMood]);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
@@ -312,63 +340,166 @@ export function BookingPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Left Column: Mixes List */}
+          {/* Left Column: Mixes List / AI Recommendations */}
           <section className="lg:col-span-7 space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">Доступные Миксы</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowMixBuilder(true)}
-                  className="px-3 py-1 rounded-lg border border-accent-gold/30 text-[10px] font-bold text-accent-gold hover:bg-accent-gold/10 transition-all"
-                >
-                  + Собрать свой
-                </button>
-                <span className="text-xs text-white/40">{mixes.length} вариантов</span>
-              </div>
+            {/* Tab Switcher */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/5 w-fit">
+              <button
+                onClick={() => setActiveTab('mixes')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === 'mixes'
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/30'
+                    : 'text-white/40 hover:text-white'
+                }`}
+              >
+                <Flame className="w-3 h-3 inline mr-1" />Все Миксы
+              </button>
+              <button
+                onClick={() => setActiveTab('ai')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === 'ai'
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/30'
+                    : 'text-white/40 hover:text-white'
+                }`}
+              >
+                <Bot className="w-3 h-3 inline mr-1" />ИИ-Рекомендация
+              </button>
             </div>
-            
-            {loading && mixes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                <div className="w-8 h-8 rounded-full border-2 border-accent-gold border-t-transparent animate-spin"></div>
-                <p className="text-xs text-white/40">Загрузка меню...</p>
-              </div>
-            ) : mixes.length === 0 ? (
-              <div className="text-center py-20 border border-white/5 rounded-2xl bg-white/[0.02]">
-                <AlertCircle className="w-10 h-10 text-white/20 mx-auto mb-3" />
-                <p className="text-sm text-white/40">Нет доступных миксов. Попробуйте обновить страницу.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {mixes.map((mix, idx) => (
-                  <motion.div
-                    key={mix.id}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    whileHover={{ y: -3, scale: 1.01 }}
-                    className="group relative p-5 rounded-2xl bg-[#120e1a]/40 border border-[#d4af37]/10 hover:border-[#d4af37]/40 transition-all cursor-pointer backdrop-blur-md overflow-hidden"
-                    onClick={() => handleMixSelect(mix)}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="relative z-10 flex flex-col h-full justify-between">
-                      <div>
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="w-9 h-9 rounded-full bg-[#d4af37]/10 flex items-center justify-center border border-[#d4af37]/20">
-                            <Flame className="w-4 h-4 text-[#d4af37]" />
+
+            {activeTab === 'mixes' ? (
+              <>
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">Доступные Миксы</h2>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowMixBuilder(true)}
+                      className="px-3 py-1 rounded-lg border border-accent-gold/30 text-[10px] font-bold text-accent-gold hover:bg-accent-gold/10 transition-all"
+                    >
+                      + Собрать свой
+                    </button>
+                    <span className="text-xs text-white/40">{mixes.length} вариантов</span>
+                  </div>
+                </div>
+                
+                {loading && mixes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                    <div className="w-8 h-8 rounded-full border-2 border-accent-gold border-t-transparent animate-spin"></div>
+                    <p className="text-xs text-white/40">Загрузка меню...</p>
+                  </div>
+                ) : mixes.length === 0 ? (
+                  <div className="text-center py-20 border border-white/5 rounded-2xl bg-white/[0.02]">
+                    <AlertCircle className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                    <p className="text-sm text-white/40">Нет доступных миксов. Попробуйте обновить страницу.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {mixes.map((mix, idx) => (
+                      <motion.div
+                        key={mix.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        whileHover={{ y: -3, scale: 1.01 }}
+                        className="group relative p-5 rounded-2xl bg-[#120e1a]/40 border border-[#d4af37]/10 hover:border-[#d4af37]/40 transition-all cursor-pointer backdrop-blur-md overflow-hidden"
+                        onClick={() => handleMixSelect(mix)}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="relative z-10 flex flex-col h-full justify-between">
+                          <div>
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="w-9 h-9 rounded-full bg-[#d4af37]/10 flex items-center justify-center border border-[#d4af37]/20">
+                                <Flame className="w-4 h-4 text-[#d4af37]" />
+                              </div>
+                              <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-accent-gold/80 border border-white/5">
+                                Крепость: {mix.strength}/10
+                              </span>
+                            </div>
+                            <h3 className="font-bold text-sm tracking-wide text-white group-hover:text-accent-gold transition-colors mb-1">{mix.name}</h3>
+                            <p className="text-xs text-white/40 line-clamp-2 leading-relaxed mb-4">{mix.description}</p>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-accent-gold/80 border border-white/5">
-                            Крепость: {mix.strength}/10
-                          </span>
+                          <div className="text-right">
+                            <span className="text-[10px] uppercase tracking-widest font-bold text-accent-gold/80 group-hover:text-white transition-colors">Выбрать →</span>
+                          </div>
                         </div>
-                        <h3 className="font-bold text-sm tracking-wide text-white group-hover:text-accent-gold transition-colors mb-1">{mix.name}</h3>
-                        <p className="text-xs text-white/40 line-clamp-2 leading-relaxed mb-4">{mix.description}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] uppercase tracking-widest font-bold text-accent-gold/80 group-hover:text-white transition-colors">Выбрать →</span>
-                      </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="space-y-6">
+                <div className="border-b border-white/10 pb-3">
+                  <h2 className="text-lg font-bold uppercase tracking-wider text-accent-gold">ИИ-Миксолог</h2>
+                  <p className="text-xs text-white/40 mt-1">Расскажите, что вы любите — ИИ подберёт идеальный микс</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-3">Ваше настроение</p>
+                  <div className="flex flex-wrap gap-2">
+                    {AI_MOODS.map((mood) => {
+                      const selected = aiMood.includes(mood.id);
+                      return (
+                        <button
+                          key={mood.id}
+                          onClick={() => {
+                            setAiMood(prev =>
+                              prev.includes(mood.id)
+                                ? prev.filter(id => id !== mood.id)
+                                : [...prev, mood.id]
+                            );
+                          }}
+                          className={`px-3 py-2 rounded-xl text-xs transition-all border ${
+                            selected
+                              ? 'bg-accent-gold/15 border-accent-gold/45 text-accent-gold'
+                              : 'bg-white/[0.03] border-white/10 text-white/50 hover:border-accent-gold/30 hover:text-white'
+                          }`}
+                        >
+                          <span className="mr-1">{mood.emoji}</span>
+                          {mood.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {aiRecommendations.length > 0 && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-accent-gold font-semibold mb-3 flex items-center gap-1">
+                      <ThumbsUp className="w-3 h-3" /> Рекомендуемые вкусы
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {aiRecommendations.map((flavor) => {
+                        const hookahFlavor = HOOKAH_FLAVORS.find(f => f.name === flavor);
+                        return (
+                          <div
+                            key={flavor}
+                            className="p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-accent-gold/30 transition-all"
+                          >
+                            <span className="mr-1.5">{hookahFlavor?.emoji || '🔥'}</span>
+                            <span className="text-xs text-white font-medium">{flavor}</span>
+                            {hookahFlavor && (
+                              <span className="text-[9px] text-white/30 ml-2">({hookahFlavor.category})</span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  </motion.div>
-                ))}
+                    <p className="text-[10px] text-white/30 mt-3">
+                      Выберите эти вкусы в конструкторе миксов или закажите готовый микс из списка слева
+                    </p>
+                  </div>
+                )}
+
+                {aiMood.length > 0 && aiRecommendations.length === 0 && (
+                  <p className="text-xs text-white/30 text-center py-8">По вашему запросу ничего не найдено. Попробуйте другой набор настроений.</p>
+                )}
+
+                {aiMood.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-10 text-center space-y-3 border border-dashed border-white/5 rounded-2xl">
+                    <Bot className="w-10 h-10 text-white/15" />
+                    <p className="text-xs text-white/30 max-w-[220px]">Выберите одно или несколько настроений, чтобы получить рекомендацию</p>
+                  </div>
+                )}
               </div>
             )}
           </section>

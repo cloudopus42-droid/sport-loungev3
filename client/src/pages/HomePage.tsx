@@ -39,6 +39,16 @@ export function HomePage() {
   };
 
   useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 150);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     api.get<Promo[]>('/api/promos')
       .then((res) => setPromos(res.data))
       .catch(() => {});
@@ -124,7 +134,7 @@ export function HomePage() {
                 <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
               </motion.button>
             </NavLink>
-            <NavLink to="/mixologist" className="w-full sm:w-auto">
+            <NavLink to="/booking" className="w-full sm:w-auto">
               <motion.button
                 className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white bg-transparent text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all"
                 whileHover={{ scale: 1.02 }}
