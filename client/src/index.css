@@ -2,27 +2,42 @@
   --color-bg: #0a0a0f;
   --color-surface: #12121a;
   --color-surface-elevated: #1a1a26;
+  --color-surface-premium: #141420;
   --color-border: rgba(255,255,255,0.06);
   --color-border-hover: rgba(255,255,255,0.12);
   --color-accent: #d4af37;
   --color-accent-glow: rgba(212,175,55,0.3);
+  --color-accent-glow-strong: rgba(212,175,55,0.5);
   --color-accent-muted: rgba(212,175,55,0.15);
+  --color-accent-deep: rgba(212,175,55,0.08);
   --color-text-primary: #f1f1f7;
   --color-text-secondary: rgba(241,241,247,0.6);
   --color-text-muted: rgba(241,241,247,0.35);
   --color-success: #22c55e;
   --color-warning: #eab308;
   --color-error: #ef4444;
+
   --glass-bg: rgba(18,18,26,0.6);
   --glass-border: rgba(255,255,255,0.08);
   --glass-blur: 40px;
   --glass-opacity: 0.6;
+  --glass-premium-bg: linear-gradient(145deg, rgba(20,20,32,0.7) 0%, rgba(25,35,50,0.55) 40%, rgba(20,25,35,0.6) 60%, rgba(18,18,26,0.7) 100%);
+
+  --shadow-soft: 0 4px 16px rgba(0,0,0,0.25);
+  --shadow-medium: 0 8px 32px rgba(0,0,0,0.35);
+  --shadow-strong: 0 16px 48px rgba(0,0,0,0.45);
+  --shadow-deep: 0 32px 80px rgba(0,0,0,0.55);
+  --shadow-xl: 0 48px 120px rgba(0,0,0,0.65);
+  --shadow-gold: 0 8px 32px rgba(212,175,55,0.08);
+  --shadow-gold-strong: 0 12px 40px rgba(212,175,55,0.15);
+
   --carousel-spring: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --spring-standard: cubic-bezier(0.25, 1, 0.5, 1);
   --spring-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring-gentle: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-press: 120ms;
   --duration-tooltip: 150ms;
   --duration-dropdown: 200ms;
@@ -190,6 +205,169 @@
       0 20px 48px 0 rgba(212, 175, 55, 0.12);
   }
 
+  .glass-card-premium {
+    background: linear-gradient(
+      145deg,
+      rgba(20, 20, 32, 0.75) 0%,
+      rgba(25, 35, 50, 0.6) 35%,
+      rgba(22, 28, 42, 0.65) 65%,
+      rgba(18, 18, 26, 0.75) 100%
+    );
+    backdrop-filter: blur(var(--glass-blur)) saturate(200%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(200%);
+    border: 0.5px solid rgba(212, 175, 55, 0.1);
+    border-radius: 1rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.04),
+      inset 0 0 40px rgba(255, 255, 255, 0.015),
+      0 0 0 1px rgba(212, 175, 55, 0.04);
+    transition: all 0.6s var(--carousel-spring);
+  }
+
+  .glass-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(212, 175, 55, 0.3) 15%,
+      rgba(212, 175, 55, 0.6) 30%,
+      rgba(255, 255, 255, 0.12) 45%,
+      rgba(212, 175, 55, 0.6) 60%,
+      rgba(212, 175, 55, 0.3) 85%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .glass-card-premium::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 80%;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.02) 25%,
+      rgba(212, 175, 55, 0.05) 40%,
+      rgba(212, 175, 55, 0.07) 50%,
+      rgba(212, 175, 55, 0.05) 60%,
+      rgba(255, 255, 255, 0.02) 75%,
+      transparent 100%
+    );
+    transform: rotate(15deg);
+    animation: glass-shimmer-premium 7s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .glass-card-premium:hover {
+    border-color: rgba(212, 175, 55, 0.2);
+    box-shadow:
+      0 32px 80px rgba(0, 0, 0, 0.6),
+      inset 0 0 0 0.5px rgba(212, 175, 55, 0.08),
+      inset 0 0 40px rgba(255, 255, 255, 0.02),
+      0 0 0 1px rgba(212, 175, 55, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .glass-card-gold-ring {
+    background: linear-gradient(
+      145deg,
+      rgba(20, 20, 32, 0.7) 0%,
+      rgba(25, 35, 50, 0.55) 40%,
+      rgba(20, 25, 35, 0.6) 60%,
+      rgba(18, 18, 26, 0.7) 100%
+    );
+    backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(220%);
+    border-radius: 1rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+    transition: all 0.6s var(--carousel-spring);
+  }
+
+  .glass-card-gold-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(212, 175, 55, 0.08) 15%,
+      rgba(212, 175, 55, 0.15) 30%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(212, 175, 55, 0.15) 60%,
+      rgba(212, 175, 55, 0.08) 85%,
+      transparent 100%
+    );
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+    animation: gold-ring-shift 4s ease-in-out infinite;
+    z-index: 2;
+  }
+
+  .glass-card-gold-ring::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 80%;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.02) 25%,
+      rgba(212, 175, 55, 0.04) 40%,
+      rgba(212, 175, 55, 0.06) 50%,
+      rgba(212, 175, 55, 0.04) 60%,
+      rgba(255, 255, 255, 0.02) 75%,
+      transparent 100%
+    );
+    transform: rotate(15deg);
+    animation: glass-shimmer-premium 7s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .glass-card-gold-ring:hover::before {
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(212, 175, 55, 0.15) 15%,
+      rgba(212, 175, 55, 0.25) 30%,
+      rgba(255, 255, 255, 0.08) 45%,
+      rgba(212, 175, 55, 0.25) 60%,
+      rgba(212, 175, 55, 0.15) 85%,
+      transparent 100%
+    );
+  }
+
+  .glass-card-gold-ring:hover {
+    box-shadow:
+      0 32px 80px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(212, 175, 55, 0.06);
+    transform: translateY(-2px);
+  }
+
   .accent-btn {
     background: linear-gradient(135deg, #d4af37 0%, #b8962e 100%);
     color: #ffffff;
@@ -305,8 +483,16 @@
     display: none;
   }
 
-  .font-display {
+  .font-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .font-body {
     font-family: 'Geist', system-ui, sans-serif;
+  }
+
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
 
@@ -314,6 +500,17 @@
   0% { transform: rotate(15deg) translateX(-30%) translateY(-10%); }
   50% { transform: rotate(15deg) translateX(10%) translateY(5%); }
   100% { transform: rotate(15deg) translateX(-30%) translateY(-10%); }
+}
+
+@keyframes glass-shimmer-premium {
+  0% { transform: rotate(15deg) translateX(-35%) translateY(-15%); opacity: 0.6; }
+  50% { transform: rotate(15deg) translateX(15%) translateY(8%); opacity: 1; }
+  100% { transform: rotate(15deg) translateX(-35%) translateY(-15%); opacity: 0.6; }
+}
+
+@keyframes gold-ring-shift {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 @keyframes float-particle {

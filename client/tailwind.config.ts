@@ -29,8 +29,10 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Geist', 'system-ui', 'sans-serif'],
-        heading: ['Geist', 'system-ui', 'sans-serif'],
-        display: ['Geist', 'system-ui', 'sans-serif'],
+        heading: ['Playfair Display', 'Georgia', 'serif'],
+        body: ['Geist', 'system-ui', 'sans-serif'],
+        display: ['Playfair Display', 'Georgia', 'serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       boxShadow: {
@@ -41,15 +43,22 @@ const config: Config = {
         'gold-pill': '0 0 25px rgba(212, 175, 55, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.1)',
         'glass': '0 8px 32px rgba(0, 0, 0, 0.4)',
         'glass-lg': '0 16px 48px rgba(0, 0, 0, 0.5)',
+        'glass-premium': '0 24px 64px rgba(0,0,0,0.55), inset 0 0 0 0.5px rgba(255,255,255,0.06), inset 0 0 40px rgba(255,255,255,0.02)',
+        'gold-ambient': '0 8px 32px rgba(212,175,55,0.08), 0 0 0 1px rgba(212,175,55,0.06)',
+        'depth-lg': '0 32px 80px rgba(0,0,0,0.6)',
+        'depth-xl': '0 48px 120px rgba(0,0,0,0.7)',
+        'elevated': '0 4px 12px rgba(0,0,0,0.3), 0 0 0 0.5px rgba(255,255,255,0.04)',
       },
       backdropBlur: {
         glass: '32px',
         'glass-lg': '48px',
+        'glass-xl': '64px',
       },
       borderRadius: {
         'glass': '24px',
         'glass-sm': '16px',
         'glass-lg': '32px',
+        'glass-xl': '48px',
         'stitch': '0.25rem',
         'stitch-lg': '0.75rem',
       },
@@ -65,6 +74,9 @@ const config: Config = {
         springIn: 'springIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards',
         pressPop: 'pressPop 0.15s cubic-bezier(0.23, 1, 0.32, 1)',
         staggerFade: 'staggerFade 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        goldSheen: 'goldSheen 3s ease-in-out infinite',
+        orbFloat: 'orbFloat 20s ease-in-out infinite',
+        glassShimmer: 'glassShimmer 6s ease-in-out infinite',
       },
       keyframes: {
         fadeInUp: {
@@ -111,6 +123,20 @@ const config: Config = {
         staggerFade: {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        goldSheen: {
+          '0%, 100%': { transform: 'translateX(-100%) translateY(-100%)' },
+          '50%': { transform: 'translateX(100%) translateY(100%)' },
+        },
+        orbFloat: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 30px) scale(0.95)' },
+        },
+        glassShimmer: {
+          '0%': { transform: 'rotate(15deg) translateX(-30%) translateY(-10%)' },
+          '50%': { transform: 'rotate(15deg) translateX(15%) translateY(5%)' },
+          '100%': { transform: 'rotate(15deg) translateX(-30%) translateY(-10%)' },
         },
       },
     },
