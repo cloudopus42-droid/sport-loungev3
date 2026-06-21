@@ -4,6 +4,18 @@ import { config } from '../config/env';
 
 let io: SocketIOServer | null = null;
 
+let lastOnlineEmit = 0;
+
+function throttledOnlineEmit(ioServer: SocketIOServer, onlineUsers: Map<string, any>) {
+  const now = Date.now();
+  if (now - lastOnlineEmit < 5000) return;
+  lastOnlineEmit = now;
+  ioServer.emit('online:count', {
+    count: onlineUsers.size,
+    users: Array.from(onlineUsers.values()).filter((u) => u.name),
+  });
+}
+
 export function initSocket(server: HttpServer): SocketIOServer {
   const ioServer = new SocketIOServer(server, {
     cors: {
@@ -15,16 +27,13 @@ export function initSocket(server: HttpServer): SocketIOServer {
   io = ioServer;
 
   const onlineUsers = new Map<string, { socketId: string; userId?: string; name?: string; role?: string }>();
+  const adminRoom = 'admin';
 
   ioServer.on('connection', (socket) => {
     console.log(`🔌 Socket connected: ${socket.id}`);
     
-    // Register initial connection
     onlineUsers.set(socket.id, { socketId: socket.id });
-    ioServer.emit('online:count', {
-      count: onlineUsers.size,
-      users: Array.from(onlineUsers.values()).filter((u) => u.name),
-    });
+    throttledOnlineEmit(ioServer, onlineUsers);
 
     socket.on('user:active', (userInfo) => {
       if (userInfo && userInfo.id) {
@@ -34,25 +43,26 @@ export function initSocket(server: HttpServer): SocketIOServer {
           name: userInfo.name,
           role: userInfo.role,
         });
-        ioServer.emit('online:count', {
-          count: onlineUsers.size,
-          users: Array.from(onlineUsers.values()).filter((u) => u.name),
-        });
+        if (userInfo.role === 'admin' || userInfo.isAdmin) {
+          socket.join(adminRoom);
+        }
+        throttledOnlineEmit(ioServer, onlineUsers);
       }
     });
 
     socket.on('disconnect', (reason) => {
       console.log(`🔌 Socket disconnected: ${socket.id} (${reason})`);
       onlineUsers.delete(socket.id);
-      ioServer.emit('online:count', {
-        count: onlineUsers.size,
-        users: Array.from(onlineUsers.values()).filter((u) => u.name),
-      });
+      throttledOnlineEmit(ioServer, onlineUsers);
     });
   });
 
   console.log('✅ Socket.IO initialized');
   return ioServer;
+}
+
+export function getAdminRoom(): string {
+  return 'admin';
 }
 
 export function getIO(): SocketIOServer {

@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import viteCompression from 'vite-plugin-compression';
 import path from 'path';
 
 export default defineConfig({
   base: '/sport-loungev3/',
-  plugins: [react()],
+  plugins: [
+    react(),
+    viteCompression({ algorithm: 'gzip', threshold: 1024 }),
+    viteCompression({ algorithm: 'brotliCompress', threshold: 1024 }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

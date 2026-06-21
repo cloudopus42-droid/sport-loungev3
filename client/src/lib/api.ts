@@ -96,7 +96,16 @@ async function apiImpl<T = any>(endpoint: string, options: ApiOptions = {}): Pro
   const text = await res.text();
   if (!text) return undefined as T;
   const json = JSON.parse(text);
-  return normalizeKeys(json) as T;
+  const normalized = normalizeKeys(json) as T;
+  // Auto-unwrap paginated responses for backwards compatibility
+  if (normalized && typeof normalized === 'object' && 'data' in (normalized as any) && 'pagination' in (normalized as any)) {
+    const p = normalized as any;
+    if (Array.isArray(p.data) && p.pagination?.page) {
+      (p.data as any)._pagination = p.pagination;
+      return p.data as T;
+    }
+  }
+  return normalized;
 }
 
 const api: ApiFunction = Object.assign(apiImpl, {
