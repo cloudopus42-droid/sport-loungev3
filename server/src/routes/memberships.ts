@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { auth } from '../middleware/auth';
 import { supabase } from '../config/supabase';
+import { getPagination, paginatedResponse } from '../utils/pagination';
 
 const router = Router();
 
@@ -246,28 +247,21 @@ router.post('/reviews', auth, async (req: Request, res: Response, next: NextFunc
       return;
     }
 
-    // Verify booking belongs to user
-    const { data: booking, error: bookingErr } = await supabase
+    const { data: booking } = await supabase
       .from('bookings')
-      .select('id, status')
+      .select('id, user_id')
       .eq('id', bookingId)
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (bookingErr || !booking) {
-      res.status(404).json({ error: 'Booking not found or not owned by user' });
+    if (!booking) {
+      res.status(404).json({ error: 'Бронирование не найдено' });
       return;
     }
 
-    // Insert review
     const { data: review, error: reviewErr } = await supabase
       .from('reviews')
-      .insert({
-        booking_id: bookingId,
-        user_id: userId,
-        rating,
-        text
-      })
+      .insert({ booking_id: bookingId, user_id: userId, rating, text })
       .select()
       .single();
 
@@ -276,109 +270,51 @@ router.post('/reviews', auth, async (req: Request, res: Response, next: NextFunc
       return;
     }
 
-    // Reward points for leaving a review (50 points)
-    const pointsAward = 50;
+    const [memResult, achResult] = await Promise.all([
+      supabase.from('users_membership').select('points').eq('user_id', userId).single(),
+      supabase.from('achievements').select('id, points_reward').eq('code', 'elite_member').maybeSingle(),
+    ]);
 
-    // Check if the 'elite_member' achievement is already unlocked
-    const { data: achievement } = await supabase
-      .from('achievements')
-      .select('*')
-      .eq('code', 'elite_member')
-      .single();
+    let totalAward = 50;
+    let transactions: any[] = [{ user_id: userId, points_delta: 50, description: 'Отзыв о посещении клуба', type: 'earn' }];
 
-    if (achievement) {
+    if (achResult.data) {
       const { data: alreadyUnlocked } = await supabase
         .from('achievement_unlocks')
-        .select('*')
+        .select('id')
         .eq('user_id', userId)
-        .eq('achievement_id', achievement.id)
+        .eq('achievement_id', achResult.data.id)
         .maybeSingle();
 
       if (!alreadyUnlocked) {
-        // Unlock achievement
-        await supabase
-          .from('achievement_unlocks')
-          .insert({
-            user_id: userId,
-            achievement_id: achievement.id
-          });
-
-        // Add achievement points
-        const totalAward = pointsAward + achievement.points_reward;
-
-        // Log loyalty transaction
-        await supabase.from('loyalty_transactions').insert([
-          { user_id: userId, points_delta: pointsAward, description: 'Отзыв о посещении клуба', type: 'earn' },
-          { user_id: userId, points_delta: achievement.points_reward, description: 'Ачивка: Элитный Член Клуба', type: 'earn' }
-        ]);
-
-        // Increment points in profile membership
-        const { data: currentMem } = await supabase
-          .from('users_membership')
-          .select('points')
-          .eq('user_id', userId)
-          .single();
-
-        const currentPoints = (currentMem?.points || 0) + totalAward;
-
-        // Determine new membership level based on currentPoints
-        let targetLevel = 'bronze';
-        if (currentPoints >= 5000) targetLevel = 'diamond';
-        else if (currentPoints >= 1500) targetLevel = 'black';
-        else if (currentPoints >= 500) targetLevel = 'gold';
-        else if (currentPoints >= 100) targetLevel = 'silver';
-
-        const { data: memTier } = await supabase
-          .from('memberships')
-          .select('*')
-          .eq('level', targetLevel)
-          .single();
-
-        await supabase
-          .from('users_membership')
-          .update({
-            points: currentPoints,
-            membership_id: memTier ? memTier.id : undefined
-          })
-          .eq('user_id', userId);
-      } else {
-        // Just standard review points
-        await supabase.from('loyalty_transactions').insert({
-          user_id: userId,
-          points_delta: pointsAward,
-          description: 'Отзыв о посещении клуба',
-          type: 'earn'
+        const achAward = achResult.data.points_reward || 0;
+        totalAward += achAward;
+        transactions.push({
+          user_id: userId, points_delta: achAward, description: 'Ачивка: Элитный Член Клуба', type: 'earn'
         });
-
-        const { data: currentMem } = await supabase
-          .from('users_membership')
-          .select('points')
-          .eq('user_id', userId)
-          .single();
-
-        const currentPoints = (currentMem?.points || 0) + pointsAward;
-
-        let targetLevel = 'bronze';
-        if (currentPoints >= 5000) targetLevel = 'diamond';
-        else if (currentPoints >= 1500) targetLevel = 'black';
-        else if (currentPoints >= 500) targetLevel = 'gold';
-        else if (currentPoints >= 100) targetLevel = 'silver';
-
-        const { data: memTier } = await supabase
-          .from('memberships')
-          .select('*')
-          .eq('level', targetLevel)
-          .single();
-
-        await supabase
-          .from('users_membership')
-          .update({
-            points: currentPoints,
-            membership_id: memTier ? memTier.id : undefined
-          })
-          .eq('user_id', userId);
+        supabase.from('achievement_unlocks').insert({
+          user_id: userId, achievement_id: achResult.data.id
+        }).then();
       }
     }
+
+    const currentPoints = (memResult.data?.points || 0) + totalAward;
+
+    let targetLevel = 'bronze';
+    if (currentPoints >= 5000) targetLevel = 'diamond';
+    else if (currentPoints >= 1500) targetLevel = 'black';
+    else if (currentPoints >= 500) targetLevel = 'gold';
+    else if (currentPoints >= 100) targetLevel = 'silver';
+
+    const [txResult, memTierResult] = await Promise.all([
+      supabase.from('loyalty_transactions').insert(transactions),
+      supabase.from('memberships').select('id').eq('level', targetLevel).single(),
+    ]);
+
+    await supabase
+      .from('users_membership')
+      .update({ points: currentPoints, ...(memTierResult.data ? { membership_id: memTierResult.data.id } : {}) })
+      .eq('user_id', userId);
 
     res.status(201).json(review);
   } catch (error) {
@@ -389,17 +325,23 @@ router.post('/reviews', auth, async (req: Request, res: Response, next: NextFunc
 // GET /api/memberships/reviews - Fetch list of reviews
 router.get('/reviews', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const pag = getPagination(req, 20, 100);
+    const { count } = await supabase
+      .from('reviews')
+      .select('*', { count: 'exact', head: true });
+
     const { data, error } = await supabase
       .from('reviews')
       .select('*, users (name, avatar)')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(pag.offset, pag.offset + pag.limit - 1);
 
     if (error) {
       res.status(500).json({ error: error.message });
       return;
     }
 
-    res.json(data);
+    res.json(paginatedResponse(data, count, pag));
   } catch (error) {
     next(error);
   }

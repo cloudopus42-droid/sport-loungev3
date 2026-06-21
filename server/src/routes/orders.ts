@@ -4,6 +4,7 @@ import { isAdmin } from '../middleware/isAdmin';
 import { supabase } from '../config/supabase';
 import { getIO } from '../socket';
 import { z } from 'zod';
+import { getPagination, paginatedResponse } from '../utils/pagination';
 import { 
   sendOrderNotification, 
   sendMasterCallNotification, 
@@ -53,14 +54,9 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
   try {
     const data = createOrderSchema.parse(req.body);
     const userId = req.user!.id;
-
-    // Calculate promised delivery time (current time + 15 minutes)
     const promisedTime = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-    
-    // Priority defaults to current timestamp (millis)
     const priority = Date.now();
 
-    // 1. Create order in Database
     const { data: order, error: insertErr } = await supabase
       .from('orders')
       .insert({
@@ -83,75 +79,46 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
       return;
     }
 
-    // 2. Insert initial history status log
-    await supabase
-      .from('order_status_history')
-      .insert({
-        order_id: order.id,
-        status: 'accepted'
-      });
+    // Fire-and-forget: status history
+    supabase.from('order_status_history').insert({ order_id: order.id, status: 'accepted' }).then();
 
-    // 3. Fetch user details to alert Telegram
+    // Fetch user details for notification
     const { data: userObj } = await supabase
       .from('users')
       .select('name, phone')
       .eq('id', userId)
       .maybeSingle();
 
-    // 4. Fetch mix details if attached
-    let mixDetails = { name: 'Индивидуальный микс' };
-    if (data.mix_id) {
-      const { data: mixObj } = await supabase
-        .from('mixes')
-        .select('name')
-        .eq('id', data.mix_id)
-        .maybeSingle();
-      if (mixObj) {
-        mixDetails = mixObj;
-      }
-    }
-
-    // 5. Send TG notifications
-    if (userObj) {
-      sendOrderNotification(order, userObj.name, userObj.phone || 'Не указан', mixDetails)
-        .catch(err => console.warn('⚠️ TG Order notification error:', err.message));
-    }
-
-    // 6. Auto-decrement tobacco stock and check for restock
+    // Auto-decrement tobacco stock and check for restock
     if (data.mix_id) {
       const { data: mix } = await supabase
         .from('mixes')
-        .select('stock_quantity, min_stock_threshold, auto_reorder_enabled, name')
+        .select('name, stock_quantity, min_stock_threshold, auto_reorder_enabled')
         .eq('id', data.mix_id)
         .single();
 
       if (mix) {
         const newStock = Math.max(0, (mix.stock_quantity || 0) - 1);
-        await supabase
-          .from('mixes')
-          .update({ stock_quantity: newStock, updated_at: new Date().toISOString() })
-          .eq('id', data.mix_id);
+        supabase.from('mixes').update({ stock_quantity: newStock, updated_at: new Date().toISOString() }).eq('id', data.mix_id).then();
 
         if (newStock <= (mix.min_stock_threshold ?? 5) && mix.auto_reorder_enabled) {
-          await supabase
-            .from('restock_requests')
-            .insert({
-              tobacco_id: data.mix_id,
-              tobacco_name: mix.name,
-              quantity: Math.max(10, (mix.min_stock_threshold ?? 5) * 2),
-              status: 'pending',
-            });
+          supabase.from('restock_requests').insert({
+            tobacco_id: data.mix_id,
+            tobacco_name: mix.name,
+            quantity: Math.max(10, (mix.min_stock_threshold ?? 5) * 2),
+            status: 'pending',
+          }).then();
         }
       }
     }
 
-    // 7. Broadcast via Socket.IO
-    try {
-      const io = getIO();
-      io.emit('order:created', mapOrderToFrontend(order));
-    } catch (socketErr) {
-      console.warn('⚠️ Socket IO emit order:created failed:', socketErr);
+    const mixDetails = { name: 'Индивидуальный микс' };
+
+    if (userObj) {
+      sendOrderNotification(order, userObj.name, userObj.phone || 'Не указан', mixDetails).catch(() => {});
     }
+
+    try { getIO().emit('order:created', mapOrderToFrontend(order)); } catch {}
 
     res.status(201).json(mapOrderToFrontend(order));
   } catch (err) {
@@ -163,16 +130,21 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 router.get('/', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status } = req.query;
-    
+    const { count } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true });
+
+    const pag = getPagination(req, 50);
+
     let query = supabase
       .from('orders')
-      .select('*, user:user_id(name, phone)');
+      .select('*, user:user_id(name, phone)')
+      .range(pag.offset, pag.offset + pag.limit - 1);
 
     if (status) {
       query = query.eq('status', status);
     }
 
-    // Default sorting: priority ascending, then created_at ascending
     const { data: orders, error } = await query
       .order('priority', { ascending: true })
       .order('created_at', { ascending: true });
@@ -185,15 +157,12 @@ router.get('/', auth, async (req: Request, res: Response, next: NextFunction) =>
     const mapped = (orders || []).map((o: any) => {
       const frontend = mapOrderToFrontend(o) as any;
       if (o.user) {
-        frontend.user = {
-          name: o.user.name,
-          phone: o.user.phone
-        };
+        frontend.user = { name: o.user.name, phone: o.user.phone };
       }
       return frontend;
     });
 
-    res.json(mapped);
+    res.json(paginatedResponse(mapped, count, pag));
   } catch (err) {
     next(err);
   }
@@ -202,12 +171,18 @@ router.get('/', auth, async (req: Request, res: Response, next: NextFunction) =>
 // GET /api/orders/my - Retrieve personal order history
 router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const pag = getPagination(req, 20, 100);
+    const { count } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', req.user!.id);
+
     const { data: orders, error } = await supabase
       .from('orders')
       .select('*, mix:mix_id(name, manufacturer)')
       .eq('user_id', req.user!.id)
       .order('created_at', { ascending: false })
-      .limit(20);
+      .range(pag.offset, pag.offset + pag.limit - 1);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -223,7 +198,7 @@ router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) 
       return frontend;
     });
 
-    res.json(mapped);
+    res.json(paginatedResponse(mapped, count, pag));
   } catch (err) {
     next(err);
   }

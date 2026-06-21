@@ -233,43 +233,21 @@ router.post(
       const postId = req.params.id;
       const userId = req.user!.id;
 
-      // Проверяем существование поста
-      const { data: post, error: fetchError } = await supabase
-        .from('posts')
-        .select('id')
-        .eq('id', postId)
-        .maybeSingle();
-
-      if (!post) {
-        res.status(404).json({ error: 'Пост не найден', status: 404 });
-        return;
-      }
-
-      // Проверяем, лайкнул ли пользователь уже этот пост
       const { data: like } = await supabase
         .from('post_likes')
-        .select('*')
+        .select('id')
         .eq('post_id', postId)
         .eq('user_id', userId)
         .maybeSingle();
 
       let liked = false;
       if (like) {
-        // Убираем лайк
-        await supabase
-          .from('post_likes')
-          .delete()
-          .eq('post_id', postId)
-          .eq('user_id', userId);
+        await supabase.from('post_likes').delete().eq('post_id', postId).eq('user_id', userId);
       } else {
-        // Ставим лайк
-        await supabase
-          .from('post_likes')
-          .insert({ post_id: postId, user_id: userId });
+        await supabase.from('post_likes').insert({ post_id: postId, user_id: userId });
         liked = true;
       }
 
-      // Считаем актуальное количество лайков
       const { count: likesCount } = await supabase
         .from('post_likes')
         .select('*', { count: 'exact', head: true })
@@ -277,13 +255,8 @@ router.post(
 
       const actualLikes = likesCount || 0;
 
-      // Обновляем счетчик в таблице posts
-      await supabase
-        .from('posts')
-        .update({ likes: actualLikes })
-        .eq('id', postId);
+      await supabase.from('posts').update({ likes: actualLikes }).eq('id', postId);
 
-      // Получаем список всех лайкнувших
       const { data: allLikes } = await supabase
         .from('post_likes')
         .select('user_id')
@@ -291,11 +264,7 @@ router.post(
 
       const likedBy = (allLikes || []).map((l: any) => l.user_id);
 
-      res.json({
-        likes: actualLikes,
-        likedBy,
-        liked,
-      });
+      res.json({ likes: actualLikes, likedBy, liked });
     } catch (error) {
       next(error);
     }

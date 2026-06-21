@@ -3,6 +3,7 @@ import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { sendBookingNotification } from '../services/telegram';
 import { z } from 'zod';
+import { getPagination, paginatedResponse } from '../utils/pagination';
 import { supabase } from '../config/supabase';
 import { getIO } from '../socket';
 
@@ -197,20 +198,26 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 // GET /api/bookings/my — My bookings (authenticated)
 router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const pag = getPagination(req, 20, 100);
+    const { count } = await supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', req.user!.id);
+
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
       .eq('user_id', req.user!.id)
       .order('date', { ascending: false })
       .order('time', { ascending: false })
-      .limit(50);
+      .range(pag.offset, pag.offset + pag.limit - 1);
 
     if (error) {
       res.status(500).json({ error: error.message });
       return;
     }
 
-    res.json((bookings || []).map(mapBookingToFrontend));
+    res.json(paginatedResponse((bookings || []).map(mapBookingToFrontend), count, pag));
   } catch (error) {
     next(error);
   }
@@ -329,27 +336,33 @@ router.get('/taste-stats', auth, isAdmin, async (req: Request, res: Response, ne
 router.get('/all', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { date, status } = req.query;
-    let query = supabase
+    const pag = getPagination(req, 50, 200);
+
+    let countQuery = supabase.from('bookings').select('*', { count: 'exact', head: true });
+    let dataQuery = supabase
       .from('bookings')
       .select('*, user:user_id(id, name, email, avatar, phone)');
 
     if (date) {
-      query = query.eq('date', date);
+      countQuery = countQuery.eq('date', date);
+      dataQuery = dataQuery.eq('date', date);
     }
     if (status) {
-      query = query.eq('status', status);
+      countQuery = countQuery.eq('status', status);
+      dataQuery = dataQuery.eq('status', status);
     }
 
-    const { data: bookings, error } = await query
-      .order('date', { ascending: false })
-      .order('time', { ascending: false });
+    const [{ count }, { data: bookings, error }] = await Promise.all([
+      countQuery,
+      dataQuery.order('date', { ascending: false }).order('time', { ascending: false }).range(pag.offset, pag.offset + pag.limit - 1),
+    ]);
 
     if (error) {
       res.status(500).json({ error: error.message });
       return;
     }
 
-    res.json((bookings || []).map(mapBookingToFrontend));
+    res.json(paginatedResponse((bookings || []).map(mapBookingToFrontend), count, pag));
   } catch (error) {
     next(error);
   }
