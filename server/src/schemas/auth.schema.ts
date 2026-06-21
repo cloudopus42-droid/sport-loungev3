@@ -21,5 +21,11 @@ export const loginSchema = z.object({
     .min(1, 'Пароль обязателен'),
 });
 
+export const profileUpdateSchema = z.object({
+  name: z.string().min(1, 'Имя не может быть пустым').max(100).optional(),
+  phone: z.string().max(20).optional(),
+  bio: z.string().max(500).optional(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

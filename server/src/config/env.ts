@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const envSchema = z.object({
   PORT: z.string().default('5000').transform(Number),
-  JWT_SECRET: z.string().default('your-super-secret-jwt-key-change-in-production'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters').default('dev-jwt-secret-min-32-chars-long!!'),
   ALLOWED_ORIGINS: z.string().default('http://localhost:5173,http://localhost:3000'),
   TELEGRAM_TOKEN: z.string().default(''),
   TELEGRAM_CHAT_ID: z.string().default(''),

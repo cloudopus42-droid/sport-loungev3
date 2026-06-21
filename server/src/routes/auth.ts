@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { registerSchema, loginSchema } from '../schemas/auth.schema';
+import { registerSchema, loginSchema, profileUpdateSchema } from '../schemas/auth.schema';
 import { auth } from '../middleware/auth';
 import { config } from '../config/env';
 import { supabase } from '../config/supabase';
@@ -247,7 +247,7 @@ router.get('/me', auth, async (req: Request, res: Response, next: NextFunction) 
 // PUT /api/auth/profile — Update profile
 router.put('/profile', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, phone, bio } = req.body;
+    const { name, phone, bio } = profileUpdateSchema.parse(req.body);
     const updates: any = {};
     if (name !== undefined) updates.name = name;
     if (phone !== undefined) updates.phone = phone;

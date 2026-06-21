@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase';
+import { auth } from '../middleware/auth';
 
 const router = Router();
 
@@ -54,7 +55,7 @@ router.get('/search', async (req: Request, res: Response, next: NextFunction) =>
   } catch (e) { next(e); }
 });
 
-router.post('/sync', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/sync', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { nodes, edges } = req.body;
     if (!Array.isArray(nodes)) {
