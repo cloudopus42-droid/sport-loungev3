@@ -138,13 +138,32 @@ router.put('/reorder', auth, isAdmin, async (req: Request, res: Response, next: 
       return;
     }
 
-    for (const item of items) {
-      const id = item._id || item.id;
-      if (!id) continue;
-      await supabase
-        .from('showcases')
-        .update({ sort_order: item.order })
-        .eq('id', id);
+    const MAX_RETRIES = 3;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      let failed = false;
+
+      for (const item of items) {
+        const id = item._id || item.id;
+        if (!id) continue;
+        const { error } = await supabase
+          .from('showcases')
+          .update({ sort_order: item.order })
+          .eq('id', id);
+
+        if (error) {
+          failed = true;
+          if (attempt < MAX_RETRIES) {
+            console.warn(`⚠️ [Showcase] Reorder attempt ${attempt}/${MAX_RETRIES} failed: ${error.message}`);
+            await new Promise(r => setTimeout(r, 200 * attempt));
+          } else {
+            res.status(500).json({ error: 'Не удалось обновить порядок: ' + error.message });
+            return;
+          }
+          break;
+        }
+      }
+
+      if (!failed) break;
     }
 
     const { data: updated } = await supabase

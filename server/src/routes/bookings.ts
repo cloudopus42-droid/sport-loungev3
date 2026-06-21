@@ -72,46 +72,70 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
   try {
     const data = createBookingSchema.parse(req.body);
 
-    // Проверяем, забронировано ли уже место на эту дату и время
-    const { data: existing, error: checkError } = await supabase
-      .from('bookings')
-      .select('id')
-      .eq('seat_id', data.seatId)
-      .eq('date', data.date)
-      .eq('time', data.time)
-      .neq('status', 'cancelled')
-      .maybeSingle();
+    // Retry loop to handle race condition on concurrent bookings
+    let booking: any = null;
+    const MAX_RETRIES = 3;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      // Проверяем, забронировано ли уже место на эту дату и время
+      const { data: existing, error: checkError } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('seat_id', data.seatId)
+        .eq('date', data.date)
+        .eq('time', data.time)
+        .neq('status', 'cancelled')
+        .maybeSingle();
 
-    if (existing) {
-      res.status(409).json({ error: 'Это место уже забронировано на выбранное время', status: 409 });
-      return;
+      if (checkError) {
+        res.status(500).json({ error: checkError.message });
+        return;
+      }
+
+      if (existing) {
+        res.status(409).json({ error: 'Это место уже забронировано на выбранное время', status: 409 });
+        return;
+      }
+
+      // Создаем бронь в БД
+      const { data: inserted, error: insertError } = await supabase
+        .from('bookings')
+        .insert({
+          user_id: req.user!.id,
+          seat_id: data.seatId,
+          seat_label: data.seatLabel,
+          seat_zone: data.seatZone,
+          date: data.date,
+          time: data.time,
+          guests_count: data.guestsCount,
+          phone: data.phone,
+          hookah_mix: data.hookahMix || 'Без кальяна (заказ на месте)',
+          hookah_strength: data.hookahStrength,
+          hookah_count: data.hookahCount,
+          comment: data.comment || '',
+          status: 'pending',
+          hookah_status: 'accepted',
+          hookah_status_updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (insertError && attempt < MAX_RETRIES) {
+        console.warn(`⚠️ [Booking] Insert attempt ${attempt}/${MAX_RETRIES} failed, retrying: ${insertError.message}`);
+        await new Promise(r => setTimeout(r, 200 * attempt));
+        continue;
+      }
+
+      if (insertError || !inserted) {
+        res.status(500).json({ error: 'Не удалось создать бронирование: ' + insertError?.message });
+        return;
+      }
+
+      booking = inserted;
+      break;
     }
 
-    // Создаем бронь в БД
-    const { data: booking, error: insertError } = await supabase
-      .from('bookings')
-      .insert({
-        user_id: req.user!.id,
-        seat_id: data.seatId,
-        seat_label: data.seatLabel,
-        seat_zone: data.seatZone,
-        date: data.date,
-        time: data.time,
-        guests_count: data.guestsCount,
-        phone: data.phone,
-        hookah_mix: data.hookahMix || 'Без кальяна (заказ на месте)',
-        hookah_strength: data.hookahStrength,
-        hookah_count: data.hookahCount,
-        comment: data.comment || '',
-        status: 'pending',
-        hookah_status: 'accepted',
-        hookah_status_updated_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (insertError || !booking) {
-      res.status(500).json({ error: 'Не удалось создать бронирование: ' + insertError?.message });
+    if (!booking) {
+      res.status(500).json({ error: 'Не удалось создать бронирование после нескольких попыток' });
       return;
     }
 

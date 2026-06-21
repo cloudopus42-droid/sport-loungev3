@@ -16,6 +16,7 @@ import { swaggerDocument } from './config/swagger';
 
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
+import { rateLimiter } from './middleware/rateLimiter';
 
 // Route imports
 import authRoutes from './routes/auth';
@@ -34,21 +35,11 @@ import invoiceRoutes from './routes/invoices';
 import orderRoutes from './routes/orders';
 import restockRoutes from './routes/restock';
 import smartFeaturesRoutes from './routes/smartFeatures';
-
-import rateLimit from 'express-rate-limit';
-
-function rateLimitMiddleware(limit: number, windowMs: number) {
-  return rateLimit({
-    windowMs,
-    max: limit,
-    message: {
-      error: 'Слишком много запросов. Пожалуйста, попробуйте позже.',
-      status: 429,
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-}
+import inventoryRoutes from './routes/inventory';
+import menuRoutes from './routes/menu';
+import pagesRoutes from './routes/pages';
+import telegramRoutes from './routes/telegram';
+import monitoringRoutes from './routes/monitoring';
 
 const app = express();
 
@@ -88,13 +79,16 @@ app.get('/api/health', (_req, res) => {
 });
 
 // Mount routes
-app.use('/api/auth', rateLimitMiddleware(15, 60000), authRoutes);
+app.use('/api/auth/login', rateLimiter(10, 60000));
+app.use('/api/auth/register', rateLimiter(5, 60000));
+app.use('/api/auth/google', rateLimiter(10, 60000));
+app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/mixes', mixRoutes);
 app.use('/api/promos', promoRoutes);
 app.use('/api/stories', storyRoutes);
 app.use('/api/invitations', invitationRoutes);
-app.use('/api/bookings', rateLimitMiddleware(10, 60000), bookingRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/api/showcases', showcaseRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/tobacco', tobaccoRoutes);
@@ -104,6 +98,11 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/restock', restockRoutes);
 app.use('/api/smart-features', smartFeaturesRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/pages', pagesRoutes);
+app.use('/api/telegram', telegramRoutes);
+app.use('/api/monitoring', monitoringRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

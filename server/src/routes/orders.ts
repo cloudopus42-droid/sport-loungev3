@@ -278,43 +278,54 @@ router.post('/:id/rating', auth, async (req: Request, res: Response, next: NextF
   try {
     const data = ratingSchema.parse(req.body);
 
-    const { data: order, error: fetchErr } = await supabase
-      .from('orders')
-      .select('rating, user_id')
-      .eq('id', req.params.id)
-      .maybeSingle();
+    // Retry loop to handle race condition on concurrent rating submissions
+    const MAX_RETRIES = 3;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const { data: order, error: fetchErr } = await supabase
+        .from('orders')
+        .select('rating, user_id')
+        .eq('id', req.params.id)
+        .maybeSingle();
 
-    if (fetchErr || !order) {
-      res.status(404).json({ error: 'Заказ не найден', status: 404 });
+      if (fetchErr || !order) {
+        res.status(404).json({ error: 'Заказ не найден', status: 404 });
+        return;
+      }
+
+      if (order.user_id !== req.user!.id) {
+        res.status(403).json({ error: 'Вы не можете оценивать чужие заказы', status: 403 });
+        return;
+      }
+
+      if (order.rating !== null) {
+        res.status(400).json({ error: 'Вы уже оценивали данный заказ', status: 400 });
+        return;
+      }
+
+      const { data: updated, error: updateErr } = await supabase
+        .from('orders')
+        .update({
+          rating: data.rating,
+          rating_comment: data.rating_comment,
+        })
+        .eq('id', req.params.id)
+        .select()
+        .single();
+
+      if (!updateErr && updated) {
+        res.json(mapOrderToFrontend(updated));
+        return;
+      }
+
+      if (updateErr && attempt < MAX_RETRIES) {
+        console.warn(`⚠️ [Rating] Update attempt ${attempt}/${MAX_RETRIES} failed, retrying: ${updateErr.message}`);
+        await new Promise(r => setTimeout(r, 200 * attempt));
+        continue;
+      }
+
+      res.status(500).json({ error: 'Не удалось сохранить рейтинг: ' + updateErr?.message });
       return;
     }
-
-    if (order.user_id !== req.user!.id) {
-      res.status(403).json({ error: 'Вы не можете оценивать чужие заказы', status: 403 });
-      return;
-    }
-
-    if (order.rating !== null) {
-      res.status(400).json({ error: 'Вы уже оценивали данный заказ', status: 400 });
-      return;
-    }
-
-    const { data: updated, error: updateErr } = await supabase
-      .from('orders')
-      .update({
-        rating: data.rating,
-        rating_comment: data.rating_comment,
-      })
-      .eq('id', req.params.id)
-      .select()
-      .single();
-
-    if (updateErr) {
-      res.status(500).json({ error: 'Не удалось сохранить рейтинг: ' + updateErr.message });
-      return;
-    }
-
-    res.json(mapOrderToFrontend(updated));
   } catch (err) {
     next(err);
   }
