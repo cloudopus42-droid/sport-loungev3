@@ -15,6 +15,7 @@ import type { Invitation } from '@/types';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
+import { staggerContainer } from '@/lib/motion';
 
 const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
 
@@ -185,10 +186,9 @@ export function MainLayout() {
   const pageTransition = prefersReducedMotion
     ? { initial: {}, animate: {}, exit: {}, transition: { duration: 0.01 } }
     : {
-        initial: { opacity: 0, y: 12 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: -12 },
-        transition: { duration: 0.35, ease: 'easeOut' },
+        initial: { opacity: 0, y: 16 },
+        animate: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 120, damping: 24, mass: 1 } },
+        exit: { opacity: 0, y: -12, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } },
       };
 
   return (
@@ -217,9 +217,9 @@ export function MainLayout() {
             className="flex items-center gap-1.5 flex-shrink-0 select-none group"
             aria-label="На главную"
           >
-            <span className="text-sm font-heading font-extrabold tracking-[0.2em] text-white group-hover:text-accent-gold transition-colors duration-300">SPORT</span>
+            <span className="text-sm font-display font-bold tracking-[0.15em] text-white group-hover:text-accent-gold transition-colors duration-300">SPORT</span>
             <motion.span
-              className="text-sm font-heading font-extrabold tracking-[0.2em] text-accent-gold"
+              className="text-sm font-display font-black italic tracking-[0.1em] text-accent-gold"
               whileHover={{ scale: [1, 1.04, 1] }}
               transition={{ duration: 0.6, ease: 'easeInOut' }}
             >
@@ -446,6 +446,7 @@ export function MainLayout() {
           <motion.div
             key={location.pathname}
             {...pageTransition}
+            variants={staggerContainer}
           >
             <Outlet />
           </motion.div>

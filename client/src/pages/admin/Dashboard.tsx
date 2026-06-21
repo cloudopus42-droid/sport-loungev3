@@ -232,7 +232,7 @@ export function Dashboard() {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Executive Analytics Finance Chart */}
-          <GlassCard className="p-6 overflow-hidden relative border-glass-border/40">
+          <GlassCard variant="premium" className="p-6 overflow-hidden relative">
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className="text-sm font-semibold text-white/90">Статистика выручки</h3>
@@ -299,7 +299,7 @@ export function Dashboard() {
           </GlassCard>
 
           {/* Active Shisha Queue Panel */}
-          <GlassCard className="p-5 border-glass-border/40">
+          <GlassCard variant="premium" className="p-5">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-white/95 flex items-center gap-1.5">
                 <PlusIcon className="w-4 h-4 text-accent-gold" />
@@ -408,7 +408,7 @@ export function Dashboard() {
           )}
 
           {/* Live Online Activity Card */}
-          <GlassCard className="p-5 border-glass-border/40">
+          <GlassCard variant="premium" className="p-5">
             <div className="flex justify-between items-center mb-3 border-b border-glass-border/10 pb-3">
               <h3 className="text-sm font-semibold text-white/95 flex items-center gap-2">
                 <UserIcon className="w-4 h-4 text-accent-gold" />
@@ -444,7 +444,7 @@ export function Dashboard() {
           </GlassCard>
 
           {/* System notification log */}
-          <GlassCard className="p-5 border-glass-border/40">
+          <GlassCard variant="premium" className="p-5">
             <div className="flex justify-between items-center mb-3 border-b border-glass-border/10 pb-3">
               <h3 className="text-sm font-semibold text-white/95">События</h3>
             </div>
@@ -474,7 +474,7 @@ export function Dashboard() {
       </div>
 
       {/* NEW section: Hookah Taste Choices Analytics (Breakdown panel) */}
-      <GlassCard className="p-6 border-glass-border/40">
+      <GlassCard variant="premium" className="p-6">
         <h3 className="text-md font-display font-semibold text-white tracking-wide flex items-center gap-2 mb-4 border-b border-glass-border/10 pb-3">
           <Award className="w-5 h-5 text-accent-gold" />
           <span>Аналитика вкусовых предпочтений гостей</span>

@@ -9,6 +9,7 @@ import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
 import { GlowIcon } from '@/components/ui/GlowIcon';
+import { staggerContainer, scaleStagger, hoverLift, pageTransition } from '@/lib/motion';
 
 type ShowcaseItem = {
   id: string;
@@ -19,6 +20,38 @@ type ShowcaseItem = {
   sort_order: number;
   is_active: boolean;
 };
+
+const staggerHero = {
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 24 } },
+};
+
+const benefitItems = [
+  {
+    title: 'Премиальное качество',
+    desc: 'Только отборные табаки и качественные смеси',
+    iconName: 'award' as const,
+    span: 'lg:col-span-4',
+  },
+  {
+    title: 'Идеальная крепость',
+    desc: 'Готовим на 4 углях под баней без перегрева и горечи',
+    iconName: 'flame' as const,
+    span: 'lg:col-span-3',
+  },
+  {
+    title: 'Круглосуточно 24/7',
+    desc: 'Мы работаем для вас в любое время суток',
+    iconName: 'clock' as const,
+    span: 'lg:col-span-3',
+  },
+  {
+    title: 'Комфорт и атмосфера',
+    desc: 'Стильный интерьер и уютная атмосфера для отдыха',
+    iconName: 'compass' as const,
+    span: 'lg:col-span-2',
+  },
+];
 
 export function HomePage() {
   const [promos, setPromos] = useState<Promo[]>([]);
@@ -61,15 +94,11 @@ export function HomePage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
-      transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
+      {...pageTransition}
       className="space-y-12 pb-16 overflow-x-hidden bg-nocturnal bg-warm-glow"
     >
-      {/* Centered Hero Section with Neon Globe Backdrop */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
-        {/* Video Background */}
         <video
           autoPlay
           muted
@@ -78,89 +107,82 @@ export function HomePage() {
           className="absolute inset-0 w-full h-full object-cover z-0"
           src="/кальянhhs.mp4"
         />
-        {/* Dark blur gradient at bottom of video */}
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/70 via-black/30 to-transparent backdrop-blur-[2px] z-0" />
 
-        <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8 liquid-glass rounded-2xl p-8">
-          {/* Subtitle Telemetry header */}
-          <motion.div 
-            className="flex items-center justify-center gap-2"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+        <motion.div
+          className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          <motion.div
+            className="glass-card-premium px-6 sm:px-10 py-8 sm:py-10 rounded-2xl"
+            variants={staggerHero}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
-            <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-bold">
-              SPORT LOUNGE • КРУГЛОСУТОЧНО 24/7
-            </span>
-          </motion.div>
-          
-          {/* Centered Large Header */}
-          <motion.h1 
-            className="text-4xl sm:text-6xl md:text-7xl font-display font-black text-white leading-[1.08] uppercase tracking-tight"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            ИСТИННЫЙ ВКУС <br />
-            <span className="gradient-text font-black">И КРЕПОСТЬ</span>
-          </motion.h1>
-          
-          {/* Paragraph description */}
-          <motion.p 
-            className="text-sm sm:text-base text-white/50 max-w-2xl mx-auto leading-relaxed font-light"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            Премиальный лаунж с изысканным обслуживанием, авторскими кальянами и элитными чайными церемониями. Сделайте заказ прямо за свой стол в реальном времени.
-          </motion.p>
-          
-          {/* Action buttons (White pill & Transparent outline) */}
-          <motion.div 
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <NavLink to="/booking" className="w-full sm:w-auto">
-              <motion.button
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#080605] border-none font-bold text-sm shadow-[0_4px_24px_rgba(212,175,55,0.35)] flex items-center justify-center gap-1.5 transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
-              </motion.button>
-            </NavLink>
-            <NavLink to="/booking" className="w-full sm:w-auto">
-              <motion.button
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white bg-transparent text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <GlowIcon name="flame" color="gold" size={16} animateOnHover /> ИИ-Миксолог
-              </motion.button>
-            </NavLink>
-          </motion.div>
+            <motion.div
+              className="flex items-center justify-center gap-2 mb-4"
+              variants={staggerHero}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
+              <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-bold">
+                SPORT LOUNGE • КРУГЛОСУТОЧНО 24/7
+              </span>
+            </motion.div>
 
-          {/* Centered address cards */}
-          <motion.div 
-            className="flex flex-col sm:flex-row justify-center items-center gap-8 pt-8 text-xs text-white/40 font-mono tracking-widest"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <span className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors" onClick={handleAddressClick}>
-              <GlowIcon name="mappin" color="gold" size={14} /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
-            </span>
-            <span className="hidden sm:inline opacity-30">•</span>
-            <span className="flex items-center gap-1.5">
-              <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
-            </span>
+            <motion.h1
+              className="text-4xl sm:text-6xl md:text-7xl font-display font-black text-white leading-[1.08] uppercase tracking-tight"
+              variants={staggerHero}
+            >
+              ИСТИННЫЙ ВКУС <br />
+              <span className="gradient-text font-black">И КРЕПОСТЬ</span>
+            </motion.h1>
+
+            <motion.p
+              className="text-sm sm:text-base text-white/50 max-w-2xl mx-auto leading-relaxed font-light mt-6"
+              variants={staggerHero}
+            >
+              Премиальный лаунж с изысканным обслуживанием, авторскими кальянами и элитными чайными церемониями. Сделайте заказ прямо за свой стол в реальном времени.
+            </motion.p>
+
+            <motion.div
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6"
+              variants={staggerHero}
+            >
+              <NavLink to="/booking" className="w-full sm:w-auto">
+                <motion.button
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#080605] border-none font-bold text-sm shadow-[0_4px_24px_rgba(212,175,55,0.35)] flex items-center justify-center gap-1.5 transition-all"
+                  {...hoverLift}
+                >
+                  <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
+                </motion.button>
+              </NavLink>
+              <NavLink to="/booking" className="w-full sm:w-auto">
+                <motion.button
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white bg-transparent text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all"
+                  {...hoverLift}
+                >
+                  <GlowIcon name="flame" color="gold" size={16} animateOnHover /> ИИ-Миксолог
+                </motion.button>
+              </NavLink>
+            </motion.div>
+
+            <motion.div
+              className="flex flex-col sm:flex-row justify-center items-center gap-8 pt-8 text-xs text-white/40 font-mono tracking-widest"
+              variants={staggerHero}
+            >
+              <span className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors" onClick={handleAddressClick}>
+                <GlowIcon name="mappin" color="gold" size={14} /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
+              </span>
+              <span className="hidden sm:inline opacity-30">•</span>
+              <span className="flex items-center gap-1.5">
+                <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
+              </span>
+            </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
+      {/* Showcase Carousel */}
       <section id="carousel" className="relative pt-8">
         <div className="text-center space-y-2 mb-6 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">
@@ -190,7 +212,7 @@ export function HomePage() {
         />
       </section>
 
-      {/* Why Guests Choose Us Section */}
+      {/* Why Us */}
       <section id="why-us" className="relative pt-8">
         <div className="text-center space-y-2 mb-10 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold flex items-center justify-center gap-1">
@@ -201,24 +223,21 @@ export function HomePage() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 relative">
-          {[
-            { title: 'Премиальное качество', desc: 'Только отборные табаки и качественные смеси', iconName: 'award' as const, span: 'lg:col-span-4' },
-            { title: 'Идеальная крепость', desc: 'Готовим на 4 углях под баней без перегрева и горечи', iconName: 'flame' as const, span: 'lg:col-span-3' },
-            { title: 'Круглосуточно 24/7', desc: 'Мы работаем для вас в любое время суток', iconName: 'clock' as const, span: 'lg:col-span-3' },
-            { title: 'Комфорт и атмосфера', desc: 'Стильный интерьер и уютная атмосфера для отдыха', iconName: 'compass' as const, span: 'lg:col-span-2' },
-          ].map((item, index) => (
+        <motion.div
+          className="grid grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 relative"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          {benefitItems.map((item, index) => (
             <motion.div
               key={item.title}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
+              variants={scaleStagger}
               onMouseMove={(e) => handleCardMouseMove(e)}
               onMouseEnter={() => setHoveredCardIndex(index)}
               onMouseLeave={() => setHoveredCardIndex(null)}
               className={`relative rounded-[28px] overflow-hidden group ${item.span}`}
             >
-              {/* Dynamic spotlight glow that follows coordinates cursor relative */}
               {hoveredCardIndex === index && (
                 <div
                   className="absolute pointer-events-none rounded-[28px] transition-opacity duration-300"
@@ -230,15 +249,13 @@ export function HomePage() {
                     top: `${cardCoords.y - 160}px`,
                     mixBlendMode: 'screen',
                     zIndex: 0,
-                    // Injecting variables for smooth CSS calculations
-                    // @ts-ignore
                     '--x': `${cardCoords.x}px`,
                     '--y': `${cardCoords.y}px`,
-                  }}
+                  } as React.CSSProperties}
                 />
               )}
-              
-              <GlassCard className="p-6 h-full flex flex-col justify-between hover:border-accent-gold/40 border-glass-border/30 z-10 relative">
+
+              <GlassCard variant="premium" hoverable className="p-6 h-full flex flex-col justify-between z-10 relative">
                 <div>
                   <div className="w-10 h-10 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center mb-4">
                     <GlowIcon name={item.iconName} color="gold" size={18} animateOnHover />
@@ -249,24 +266,21 @@ export function HomePage() {
               </GlassCard>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
-      {/* Booking Footer CTA section with VIP Club promo card */}
+      {/* Booking CTA */}
       <section id="events" className="relative pt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch select-none">
-          {/* Main Booking Panel */}
           <div className="lg:col-span-8">
-            <GlassCard className="p-8 sm:p-10 h-full flex flex-col justify-between border-glass-border/30 relative overflow-hidden group min-h-[320px]">
-              {/* Background Image of Cozy Lounge */}
-              <div 
-                className="absolute inset-0 bg-cover bg-center opacity-15 mix-blend-luminosity z-0 transition-transform duration-700 group-hover:scale-105" 
+            <GlassCard variant="gold-ring" className="p-8 sm:p-10 h-full flex flex-col justify-between relative overflow-hidden group min-h-[320px]">
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-15 mix-blend-luminosity z-0 transition-transform duration-700 group-hover:scale-105"
                 style={{ backgroundImage: `url('https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=800&auto=format&fit=crop')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/45 to-black/10 z-0" />
-              {/* Soft warm lamp background effect inside CTA */}
               <div className="absolute right-0 bottom-0 w-80 h-80 bg-accent-gold/5 rounded-full blur-[90px] pointer-events-none" />
-              
+
               <div className="space-y-4 max-w-xl z-10">
                 <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold font-semibold flex items-center gap-1.5">
                   <Flame className="w-3.5 h-3.5 text-accent-gold animate-pressPop" /> КОНСТРУКТОР ВКУСОВ
@@ -283,8 +297,7 @@ export function HomePage() {
                 <NavLink to="/booking">
                   <motion.button
                     className="px-8 py-3.5 rounded-full border border-[#d4af37]/40 text-white bg-gradient-to-r from-[#b8962e] to-[#8a6d1b] hover:from-[#c9a032] hover:to-[#5c1818] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
-                    whileHover={{ scale: 1.02, transition: { type: 'spring', duration: 0.4, bounce: 0.2 } }}
-                    whileTap={{ scale: 0.97, transition: { type: 'spring', duration: 0.12, bounce: 0 } }}
+                    {...hoverLift}
                   >
                     <Flame className="w-4 h-4 text-accent-gold animate-pressPop" /> Открыть конструктор
                   </motion.button>
@@ -293,15 +306,13 @@ export function HomePage() {
             </GlassCard>
           </div>
 
-          {/* VIP Pass Panel */}
           <div className="lg:col-span-4">
-            <GlassCard className="p-8 h-full flex flex-col justify-between bg-gradient-to-br from-[#0c0816]/95 via-[#050308]/98 to-black border-accent-gold/35 relative overflow-hidden text-center group min-h-[320px] z-10">
-              {/* Decorative corners matching reference VIP layout */}
+            <GlassCard variant="gold-ring" className="p-8 h-full flex flex-col justify-between relative overflow-hidden text-center group min-h-[320px] z-10">
               <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-accent-gold/60 pointer-events-none" />
               <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-accent-gold/60 pointer-events-none" />
               <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-accent-gold/60 pointer-events-none" />
               <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-accent-gold/60 pointer-events-none" />
-              
+
               <div className="space-y-4 z-10 mt-4">
                 <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold/90 font-bold block">Закрытый Клуб</span>
                 <h4 className="text-5xl font-display font-bold text-accent-gold tracking-widest animate-glowPulse">VIP</h4>
@@ -312,8 +323,8 @@ export function HomePage() {
               </div>
 
               <div className="pt-6 z-10">
-                <NavLink 
-                  to="/profile" 
+                <NavLink
+                  to="/profile"
                   className="inline-flex items-center gap-1.5 text-xs text-accent-gold hover:underline font-bold"
                 >
                   <span>Подробнее</span>
@@ -325,7 +336,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Promos Banner Section */}
+      {/* Promos */}
       {promos.length > 0 && (
         <section className="pt-8">
           <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
@@ -333,21 +344,21 @@ export function HomePage() {
           </h2>
           <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {promos.map((promo, i) => (
-              <motion.div 
-                key={promo._id} 
+              <motion.div
+                key={promo._id}
                 className="flex-shrink-0 w-[260px] sm:w-[320px] lg:w-[360px]"
-                initial={{ opacity: 0, x: 30 }} 
-                animate={{ opacity: 1, x: 0 }} 
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 * i, duration: 0.5 }}
               >
-                <GlassCard className="p-3.5 h-full hover:border-accent-gold/30 hover:shadow-glow-gold transition-all duration-300 flex flex-col justify-between">
+                <GlassCard variant="premium" className="p-3.5 h-full transition-all duration-300 flex flex-col justify-between">
                   <div>
                     {promo.imageUrl && (
-                      <img 
-                        src={resolveImageUrl(promo.imageUrl)} 
+                      <img
+                        src={resolveImageUrl(promo.imageUrl)}
                         alt={promo.title}
                         loading="lazy"
-                        className="w-full h-32 sm:h-40 object-cover rounded-xl mb-3.5" 
+                        className="w-full h-32 sm:h-40 object-cover rounded-xl mb-3.5"
                       />
                     )}
                     <div className="flex items-center justify-between gap-2 mb-2">
@@ -367,7 +378,7 @@ export function HomePage() {
         </section>
       )}
 
-      {/* Interactive Map & Detailed Contacts */}
+      {/* Contacts */}
       <section id="contacts" className="relative pt-6">
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
           <GlowIcon name="mappin" color="gold" size={20} className="flex-shrink-0" /> Как нас найти
@@ -375,7 +386,7 @@ export function HomePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <GlassCard className="overflow-hidden p-0 border border-glass-border shadow-lg">
+            <GlassCard variant="premium" className="overflow-hidden p-0">
               <iframe
                 src="https://yandex.ru/map-widget/v1/?ll=47.2725%2C56.1366&z=17&pt=47.2725%2C56.1366%2Cpm2rdm&lang=ru_RU"
                 width="100%"
@@ -389,17 +400,17 @@ export function HomePage() {
           </div>
 
           <div className="space-y-4">
-            <GlassCard className="p-5.5 flex flex-col justify-between h-full">
+            <GlassCard variant="premium" hoverable className="p-5.5 flex flex-col justify-between h-full">
               <div className="space-y-4">
                 <h3 className="text-base sm:text-lg font-display font-semibold text-white">Адрес и Контакты</h3>
-                
+
                 <div className="flex items-start gap-3.5">
                   <GlowIcon name="mappin" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs sm:text-sm text-white font-medium">{CONTACT.address}</p>
-                    <a 
+                    <a
                       href="https://yandex.ru/maps/?pt=47.2725,56.1366&z=17&l=map"
-                      target="_blank" 
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-[11px] text-accent-gold hover:underline mt-1 inline-block"
                     >
@@ -420,10 +431,10 @@ export function HomePage() {
 
                 <div className="h-px bg-glass-border" />
 
-                <a 
-                  href={CONTACT.telegramUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={CONTACT.telegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3.5 group"
                 >
                   <GlowIcon name="send" color="gold" size={16} className="flex-shrink-0" />
@@ -440,4 +451,3 @@ export function HomePage() {
     </motion.div>
   );
 }
-
