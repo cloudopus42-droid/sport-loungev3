@@ -37,19 +37,25 @@ export function FeedPage() {
   const [newImagePreview, setNewImagePreview] = useState('');
   const [creating, setCreating] = useState(false);
 
-  const fetchPosts = useCallback(async (p: number) => {
+  const fetchPosts = useCallback(async (p: number, signal?: AbortSignal) => {
     try {
-      const { data } = await api.get('/api/posts', { params: { page: p, limit: 10 } });
+      const data = await api('/api/posts', { params: { page: p, limit: 10 }, signal });
       if (p === 1) {
         setPosts(data.posts);
       } else {
         setPosts((prev) => [...prev, ...data.posts]);
       }
       setHasMore(data.hasMore);
-    } catch {} finally { setLoading(false); }
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+    } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchPosts(1); }, [fetchPosts]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchPosts(1, ac.signal);
+    return () => ac.abort();
+  }, [fetchPosts]);
 
   const loadMore = useCallback(() => {
     if (hasMore && !loading) {
@@ -70,7 +76,7 @@ export function FeedPage() {
   const handleLike = async (postId: string) => {
     if (!isAuthenticated) { showToast('Войдите чтобы лайкать', 'error'); return; }
     try {
-      const { data } = await api.post(`/api/posts/${postId}/like`);
+      const data = await api(`/api/posts/${postId}/like`, { method: 'POST' });
       setPosts((prev) => prev.map((p) => p._id === postId ? { ...p, likes: data.likes, likedBy: data.likedBy } : p));
     } catch {}
   };
@@ -83,7 +89,7 @@ export function FeedPage() {
       newSet.add(postId);
       if (!commentsData[postId]) {
         try {
-          const { data } = await api.get(`/api/posts/${postId}/comments`);
+          const data = await api(`/api/posts/${postId}/comments`);
           setCommentsData((prev) => ({ ...prev, [postId]: data }));
         } catch {}
       }
@@ -95,7 +101,7 @@ export function FeedPage() {
     const text = commentInputs[postId]?.trim();
     if (!text) return;
     try {
-      const { data } = await api.post(`/api/posts/${postId}/comments`, { text });
+      const data = await api(`/api/posts/${postId}/comments`, { method: 'POST', body: { text } });
       setCommentsData((prev) => ({ ...prev, [postId]: data }));
       setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
     } catch { showToast('Ошибка отправки', 'error'); }
@@ -110,7 +116,7 @@ export function FeedPage() {
       fd.append('title', newTitle);
       fd.append('description', newDesc);
       fd.append('image', newImage);
-      const { data } = await api.post('/api/posts', fd);
+      const data = await api('/api/posts', { method: 'POST', body: fd });
       setPosts((prev) => [data, ...prev]);
       setShowCreate(false);
       setNewTitle(''); setNewDesc(''); setNewImage(null); setNewImagePreview('');

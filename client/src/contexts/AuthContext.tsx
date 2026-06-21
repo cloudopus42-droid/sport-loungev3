@@ -63,6 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
+    const ac = new AbortController();
     const checkAuth = async () => {
       const savedToken = localStorage.getItem('token');
       if (!savedToken) {
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       try {
-        const { data } = await api.get<{ user: User }>('/api/auth/me');
+        const data = await api<{ user: User }>('/api/auth/me', { signal: ac.signal });
         const normalized = normalizeUser(data.user);
         setUser(normalized);
         setToken(savedToken);
@@ -89,10 +90,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     checkAuth();
+    return () => ac.abort();
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { data } = await api.post<AuthResponse>('/api/auth/login', { email, password });
+    const data = await api<AuthResponse>('/api/auth/login', { method: 'POST', body: { email, password } });
     const normalized = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(normalized));
@@ -101,7 +103,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    const { data } = await api.post<AuthResponse>('/api/auth/register', { email, password, name });
+    const data = await api<AuthResponse>('/api/auth/register', { method: 'POST', body: { email, password, name } });
     const normalized = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(normalized));
@@ -120,7 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const handleGoogleCallback = useCallback(async (accessToken: string) => {
-    const { data } = await api.post<AuthResponse>('/api/auth/google', { accessToken });
+    const data = await api<AuthResponse>('/api/auth/google', { method: 'POST', body: { accessToken } });
     const normalized = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(normalized));

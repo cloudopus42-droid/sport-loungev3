@@ -34,11 +34,12 @@ export function AdminInvitationsPage() {
   const [location, setLocation] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
-  const fetchInvitations = useCallback(async () => {
+  const fetchInvitations = useCallback(async (signal?: AbortSignal) => {
     try {
-      const { data } = await api.get('/api/invitations');
+      const data = await api('/api/invitations', { signal });
       setInvitations(Array.isArray(data) ? data : data.data || []);
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       showToast('Ошибка загрузки приглашений', 'error');
     } finally {
       setLoading(false);
@@ -46,7 +47,9 @@ export function AdminInvitationsPage() {
   }, []);
 
   useEffect(() => {
-    fetchInvitations();
+    const ac = new AbortController();
+    fetchInvitations(ac.signal);
+    return () => ac.abort();
   }, [fetchInvitations]);
 
   const openCreate = () => {
@@ -79,14 +82,10 @@ export function AdminInvitationsPage() {
       if (file) formData.append('image', file);
 
       if (editingInvitation) {
-        await api.put(`/api/invitations/${editingInvitation._id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api(`/api/invitations/${editingInvitation._id}`, { method: 'PUT', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
         showToast('Приглашение обновлено', 'success');
       } else {
-        await api.post('/api/invitations', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api('/api/invitations', { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
         showToast('Приглашение создано', 'success');
       }
       setModalOpen(false);
@@ -103,7 +102,7 @@ export function AdminInvitationsPage() {
     if (!publishTarget) return;
     setPublishing(true);
     try {
-      await api.put(`/api/invitations/${publishTarget._id}`, { status: 'published' });
+      await api(`/api/invitations/${publishTarget._id}`, { method: 'PUT', body: { status: 'published' } });
 
       // Emit socket event
       if (socket) {
@@ -125,7 +124,7 @@ export function AdminInvitationsPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await api.delete(`/api/invitations/${deleteTarget}`);
+      await api(`/api/invitations/${deleteTarget}`, { method: 'DELETE' });
       showToast('Приглашение удалено', 'success');
       setDeleteDialogOpen(false);
       setDeleteTarget(null);

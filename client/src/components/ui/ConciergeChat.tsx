@@ -29,9 +29,9 @@ export function ConciergeChat() {
   };
 
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(scrollToBottom, 80);
-    }
+    if (!isOpen) return;
+    const timer = setTimeout(scrollToBottom, 80);
+    return () => clearTimeout(timer);
   }, [isOpen, messages]);
 
   const handleSend = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export function ConciergeChat() {
 
     try {
       // Call backend AI concierge assistant
-      const { data } = await api.post<{ response: string }>('/api/ai/chat', {
+      const { data } = await api.post('/api/ai/chat', {
         message: userMsg,
         history: updatedMessages.slice(0, -1) // omit the last user message as it is passed separately
       });

@@ -18,6 +18,6 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((err) => {
       console.log('SW registration failed: ', err);
     });
-  });
+  }, { once: true });
 }
 

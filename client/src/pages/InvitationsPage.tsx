@@ -12,10 +12,12 @@ export function InvitationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const ac = new AbortController();
     const fetchInvitations = async () => {
       try {
-        const { data } = await api.get<Invitation[]>('/api/invitations', {
+        const data = await api<Invitation[]>('/api/invitations', {
           params: { status: 'published' },
+          signal: ac.signal,
         });
         setInvitations(data);
       } catch {
@@ -25,6 +27,7 @@ export function InvitationsPage() {
       }
     };
     fetchInvitations();
+    return () => ac.abort();
   }, []);
 
   return (

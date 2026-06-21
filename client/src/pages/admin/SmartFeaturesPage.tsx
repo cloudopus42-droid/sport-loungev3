@@ -71,7 +71,7 @@ export function SmartFeaturesPage() {
   const fetchFeatures = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get<SmartFeature[]>('/api/smart-features');
+      const data = await api<SmartFeature[]>('/api/smart-features');
       setFeatures(Array.isArray(data) ? data : []);
     } catch {
       showToast('Ошибка загрузки функций', 'error');
@@ -81,7 +81,9 @@ export function SmartFeaturesPage() {
   }, []);
 
   useEffect(() => {
+    const ac = new AbortController();
     fetchFeatures();
+    return () => ac.abort();
   }, [fetchFeatures]);
 
   const handleToggle = async (feature: SmartFeature) => {
@@ -91,7 +93,7 @@ export function SmartFeaturesPage() {
       prev.map((f) => (f.id === feature.id ? { ...f, enabled: newEnabled } : f))
     );
     try {
-      await api.put(`/api/smart-features/${feature.id}`, { enabled: newEnabled });
+      await api(`/api/smart-features/${feature.id}`, { method: 'PUT', body: { enabled: newEnabled } });
       showToast(
         `${feature.name} ${newEnabled ? 'включена' : 'отключена'}`,
         'success'
@@ -128,9 +130,9 @@ export function SmartFeaturesPage() {
         setSavingConfig(false);
         return;
       }
-      const { data } = await api.put<SmartFeature>(
+      const data = await api<SmartFeature>(
         `/api/smart-features/${editingFeature.id}`,
-        { config: parsed }
+        { method: 'PUT', body: { config: parsed } }
       );
       setFeatures((prev) =>
         prev.map((f) => (f.id === editingFeature.id ? data : f))

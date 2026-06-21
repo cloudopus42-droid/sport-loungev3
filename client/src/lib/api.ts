@@ -1,32 +1,9 @@
-import axios from 'axios';
-
-// Dynamic base URL: works on localhost, LAN IP, and production
 function getBaseUrl(): string {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
   const { protocol, hostname, port } = window.location;
-  // If served from port 5000 (SPA via Express), API is same origin
   if (port === '5000' || port === '') return '';
-  // Dev server (port 3000) — use same hostname but port 5000
   return `${protocol}//${hostname}:5000`;
 }
-
-const api = axios.create({
-  baseURL: getBaseUrl(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 function normalizeKeys(obj: any): any {
   if (!obj || typeof obj !== 'object') return obj;
@@ -49,13 +26,60 @@ function normalizeKeys(obj: any): any {
   return normalized;
 }
 
-api.interceptors.response.use(
-  (response) => {
-    response.data = normalizeKeys(response.data);
-    return response;
-  },
-  (error) => {
-    if (error.response?.status === 401) {
+export interface ApiOptions {
+  method?: string;
+  body?: any;
+  headers?: Record<string, string>;
+  params?: Record<string, string | number | undefined>;
+  signal?: AbortSignal;
+}
+
+interface ApiFunction {
+  <T = any>(endpoint: string, options?: ApiOptions): Promise<T>;
+  get<T = any>(endpoint: string, options?: ApiOptions): Promise<T>;
+  post<T = any>(endpoint: string, body?: any, options?: ApiOptions): Promise<T>;
+  put<T = any>(endpoint: string, body?: any, options?: ApiOptions): Promise<T>;
+  delete<T = any>(endpoint: string, options?: ApiOptions): Promise<T>;
+}
+
+async function apiImpl<T = any>(endpoint: string, options: ApiOptions = {}): Promise<T> {
+  const token = localStorage.getItem('token');
+  const headers: Record<string, string> = {
+    ...options.headers,
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  let url = `${getBaseUrl()}${endpoint}`;
+
+  if (options.params) {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(options.params)) {
+      if (value !== undefined) searchParams.set(key, String(value));
+    }
+    const qs = searchParams.toString();
+    if (qs) url += `?${qs}`;
+  }
+
+  let body: BodyInit | undefined;
+  if (options.body) {
+    if (options.body instanceof FormData) {
+      body = options.body;
+      delete headers['Content-Type'];
+    } else {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify(options.body);
+    }
+  }
+
+  const res = await fetch(url, {
+    method: options.method || 'GET',
+    headers,
+    body,
+    signal: options.signal,
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       const base = import.meta.env.BASE_URL;
@@ -63,9 +87,28 @@ api.interceptors.response.use(
         window.location.href = `${base}login`;
       }
     }
-    return Promise.reject(error);
+    const errBody = await res.json().catch(() => ({}));
+    const err: any = new Error(errBody.error || `HTTP ${res.status}`);
+    err.response = { data: errBody, status: res.status };
+    throw err;
   }
-);
 
+  const text = await res.text();
+  if (!text) return undefined as T;
+  const json = JSON.parse(text);
+  return normalizeKeys(json) as T;
+}
+
+const api: ApiFunction = Object.assign(apiImpl, {
+  get: <T = any>(endpoint: string, options?: ApiOptions) =>
+    apiImpl<T>(endpoint, { ...options, method: 'GET' }),
+  post: <T = any>(endpoint: string, body?: any, options?: ApiOptions) =>
+    apiImpl<T>(endpoint, { ...options, method: 'POST', body }),
+  put: <T = any>(endpoint: string, body?: any, options?: ApiOptions) =>
+    apiImpl<T>(endpoint, { ...options, method: 'PUT', body }),
+  delete: <T = any>(endpoint: string, options?: ApiOptions) =>
+    apiImpl<T>(endpoint, { ...options, method: 'DELETE' }),
+}) as ApiFunction;
+
+export { api };
 export default api;
-

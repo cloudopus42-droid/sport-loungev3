@@ -37,21 +37,22 @@ export function HomePage() {
 
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash) {
-      const el = document.querySelector(hash);
-      if (el) {
-        setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 150);
-      }
-    }
+    if (!hash) return;
+    const el = document.querySelector(hash);
+    if (!el) return;
+    const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 150);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    api.get<Promo[]>('/api/promos')
-      .then((res) => setPromos(res.data))
+    const ac = new AbortController();
+    api<Promo[]>('/api/promos', { signal: ac.signal })
+      .then((data) => setPromos(data))
       .catch(() => {});
-    api.get<ShowcaseItem[]>('/api/showcases')
-      .then((res) => setShowcaseItems(res.data?.filter(s => s.is_active) || []))
+    api<ShowcaseItem[]>('/api/showcases', { signal: ac.signal })
+      .then((data) => setShowcaseItems(data?.filter(s => s.is_active) || []))
       .catch(() => {});
+    return () => ac.abort();
   }, []);
 
   const handleAddressClick = () => {

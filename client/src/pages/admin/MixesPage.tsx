@@ -29,11 +29,12 @@ export function MixesPage() {
   const [strength, setStrength] = useState(5);
   const [status, setStatus] = useState<'active' | 'inactive'>('active');
 
-  const fetchMixes = useCallback(async () => {
+  const fetchMixes = useCallback(async (signal?: AbortSignal) => {
     try {
-      const { data } = await api.get('/api/mixes');
+      const data = await api('/api/mixes', { signal });
       setMixes(Array.isArray(data) ? data : data.data || []);
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       showToast('Ошибка загрузки миксов', 'error');
     } finally {
       setLoading(false);
@@ -41,7 +42,9 @@ export function MixesPage() {
   }, []);
 
   useEffect(() => {
-    fetchMixes();
+    const ac = new AbortController();
+    fetchMixes(ac.signal);
+    return () => ac.abort();
   }, [fetchMixes]);
 
   const openCreate = () => {
@@ -69,10 +72,10 @@ export function MixesPage() {
 
     try {
       if (editingMix) {
-        await api.put(`/api/mixes/${editingMix._id}`, payload);
+        await api(`/api/mixes/${editingMix._id}`, { method: 'PUT', body: payload });
         showToast('Микс обновлён', 'success');
       } else {
-        await api.post('/api/mixes', payload);
+        await api('/api/mixes', { method: 'POST', body: payload });
         showToast('Микс добавлен', 'success');
       }
       setModalOpen(false);
@@ -89,7 +92,7 @@ export function MixesPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await api.delete(`/api/mixes/${deleteTarget}`);
+      await api(`/api/mixes/${deleteTarget}`, { method: 'DELETE' });
       showToast('Микс удалён', 'success');
       setDeleteDialogOpen(false);
       setDeleteTarget(null);

@@ -26,11 +26,12 @@ export function PostsPage() {
   const [description, setDescription] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
-  const fetchPosts = useCallback(async () => {
+  const fetchPosts = useCallback(async (signal?: AbortSignal) => {
     try {
-      const { data } = await api.get('/api/posts', { params: { limit: 100 } });
+      const data = await api('/api/posts', { params: { limit: 100 }, signal });
       setPosts(data.posts || data);
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       showToast('Ошибка загрузки постов', 'error');
     } finally {
       setLoading(false);
@@ -38,7 +39,9 @@ export function PostsPage() {
   }, []);
 
   useEffect(() => {
-    fetchPosts();
+    const ac = new AbortController();
+    fetchPosts(ac.signal);
+    return () => ac.abort();
   }, [fetchPosts]);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -55,9 +58,7 @@ export function PostsPage() {
       formData.append('description', description);
       formData.append('image', file);
 
-      await api.post('/api/posts', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await api('/api/posts', { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
 
       showToast('Пост создан', 'success');
       setModalOpen(false);
@@ -74,7 +75,7 @@ export function PostsPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await api.delete(`/api/posts/${deleteTarget}`);
+      await api(`/api/posts/${deleteTarget}`, { method: 'DELETE' });
       showToast('Пост удалён', 'success');
       setDeleteDialogOpen(false);
       setDeleteTarget(null);
@@ -90,7 +91,7 @@ export function PostsPage() {
     setDeleting(true);
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => api.delete(`/api/posts/${id}`))
+        Array.from(selectedIds).map((id) => api(`/api/posts/${id}`, { method: 'DELETE' }))
       );
       showToast(`Удалено постов: ${selectedIds.size}`, 'success');
       setBulkDeleteOpen(false);

@@ -24,9 +24,9 @@ export function FeatureProvider({ children }: FeatureProviderProps) {
   const [features, setFeatures] = useState<FeatureStatusMap>({});
   const [loading, setLoading] = useState(true);
 
-  const fetchFeatures = useCallback(async () => {
+  const fetchFeatures = useCallback(async (signal?: AbortSignal) => {
     try {
-      const { data } = await api.get<FeatureStatusMap>('/api/smart-features/status');
+      const data = await api<FeatureStatusMap>('/api/smart-features/status', { signal });
       setFeatures(data);
     } catch {
       setFeatures({});
@@ -36,7 +36,9 @@ export function FeatureProvider({ children }: FeatureProviderProps) {
   }, []);
 
   useEffect(() => {
-    fetchFeatures();
+    const ac = new AbortController();
+    fetchFeatures(ac.signal);
+    return () => ac.abort();
   }, [fetchFeatures]);
 
   const isFeatureEnabled = useCallback(

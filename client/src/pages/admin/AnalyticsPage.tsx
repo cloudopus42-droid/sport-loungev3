@@ -101,17 +101,19 @@ export function AnalyticsPage() {
   };
 
   useEffect(() => {
+    const ac = new AbortController();
     (async () => {
       try { 
-        const { data } = await api.get<Booking[]>('/api/bookings/all'); 
+        const data = await api<Booking[]>('/api/bookings/all', { signal: ac.signal }); 
         setAllBookings(data); 
       } catch {}
       try {
-        const { data } = await api.get<Invoice[]>('/api/invoices');
+        const data = await api<Invoice[]>('/api/invoices', { signal: ac.signal });
         setInvoices(data);
       } catch {}
       setLoading(false);
     })();
+    return () => ac.abort();
   }, []);
 
   const handleSaveSettings = () => {

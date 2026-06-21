@@ -141,7 +141,12 @@ export function BookingPage() {
     loadMixes(); // reload to show the custom mix in list
   };
 
+  const loadMixesRef = useRef<AbortController | null>(null);
+
   const loadMixes = () => {
+    loadMixesRef.current?.abort();
+    const ac = new AbortController();
+    loadMixesRef.current = ac;
     setLoading(true);
     let localCustomMix: any = null;
     try {
@@ -163,25 +168,32 @@ export function BookingPage() {
 
     setMixes(localCustomMix ? [localCustomMix] : []);
 
-    api.get<Mix[]>('/api/mixes')
-      .then(res => {
-        const serverList = res.data || [];
+    api<Mix[]>('/api/mixes', { signal: ac.signal })
+      .then(data => {
+        const serverList = data || [];
         const combined = localCustomMix ? [localCustomMix, ...serverList] : serverList;
         setMixes(combined);
       })
-      .catch(() => {
+      .catch((err: any) => {
+        if (err?.name === 'AbortError') return;
         showToast('Сеть недоступна, показано локальное меню', 'error');
       })
       .finally(() => setLoading(false));
   };
 
+  const fetchOrderStatusRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
     loadMixes();
+    return () => { loadMixesRef.current?.abort(); };
+  }, []);
 
+  useEffect(() => {
     const savedOrderId = localStorage.getItem('current_order_id');
     if (savedOrderId && isAuthenticated) {
       fetchOrderStatus(savedOrderId);
     }
+    return () => { fetchOrderStatusRef.current?.abort(); };
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -228,9 +240,13 @@ export function BookingPage() {
   }, [activeOrder]);
 
   const fetchOrderStatus = (id: string) => {
-    api.get(`/api/orders/${id}/status`)
-      .then(res => setActiveOrder(res.data))
-      .catch(() => {
+    fetchOrderStatusRef.current?.abort();
+    const ac = new AbortController();
+    fetchOrderStatusRef.current = ac;
+    api(`/api/orders/${id}/status`, { signal: ac.signal })
+      .then(data => { if (!ac.signal.aborted) setActiveOrder(data); })
+      .catch((err: any) => {
+        if (err?.name === 'AbortError') return;
         localStorage.removeItem('current_order_id');
         setActiveOrder(null);
       });
@@ -269,13 +285,13 @@ export function BookingPage() {
         finalNotes = `[ИИ-Микс: ${mixDetails}. Чаша: ${raw.bowlType || 'глина'}] ${finalNotes}`;
       }
 
-      const res = await api.post('/api/orders', {
+      const res = await api('/api/orders', { method: 'POST', body: {
         mix_id: isCustom ? null : selectedMix.id,
         liquid_id: data.liquidBase,
         notes: finalNotes,
-      });
-      setActiveOrder(res.data);
-      localStorage.setItem('current_order_id', res.data.id);
+      }});
+      setActiveOrder(res);
+      localStorage.setItem('current_order_id', res.id);
       setShowConfirmModal(false);
       reset();
       showToast('Заказ успешно принят!', 'success');
@@ -288,7 +304,7 @@ export function BookingPage() {
     if (!activeOrder) return;
     setLoading(true);
     try {
-      await api.post(`/api/orders/${activeOrder.id}/request-master`);
+      await api(`/api/orders/${activeOrder.id}/request-master`, { method: 'POST' });
       setMasterCalled(true);
       showToast('Кальянный мастер вызван к вашему столу', 'success');
     } catch (err) {

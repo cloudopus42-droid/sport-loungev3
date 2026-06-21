@@ -78,38 +78,45 @@ export function Dashboard() {
   // Taste analytics state
   const [tasteStats, setTasteStats] = useState<TasteStats | null>(null);
 
+  const fetchDataRef = useRef<AbortController | null>(null);
+  const advanceHookahStatusRef = useRef<AbortController | null>(null);
+
   const fetchData = async () => {
+    fetchDataRef.current?.abort();
+    const ac = new AbortController();
+    fetchDataRef.current = ac;
+
     try {
       const [postsRes, mixesRes, promosRes, invitationsRes, bookingsRes, tasteStatsRes] = await Promise.allSettled([
-        api.get('/api/posts', { params: { limit: 1 } }),
-        api.get('/api/mixes'),
-        api.get('/api/promos'),
-        api.get('/api/invitations'),
-        api.get('/api/bookings/all'),
-        api.get('/api/bookings/taste-stats'),
+        api('/api/posts', { params: { limit: 1 }, signal: ac.signal }),
+        api('/api/mixes', { signal: ac.signal }),
+        api('/api/promos', { signal: ac.signal }),
+        api('/api/invitations', { signal: ac.signal }),
+        api('/api/bookings/all', { signal: ac.signal }),
+        api('/api/bookings/taste-stats', { signal: ac.signal }),
       ]);
 
       const totalPosts = postsRes.status === 'fulfilled'
-        ? (postsRes.value.data.total ?? postsRes.value.data.posts?.length ?? 0)
+        ? (postsRes.value.total ?? postsRes.value.posts?.length ?? 0)
         : 0;
       const totalMixes = mixesRes.status === 'fulfilled'
-        ? (Array.isArray(mixesRes.value.data) ? mixesRes.value.data.length : 0)
+        ? (Array.isArray(mixesRes.value) ? mixesRes.value.length : 0)
         : 0;
       const activePromos = promosRes.status === 'fulfilled'
-        ? (Array.isArray(promosRes.value.data) ? promosRes.value.data.length : 0)
+        ? (Array.isArray(promosRes.value) ? promosRes.value.length : 0)
         : 0;
       const publishedInvitations = invitationsRes.status === 'fulfilled'
-        ? (Array.isArray(invitationsRes.value.data) ? invitationsRes.value.data.length : 0)
+        ? (Array.isArray(invitationsRes.value) ? invitationsRes.value.length : 0)
         : 0;
 
-      const bookings = bookingsRes.status === 'fulfilled' ? bookingsRes.value.data : [];
+      const bookings = bookingsRes.status === 'fulfilled' ? bookingsRes.value : [];
       const totalOrders = bookings.length;
       const totalRevenue = bookings.filter((b: any) => b.status === 'confirmed').length * 1200;
 
       setStats({ totalPosts, totalMixes, activePromos, publishedInvitations, totalRevenue, totalOrders });
 
       if (tasteStatsRes.status === 'fulfilled') {
-        setTasteStats(tasteStatsRes.value.data);
+        setTasteStats(tasteStatsRes.value);
       }
 
       // Filter active orders (confirmed bookings where hookah is not yet ready)
@@ -124,7 +131,8 @@ export function Dashboard() {
       }));
       setActiveOrders(mappedOrders);
 
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       console.error('Failed to fetch dashboard stats:', err);
       showToast('Не удалось загрузить данные панели', 'error');
     } finally {
@@ -158,6 +166,7 @@ export function Dashboard() {
     });
 
     return () => {
+      fetchDataRef.current?.abort();
       socket.off('online:count');
       socket.off('booking:created');
       socket.off('booking:updated');
@@ -165,6 +174,10 @@ export function Dashboard() {
   }, [socket]);
 
   const advanceHookahStatus = async (orderId: string, currentStatus: string) => {
+    advanceHookahStatusRef.current?.abort();
+    const ac = new AbortController();
+    advanceHookahStatusRef.current = ac;
+
     const statusFlow: Record<string, string> = {
       accepted: 'heating',
       heating: 'almost',
@@ -174,9 +187,10 @@ export function Dashboard() {
     if (!nextStatus) return;
 
     try {
-      await api.put(`/api/bookings/${orderId}/hookah-status`, { hookahStatus: nextStatus });
+      await api(`/api/bookings/${orderId}/hookah-status`, { method: 'PUT', body: { hookahStatus: nextStatus }, signal: ac.signal });
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       console.error('Failed to update hookah status:', err);
     }
   };

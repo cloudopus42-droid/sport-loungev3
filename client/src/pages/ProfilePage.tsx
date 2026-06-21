@@ -167,20 +167,23 @@ export function ProfilePage() {
         ? `${repeatBooking.hookahMix}${repeatSpecialNotes ? ` | Пожелания: ${repeatSpecialNotes}` : ''}`
         : repeatSpecialNotes;
 
-      const res = await api.post('/api/orders', {
-        mix_id: null,
-        liquid_id: repeatLiquidBase,
-        notes: notesString,
-        seat_id: repeatSeatLabel.replace(/\s+/g, '-').toLowerCase(),
-        seat_label: repeatSeatLabel,
-        seat_zone: repeatSeatLabel.includes('VIP') ? 'vip' : repeatSeatLabel.includes('PC') ? 'pro' : 'hall',
+      const res = await api('/api/orders', {
+        method: 'POST',
+        body: {
+          mix_id: null,
+          liquid_id: repeatLiquidBase,
+          notes: notesString,
+          seat_id: repeatSeatLabel.replace(/\s+/g, '-').toLowerCase(),
+          seat_label: repeatSeatLabel,
+          seat_zone: repeatSeatLabel.includes('VIP') ? 'vip' : repeatSeatLabel.includes('PC') ? 'pro' : 'hall',
+        },
       });
 
       showToast('Заказ принят! Мастера уже собирают его 💨', 'success');
       setShowRepeatModal(false);
       
-      localStorage.setItem('current_order_id', res.data.id);
-      setTimeout(() => {
+      localStorage.setItem('current_order_id', res.id);
+      navigationTimeoutRef.current = setTimeout(() => {
         window.location.href = `${import.meta.env.BASE_URL}booking`;
       }, 1000);
 
@@ -209,6 +212,8 @@ export function ProfilePage() {
   // Custom Avatar Upload
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // VIP Card Flipping & QR Pass
   const [isFlipped, setIsFlipped] = useState(false);
@@ -293,35 +298,57 @@ export function ProfilePage() {
     } catch {}
   }, []);
 
+  const fetchBookingsRef = useRef<AbortController | null>(null);
+  const fetchVIPClubDataRef = useRef<AbortController | null>(null);
+  const fetchPreferencesRef = useRef<AbortController | null>(null);
+
   const fetchBookings = async () => {
+    fetchBookingsRef.current?.abort();
+    const ac = new AbortController();
+    fetchBookingsRef.current = ac;
     try {
-      const { data } = await api.get<Booking[]>('/api/bookings/my');
+      const data = await api<Booking[]>('/api/bookings/my', { signal: ac.signal });
+      if (ac.signal.aborted) return;
       setBookings(data);
-    } catch {}
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+    }
     setLoadingBookings(false);
   };
 
   const fetchVIPClubData = async () => {
+    fetchVIPClubDataRef.current?.abort();
+    const ac = new AbortController();
+    fetchVIPClubDataRef.current = ac;
     try {
-      const { data: mem } = await api.get('/api/memberships/me');
+      const mem = await api('/api/memberships/me', { signal: ac.signal });
+      if (ac.signal.aborted) return;
       setMembership(mem);
 
-      const { data: achs } = await api.get('/api/memberships/achievements');
+      const achs = await api('/api/memberships/achievements', { signal: ac.signal });
+      if (ac.signal.aborted) return;
       setAchievements(achs);
 
-      const { data: logs } = await api.get('/api/memberships/loyalty');
+      const logs = await api('/api/memberships/loyalty', { signal: ac.signal });
+      if (ac.signal.aborted) return;
       setLoyaltyLogs(logs);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       console.error('Failed to load VIP membership context:', err);
     }
     setLoadingVIP(false);
   };
 
   const fetchPreferences = async () => {
+    fetchPreferencesRef.current?.abort();
+    const ac = new AbortController();
+    fetchPreferencesRef.current = ac;
     try {
-      const { data } = await api.get('/api/users/me/preferences');
+      const data = await api('/api/users/me/preferences', { signal: ac.signal });
+      if (ac.signal.aborted) return;
       setPreferences(data);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       console.error('Failed to load user preferences:', err);
     }
     setLoadingPrefs(false);
@@ -331,6 +358,12 @@ export function ProfilePage() {
     fetchBookings();
     fetchVIPClubData();
     fetchPreferences();
+    return () => {
+      fetchBookingsRef.current?.abort();
+      fetchVIPClubDataRef.current?.abort();
+      fetchPreferencesRef.current?.abort();
+      if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
+    };
   }, []);
 
   // Keep track of notified booking ready alerts (synchronized with localStorage)
@@ -344,12 +377,14 @@ export function ProfilePage() {
   });
 
   useEffect(() => {
+    const ac = new AbortController();
     const fetchStatuses = async () => {
       const active = bookings.filter(b => b.status !== 'cancelled');
       const results: Record<string, any> = {};
       for (const b of active) {
         try { 
-          const { data } = await api.get(`/api/bookings/${b._id}/hookah-status`); 
+          const data = await api(`/api/bookings/${b._id}/hookah-status`, { signal: ac.signal }); 
+          if (ac.signal.aborted) return;
           results[b._id] = data; 
           
           if (data.hookahStatus === 'ready' && !notifiedReady.includes(b._id)) {
@@ -378,19 +413,21 @@ export function ProfilePage() {
               }
             }
           }
-        } catch {}
+        } catch (err: any) {
+          if (err?.name === 'AbortError') return;
+        }
       }
       setHookahStatuses(results);
     };
     if (bookings.length > 0) fetchStatuses();
     const interval = setInterval(() => { if (bookings.length > 0) fetchStatuses(); }, 10000);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); ac.abort(); };
   }, [bookings, notifiedReady]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put('/api/auth/profile', { name: editName, phone: editPhone, bio: editBio });
+      await api('/api/auth/profile', { method: 'PUT', body: { name: editName, phone: editPhone, bio: editBio } });
       updatePrefs({ bio: editBio, phone: editPhone });
       const updatedUser: UserType = { ...user!, name: editName, phone: editPhone, bio: editBio };
       setUser(updatedUser);
@@ -412,7 +449,9 @@ export function ProfilePage() {
 
     setUploadingAvatar(true);
     try {
-      const { data } = await api.post('/api/auth/avatar', formData, {
+      const data = await api('/api/auth/avatar', {
+        method: 'POST',
+        body: formData,
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -429,7 +468,7 @@ export function ProfilePage() {
 
   const handleCancelBooking = async (id: string) => {
     try {
-      await api.delete(`/api/bookings/${id}`);
+      await api(`/api/bookings/${id}`, { method: 'DELETE' });
       setBookings(prev => prev.map(b => b._id === id ? { ...b, status: 'cancelled' as const } : b));
       showToast('Заказ отменён', 'success');
     } catch { 
@@ -441,10 +480,13 @@ export function ProfilePage() {
     if (!reviewBookingId) return;
     setSubmittingReview(true);
     try {
-      await api.post('/api/memberships/reviews', {
-        bookingId: reviewBookingId,
-        rating: reviewRating,
-        text: reviewText
+      await api('/api/memberships/reviews', {
+        method: 'POST',
+        body: {
+          bookingId: reviewBookingId,
+          rating: reviewRating,
+          text: reviewText
+        }
       });
       showToast('Спасибо за отзыв! Начислены баллы лояльности.', 'success');
       setReviewBookingId(null);

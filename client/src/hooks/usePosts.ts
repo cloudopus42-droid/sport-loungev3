@@ -23,7 +23,7 @@ export function usePosts(): UsePostsReturn {
     setLoading(true);
 
     try {
-      const { data } = await api.get<{ posts: Post[]; total: number; page: number; limit: number; hasMore: boolean }>('/api/posts', {
+      const data = await api<{ posts: Post[]; total: number; page: number; limit: number; hasMore: boolean }>('/api/posts', {
         params: { page, limit: 10 },
       });
 
@@ -50,7 +50,7 @@ export function usePosts(): UsePostsReturn {
 
     setLoading(true);
     try {
-      const { data } = await api.get<{ posts: Post[]; total: number; page: number; limit: number; hasMore: boolean }>('/api/posts', {
+      const data = await api<{ posts: Post[]; total: number; page: number; limit: number; hasMore: boolean }>('/api/posts', {
         params: { page: 1, limit: 10 },
       });
       setPosts(data.posts);

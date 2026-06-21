@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Play, Check, Flame, ChevronUp, ChevronDown, RefreshCw, Send } from 'lucide-react';
 import { showToast } from '@/components/NotificationToast';
@@ -10,10 +10,12 @@ export function OrdersAdmin() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [manualReorder, setManualReorder] = useState(true);
+  const fetchQueueRef = useRef<AbortController | null>(null);
 
   // Load orders queue on mount
   useEffect(() => {
     fetchQueue();
+    return () => { fetchQueueRef.current?.abort(); };
   }, []);
 
   // Socket updates subscription
@@ -44,12 +46,16 @@ export function OrdersAdmin() {
   }, [socket]);
 
   const fetchQueue = async () => {
+    fetchQueueRef.current?.abort();
+    const ac = new AbortController();
+    fetchQueueRef.current = ac;
     setLoading(true);
     try {
       // Fetch active orders (not done)
-      const res = await api.get('/api/orders');
-      setOrders(res.data || []);
+      const data = await api('/api/orders', { signal: ac.signal });
+      setOrders(data || []);
     } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       showToast('Не удалось загрузить очередь заказов', 'error');
     } finally {
       setLoading(false);
@@ -58,8 +64,8 @@ export function OrdersAdmin() {
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     try {
-      const res = await api.put(`/api/orders/${id}/status`, { status: newStatus });
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, ...res.data } : o));
+      const result = await api(`/api/orders/${id}/status`, { method: 'PUT', body: { status: newStatus } });
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, ...result } : o));
       showToast(`Статус заказа обновлен! 💨`, 'success');
       
       // If status is 'done', remove from queue view or flag as done
@@ -73,8 +79,8 @@ export function OrdersAdmin() {
 
   const handleExtendTime = async (id: string, minutes: number) => {
     try {
-      const res = await api.post(`/api/orders/${id}/extend-time`, { minutes });
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, ...res.data } : o));
+      const result = await api(`/api/orders/${id}/extend-time`, { method: 'POST', body: { minutes } });
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, ...result } : o));
       showToast(`Время заказа успешно продлено на +${minutes} мин!`, 'success');
     } catch (err: any) {
       showToast('Ошибка при продлении времени', 'error');
@@ -98,8 +104,8 @@ export function OrdersAdmin() {
 
     // Save to server
     try {
-      const orderIds = newQueue.map(o => o.id);
-      await api.put('/api/orders/reorder', { ids: orderIds });
+      const ids = newQueue.map(o => o.id);
+      await api('/api/orders/reorder', { method: 'PUT', body: { ids } });
       showToast('Очередь заказов успешно сохранена.', 'success');
     } catch (err: any) {
       showToast('Ошибка при изменении порядка очереди', 'error');
@@ -308,7 +314,7 @@ export function OrdersAdmin() {
                         {order.masterCalled && (
                           <button
                             onClick={async () => {
-                              await api.post(`/api/orders/${order.id}/request-master`);
+                              await api(`/api/orders/${order.id}/request-master`, { method: 'POST' });
                               setOrders(prev => prev.map(o => o.id === order.id ? { ...o, masterCalled: false } : o));
                               showToast('Статус вызова мастера сброшен.', 'success');
                             }}

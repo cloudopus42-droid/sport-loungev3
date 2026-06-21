@@ -35,29 +35,36 @@ export function AdminBookingsPage() {
   const [filterStatus, setFilterStatus] = useState('');
   const [hookahStatuses, setHookahStatuses] = useState<Record<string, any>>({});
 
-  const fetchBookings = useCallback(async () => {
+  const fetchBookings = useCallback(async (signal?: AbortSignal) => {
     try {
       const params: any = {};
       if (filterDate) params.date = filterDate;
       if (filterStatus) params.status = filterStatus;
-      const { data } = await api.get<Booking[]>('/api/bookings/all', { params });
+      const data = await api<Booking[]>('/api/bookings/all', { params, signal });
       setBookings(data);
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       showToast('Ошибка загрузки', 'error');
     }
     setLoading(false);
   }, [filterDate, filterStatus]);
 
-  useEffect(() => { fetchBookings(); }, [fetchBookings]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchBookings(ac.signal);
+    return () => ac.abort();
+  }, [fetchBookings]);
 
   // Auto-refresh hookah statuses every 15s
   useEffect(() => {
+    const ac = new AbortController();
     const fetchStatuses = async () => {
       const active = bookings.filter(b => b.status !== 'cancelled');
       const results: Record<string, any> = {};
       for (const b of active) {
         try {
-          const { data } = await api.get(`/api/bookings/${b._id}/hookah-status`);
+          const data = await api(`/api/bookings/${b._id}/hookah-status`, { signal: ac.signal });
+          if (ac.signal.aborted) return;
           results[b._id] = data;
         } catch {}
       }
@@ -65,12 +72,12 @@ export function AdminBookingsPage() {
     };
     if (bookings.length > 0) fetchStatuses();
     const interval = setInterval(() => { if (bookings.length > 0) fetchStatuses(); }, 15000);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); ac.abort(); };
   }, [bookings]);
 
   const updateStatus = async (id: string, status: 'confirmed' | 'cancelled') => {
     try {
-      await api.put(`/api/bookings/${id}/status`, { status });
+      await api(`/api/bookings/${id}/status`, { method: 'PUT', body: { status } });
       setBookings(prev => prev.map(b => b._id === id ? { ...b, status } : b));
       showToast(status === 'confirmed' ? 'Заказ подтверждён' : 'Заказ отклонён', 'success');
     } catch { showToast('Ошибка при обновлении статуса', 'error'); }

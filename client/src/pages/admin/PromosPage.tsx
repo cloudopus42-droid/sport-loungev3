@@ -32,11 +32,12 @@ export function PromosPage() {
   const [active, setActive] = useState(true);
   const [file, setFile] = useState<File | null>(null);
 
-  const fetchPromos = useCallback(async () => {
+  const fetchPromos = useCallback(async (signal?: AbortSignal) => {
     try {
-      const { data } = await api.get('/api/promos');
+      const data = await api('/api/promos', { signal });
       setPromos(Array.isArray(data) ? data : data.data || []);
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       showToast('Ошибка загрузки акций', 'error');
     } finally {
       setLoading(false);
@@ -44,7 +45,9 @@ export function PromosPage() {
   }, []);
 
   useEffect(() => {
-    fetchPromos();
+    const ac = new AbortController();
+    fetchPromos(ac.signal);
+    return () => ac.abort();
   }, [fetchPromos]);
 
   const openCreate = () => {
@@ -84,14 +87,10 @@ export function PromosPage() {
       if (file) formData.append('image', file);
 
       if (editingPromo) {
-        await api.put(`/api/promos/${editingPromo._id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api(`/api/promos/${editingPromo._id}`, { method: 'PUT', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
         showToast('Акция обновлена', 'success');
       } else {
-        await api.post('/api/promos', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api('/api/promos', { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
         showToast('Акция создана', 'success');
       }
       setModalOpen(false);
@@ -108,7 +107,7 @@ export function PromosPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await api.delete(`/api/promos/${deleteTarget}`);
+      await api(`/api/promos/${deleteTarget}`, { method: 'DELETE' });
       showToast('Акция удалена', 'success');
       setDeleteDialogOpen(false);
       setDeleteTarget(null);

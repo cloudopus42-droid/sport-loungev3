@@ -145,7 +145,7 @@ function TobaccoItemsPanel() {
 
   const fetchItems = useCallback(async () => {
     try {
-      const { data } = await api.get('/api/tobacco');
+      const data = await api('/api/tobacco');
       setItems(Array.isArray(data) ? data : []);
     } catch {
       showToast('Ошибка загрузки', 'error');
@@ -154,7 +154,11 @@ function TobaccoItemsPanel() {
     }
   }, []);
 
-  useEffect(() => { fetchItems(); }, [fetchItems]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchItems();
+    return () => ac.abort();
+  }, [fetchItems]);
 
   const resetForm = () => {
     setName('');
@@ -194,16 +198,14 @@ function TobaccoItemsPanel() {
 
     try {
       if (editingItem) {
-        await api.put(`/api/tobacco/${editingItem._id}`, payload);
+        await api(`/api/tobacco/${editingItem._id}`, { method: 'PUT', body: payload });
         showToast('Товар обновлён', 'success');
       } else {
         const formData = new FormData();
         Object.entries(payload).forEach(([k, v]) => formData.append(k, String(v)));
         if (file) formData.append('image', file);
         formData.append('stock_quantity', '0');
-        await api.post('/api/tobacco', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api('/api/tobacco', { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
         showToast('Товар добавлен', 'success');
       }
       setModalOpen(false);
@@ -220,7 +222,7 @@ function TobaccoItemsPanel() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await api.delete(`/api/tobacco/${deleteTarget}`);
+      await api(`/api/tobacco/${deleteTarget}`, { method: 'DELETE' });
       showToast('Товар удалён', 'success');
       setDeleteDialogOpen(false);
       setDeleteTarget(null);
@@ -369,7 +371,7 @@ function StockPanel() {
 
   const fetchStock = useCallback(async () => {
     try {
-      const { data } = await api.get('/api/tobacco/stock');
+      const data = await api('/api/tobacco/stock');
       setItems(Array.isArray(data) ? data : []);
     } catch {
       showToast('Ошибка загрузки остатков', 'error');
@@ -378,7 +380,11 @@ function StockPanel() {
     }
   }, []);
 
-  useEffect(() => { fetchStock(); }, [fetchStock]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchStock();
+    return () => ac.abort();
+  }, [fetchStock]);
 
   const getEditValue = (id: string) => editValues[id] ?? items.find((i) => i._id === id)?.stock_quantity ?? 0;
 
@@ -401,7 +407,7 @@ function StockPanel() {
     const prev = item.stock_quantity;
     item.stock_quantity = quantity;
     try {
-      await api.put(`/api/tobacco/${item._id}/stock`, { quantity });
+      await api(`/api/tobacco/${item._id}/stock`, { method: 'PUT', body: { quantity } });
       showToast(`${item.name}: остаток обновлён`, 'success');
       setEditValues((prev) => {
         const next = { ...prev };
@@ -532,7 +538,7 @@ function RestockPanel() {
 
   const fetchRequests = useCallback(async () => {
     try {
-      const { data } = await api.get('/api/restock/requests');
+      const data = await api('/api/restock/requests');
       setRequests(Array.isArray(data) ? data : []);
     } catch {
       showToast('Ошибка загрузки заявок', 'error');
@@ -543,17 +549,21 @@ function RestockPanel() {
 
   const fetchTobacco = useCallback(async () => {
     try {
-      const { data } = await api.get('/api/tobacco');
+      const data = await api('/api/tobacco');
       setTobaccoItems(Array.isArray(data) ? data : []);
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => { fetchRequests(); fetchTobacco(); }, [fetchRequests, fetchTobacco]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchRequests(); fetchTobacco();
+    return () => ac.abort();
+  }, [fetchRequests, fetchTobacco]);
 
   const updateStatus = async (id: string, status: RestockRequestItem['status']) => {
     setActionLoading(id);
     try {
-      await api.put(`/api/restock/requests/${id}`, { status });
+      await api(`/api/restock/requests/${id}`, { method: 'PUT', body: { status } });
       const labels: Record<string, string> = { pending: 'в ожидание', approved: 'одобрена', completed: 'выполнена', rejected: 'отклонена' };
       showToast(`Заявка ${labels[status]}`, 'success');
       fetchRequests();
@@ -570,11 +580,11 @@ function RestockPanel() {
     if (newQuantity < 1) { showToast('Количество должно быть больше 0', 'error'); return; }
 
     try {
-      await api.post('/api/restock/requests', {
+      await api('/api/restock/requests', { method: 'POST', body: {
         tobacco_id: newTobaccoId,
         quantity: newQuantity,
         notes: newNotes,
-      });
+      } });
       showToast('Заявка создана', 'success');
       setCreateModalOpen(false);
       setNewTobaccoId('');

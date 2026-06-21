@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export function LuxuryCursor() {
   const [hovered, setHovered] = useState(false);
   const [clicked, setClicked] = useState(false);
   const [hidden, setHidden] = useState(true);
+  const hiddenRef = useRef(hidden);
+  hiddenRef.current = hidden;
 
   // Motion values for precise cursor coordinate tracking
   const cursorX = useMotionValue(-100);
@@ -23,7 +25,7 @@ export function LuxuryCursor() {
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-      if (hidden) setHidden(false);
+      if (hiddenRef.current) setHidden(false);
     };
 
     const handleMouseLeave = () => setHidden(true);
@@ -47,7 +49,6 @@ export function LuxuryCursor() {
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
 
-    // Initial hook
     addHoverListeners();
 
     // DOM MutationObserver to dynamically hook cursors to elements loaded later
@@ -62,7 +63,7 @@ export function LuxuryCursor() {
       window.removeEventListener('mouseup', handleMouseUp);
       observer.disconnect();
     };
-  }, [cursorX, cursorY, hidden]);
+  }, [cursorX, cursorY]);
 
   if (hidden) return null;
 

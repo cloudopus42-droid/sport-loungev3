@@ -31,7 +31,7 @@ export function AdminShowcasePage() {
 
   const fetchItems = useCallback(async () => {
     try {
-      const { data } = await api.get('/api/showcases');
+      const data = await api('/api/showcases');
       setItems(Array.isArray(data) ? data : data.data || []);
     } catch {
       showToast('Ошибка загрузки витрины', 'error');
@@ -41,7 +41,9 @@ export function AdminShowcasePage() {
   }, []);
 
   useEffect(() => {
+    const ac = new AbortController();
     fetchItems();
+    return () => ac.abort();
   }, [fetchItems]);
 
   const handleSave = async () => {
@@ -54,16 +56,12 @@ export function AdminShowcasePage() {
       if (file) formData.append('image', file);
 
       if (editing) {
-        const { data } = await api.put(`/api/showcases/${editing}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        setItems((prev) => prev.map((i) => i._id === editing ? data : i));
+        const result = await api(`/api/showcases/${editing}`, { method: 'PUT', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+        setItems((prev) => prev.map((i) => i._id === editing ? result : i));
         showToast('Обновлено', 'success');
       } else {
-        const { data } = await api.post('/api/showcases', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        setItems((prev) => [...prev, data]);
+        const result = await api('/api/showcases', { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+        setItems((prev) => [...prev, result]);
         showToast('Создано', 'success');
       }
       setEditing(null);
@@ -79,7 +77,7 @@ export function AdminShowcasePage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/api/showcases/${id}`);
+      await api(`/api/showcases/${id}`, { method: 'DELETE' });
       setItems((prev) => prev.filter((i) => i._id !== id));
       showToast('Удалено', 'success');
     } catch {
@@ -108,7 +106,7 @@ export function AdminShowcasePage() {
     reordered.splice(toIndex, 0, moved);
     const updated = reordered.map((item, idx) => ({ ...item, order: idx }));
     setItems(updated);
-    api.put('/api/showcases/reorder', updated.map(({ _id, order }) => ({ _id, order })))
+    api('/api/showcases/reorder', { method: 'PUT', body: updated.map(({ _id, order }) => ({ _id, order })) })
       .catch(() => showToast('Ошибка сохранения порядка', 'error'));
   };
 
