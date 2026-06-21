@@ -10,6 +10,7 @@ import { config } from './config/env';
 import { connectDB } from './config/db';
 import { initSocket } from './socket';
 import { startSupportBot } from './services/supportBot';
+import { startAdminBot } from './services/adminBot';
 import { startOrderScheduler } from './services/orderScheduler';
 import { seedSmartFeatures } from './routes/smartFeatures';
 
@@ -40,6 +41,13 @@ async function bootstrap(): Promise<void> {
       }
     } else {
       console.log('🤖 [Support Bot] Disabled in development (set SUPPORT_BOT_ENABLED=true to run locally)');
+    }
+
+    // Start admin bot for order management
+    try {
+      startAdminBot();
+    } catch (err: any) {
+      console.error('❌ Failed to start admin bot:', err.message);
     }
 
     // Start background orders delay tracker

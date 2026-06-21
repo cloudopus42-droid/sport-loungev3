@@ -1,4 +1,5 @@
 import { config } from '../config/env';
+import { adminNotifyNewOrder, adminNotifyMasterCall } from './adminBot';
 
 const ORDER_BOT_TOKEN = process.env.ORDER_BOT_TOKEN || ''; // SPORT LOUNGE BOT (@hookahversebot) - Заказы
 const MANAGER_BOT_TOKEN = process.env.MANAGER_BOT_TOKEN || ''; // Menedher_bot (@llsportsmanager_bot) - Вызовы мастера
@@ -75,22 +76,40 @@ export async function sendOrderNotification(order: any, userName: string, phone:
     `📱 *Телефон:* ${escapeMarkdown(phone)}`,
   ].filter(Boolean).join('\n');
 
+  // Also send interactive notification via admin bot
+  adminNotifyNewOrder(
+    order.id,
+    order.seat_label,
+    order.seat_zone,
+    userName,
+    mixDetails.name || 'Индивидуальный микс',
+    order.promised_delivery_time,
+  ).catch(err => console.warn('⚠️ Admin bot notify failed:', err.message));
+
   return sendTelegramMessage(ORDER_BOT_TOKEN, chatId, message);
 }
 
-export async function sendMasterCallNotification(seatLabel: string, seatZone: string, phone: string) {
+export async function sendMasterCallNotification(order: any, phone: string) {
   const chatId = config.telegramChatId || '5652912760';
-  const zoneName = zoneLabels[seatZone] || seatZone || 'Общий зал';
+  const zoneName = zoneLabels[order.seat_zone] || order.seat_zone || 'Общий зал';
 
   const message = [
     '🚨 *ВЫЗОВ КАЛЬЯННОГО МАЭСТРО\\!*',
     '',
-    `📍 *Стол:* ${escapeMarkdown(seatLabel)} \\(${escapeMarkdown(zoneName)}\\)`,
+    `📍 *Стол:* ${escapeMarkdown(order.seat_label)} \\(${escapeMarkdown(zoneName)}\\)`,
     '🔔 *Причина:* Требуется замена углей или помощь с кальяном\\!',
     '',
     `📱 *Контакты гостя:* ${escapeMarkdown(phone)}`,
     '🏃‍♂️ *Пожалуйста, подойдите к гостю незамедлительно\\!*'
   ].join('\n');
+
+  // Also send interactive notification via admin bot
+  adminNotifyMasterCall(
+    order.id,
+    order.seat_label,
+    order.seat_zone,
+    phone
+  ).catch(err => console.warn('⚠️ Admin bot master call notify failed:', err.message));
 
   return sendTelegramMessage(MANAGER_BOT_TOKEN, chatId, message);
 }

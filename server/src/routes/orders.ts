@@ -111,7 +111,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
       }
     }
 
-    // 5. Send TG message
+    // 5. Send TG notifications
     if (userObj) {
       sendOrderNotification(order, userObj.name, userObj.phone || 'Не указан', mixDetails)
         .catch(err => console.warn('⚠️ TG Order notification error:', err.message));
@@ -271,7 +271,7 @@ router.post('/:id/request-master', auth, async (req: Request, res: Response, nex
       .maybeSingle();
 
     // Trigger Telegram Master Alarm
-    sendMasterCallNotification(order.seat_label, order.seat_zone, userObj?.phone || 'Не указан')
+    sendMasterCallNotification(order, userObj?.phone || 'Не указан')
       .catch(err => console.warn('⚠️ TG Master Call alert error:', err.message));
 
     // Update flag in DB
