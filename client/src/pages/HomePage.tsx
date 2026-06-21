@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';
@@ -8,10 +8,7 @@ import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
-import premiumHookah from '../premium_hookah.png';
 import { GlowIcon } from '@/components/ui/GlowIcon';
-
-const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
 
 type ShowcaseItem = {
   id: string;
@@ -160,104 +157,6 @@ export function HomePage() {
               <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
             </span>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Live System Console Dashboard Section - Structured Fintech Grid */}
-      <section className="relative pt-4 max-w-6xl mx-auto px-4 z-10">
-        <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-6 select-none">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
-            <span className="text-[10px] font-mono text-white/50 tracking-wider">LIVE TELEMETRY FEED: SYSTEM ONLINE</span>
-          </div>
-          <span className="text-[10px] font-mono text-accent-gold font-bold">SPORT LOUNGE CONSOLE V3.0</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-          {/* Main Visual: ThreeSmoke and breathing hookah render */}
-          <div className="md:col-span-6 lg:col-span-5">
-            <GlassCard className="p-6 h-full flex flex-col justify-between border border-glass-border/30 bg-[#0c0816]/90 relative overflow-hidden select-none">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest block mb-2">VOLUMETRIC VISUALIZER</span>
-              <div className="relative h-48 flex items-center justify-center">
-                <Suspense fallback={null}>
-                  <ThreeSmoke />
-                </Suspense>
-                <img 
-                  src={premiumHookah} 
-                  alt="Sport Lounge Premium Hookah" 
-                  className="max-h-[190px] w-auto object-contain filter drop-shadow-[0_12px_40px_rgba(212,175,55,0.22)] z-10 animate-breathe-image"
-                />
-              </div>
-              <div className="text-center pt-2">
-                <span className="text-[10px] text-white/50">Премиальные чаши и элитные смеси</span>
-              </div>
-            </GlassCard>
-          </div>
-
-          {/* System status widgets */}
-          <div className="md:col-span-6 lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Widget 1: Seating occupancy and wait time */}
-            <GlassCard className="p-5 flex flex-col justify-between border border-glass-border/20 bg-[#0c0816]/90 select-none">
-              <div>
-                <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-2">Нагрузка хоста</span>
-                <span className="text-3xl font-extrabold text-white font-mono tracking-tight block">34 / 54</span>
-                <span className="text-xs text-white/40 block mt-1">активных столов в зале</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-white/60 pt-4 border-t border-white/5">
-                <GlowIcon name="clock" color="gold" size={14} className="text-accent-gold" />
-                <span>Ожидание сборки заказа: ~8.5 мин</span>
-              </div>
-            </GlassCard>
-
-            {/* Widget 2: Flavor Gauges */}
-            <GlassCard className="p-5 flex flex-col justify-between border border-glass-border/20 bg-[#0c0816]/90 select-none">
-              <div>
-                <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-3">Интенсивность покура</span>
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-white/60">
-                      <span>Сладкий</span>
-                      <span className="text-accent-gold font-mono font-bold">72%</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-accent-gold to-accent-amber" style={{ width: '72%' }} />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-white/60">
-                      <span>Крепкий</span>
-                      <span className="text-accent-gold font-mono font-bold">65%</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-accent-gold to-accent-gold" style={{ width: '65%' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-
-            {/* Widget 3: Live lounge sound system */}
-            <GlassCard className="p-5 sm:col-span-2 flex items-center justify-between gap-4 border border-glass-border/20 bg-[#0c0816]/90 select-none">
-              <div className="flex items-center gap-3 truncate">
-                <div className="w-9 h-9 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-                </div>
-                <div className="truncate">
-                  <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold">Аудиосистема заведения</span>
-                  <span className="text-xs text-white font-bold block truncate">Speed Dial — Zero 7</span>
-                </div>
-              </div>
-              
-              {/* Mini audio wave bars */}
-              <div className="flex items-end gap-1 h-6 flex-shrink-0">
-                <span className="w-0.5 h-3 bg-accent-gold rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-accent-gold rounded-full soundwave-bar" />
-                <span className="w-0.5 h-4 bg-accent-gold rounded-full soundwave-bar" />
-                <span className="w-0.5 h-2 bg-accent-gold rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-accent-gold rounded-full soundwave-bar" />
-              </div>
-            </GlassCard>
-          </div>
         </div>
       </section>
 

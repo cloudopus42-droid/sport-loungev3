@@ -24,6 +24,7 @@ export function AdminShowcasePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [file, setFile] = useState<File | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -66,6 +67,7 @@ export function AdminShowcasePage() {
         showToast('Создано', 'success');
       }
       setEditing(null);
+      setShowForm(false);
       setForm(emptyForm);
       setFile(null);
     } catch {
@@ -93,6 +95,7 @@ export function AdminShowcasePage() {
 
   const cancelForm = () => {
     setEditing(null);
+    setShowForm(false);
     setForm(emptyForm);
     setFile(null);
   };
@@ -116,13 +119,13 @@ export function AdminShowcasePage() {
           <h1 className="text-2xl font-display font-bold text-white">Витрина</h1>
           <p className="text-sm text-white/40">Карточки на главной странице</p>
         </div>
-        <GlowButton size="sm" onClick={() => { cancelForm(); setForm({ ...emptyForm, order: items.length }); }}>
+        <GlowButton size="sm" onClick={() => { cancelForm(); setShowForm(true); setForm({ ...emptyForm, order: items.length }); }}>
           <Plus className="w-4 h-4" /> Добавить
         </GlowButton>
       </div>
 
       {/* Form */}
-      {(editing !== null || form.title || form.description || file) && (
+      {(showForm || editing !== null) && (
         <GlassCard className="p-5 space-y-4">
           <h3 className="text-sm font-semibold text-white">
             {editing ? 'Редактировать карточку' : 'Новая карточка'}

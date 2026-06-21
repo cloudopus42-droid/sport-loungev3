@@ -16,9 +16,9 @@ const createOrderSchema = z.object({
   mix_id: z.string().uuid().nullable().optional(),
   liquid_id: z.string().min(1),
   notes: z.string().max(500).optional().default(''),
-  seat_id: z.string().min(1),
-  seat_label: z.string().min(1),
-  seat_zone: z.string().min(1),
+  seat_id: z.string().optional().default(''),
+  seat_label: z.string().optional().default(''),
+  seat_zone: z.string().optional().default(''),
 });
 
 const ratingSchema = z.object({

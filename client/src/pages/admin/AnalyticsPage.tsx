@@ -73,9 +73,20 @@ export function AnalyticsPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>(saved?.inventory || defaultInventory);
   const [editingInventory, setEditingInventory] = useState(false);
 
-  // Liquid glass settings
+  // Liquid glass settings — scoped to AnalyticsPage only, cleaned up on unmount
   const [blurVal, setBlurVal] = useState(() => Number(localStorage.getItem('glass_blur') || '40'));
   const [opacityVal, setOpacityVal] = useState(() => Number(localStorage.getItem('glass_opacity') || '0.72'));
+
+  useEffect(() => {
+    const origBlur = getComputedStyle(document.documentElement).getPropertyValue('--glass-blur').trim();
+    const origOpacity = getComputedStyle(document.documentElement).getPropertyValue('--glass-opacity').trim();
+    return () => {
+      if (origBlur) document.documentElement.style.setProperty('--glass-blur', origBlur);
+      else document.documentElement.style.removeProperty('--glass-blur');
+      if (origOpacity) document.documentElement.style.setProperty('--glass-opacity', origOpacity);
+      else document.documentElement.style.removeProperty('--glass-opacity');
+    };
+  }, []);
 
   const handleBlurChange = (val: number) => {
     setBlurVal(val);
