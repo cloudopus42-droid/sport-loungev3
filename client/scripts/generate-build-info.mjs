@@ -43,23 +43,29 @@ window.__slBuildId = '${buildId}';
   var bld = window.__slBuildId;
   if (!bld) return;
 
-  // Force-unregister ALL stale service workers on every page load
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      if (regs.length) {
-        // Check if any existing SW has a different buildId
-        Promise.all(regs.map(function(r) { return r.unregister(); }))
-          .then(function() {
-            // Re-register with updateViaCache=none
-            navigator.serviceWorker.register('/sport-loungev3/sw.js', { updateViaCache: 'none' })
-              .then(function() {
-                console.log('[SW] fresh registration OK — reloading for fresh content');
-                setTimeout(function() { location.reload(); }, 300);
-              })
-              .catch(function(e) { console.log('[SW] register fail:', e); });
-          });
-      }
-    });
+  // Only run cycle when buildId actually changed (avoids infinite reload loops)
+  var storedBld = localStorage.getItem('_sl_bld');
+  if (storedBld !== bld) {
+    localStorage.setItem('_sl_bld', bld);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        if (regs.length) {
+          // Old SW exists — unregister, register fresh with updateViaCache=none, then reload
+          Promise.all(regs.map(function(r) { return r.unregister(); }))
+            .then(function() {
+              return navigator.serviceWorker.register('/sport-loungev3/sw.js', { updateViaCache: 'none' });
+            })
+            .then(function() {
+              setTimeout(function() { location.reload(); }, 300);
+            })
+            .catch(function(e) { console.log('[SW] fail:', e); });
+        } else {
+          // No existing SW — just register with correct options
+          navigator.serviceWorker.register('/sport-loungev3/sw.js', { updateViaCache: 'none' })
+            .catch(function(e) { console.log('[SW] fail:', e); });
+        }
+      });
+    }
   }
 
   // Poll for new version every 20s
