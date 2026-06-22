@@ -54,7 +54,7 @@ export function AdminLogsPage() {
         <p className="text-xs text-white/40 mt-1">Логирование административных операций</p>
       </motion.div>
 
-      <GlassCard className="p-0 overflow-hidden border-glass-border/40">
+      <GlassCard variant="premium" className="p-0 overflow-hidden border-glass-border/40">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>

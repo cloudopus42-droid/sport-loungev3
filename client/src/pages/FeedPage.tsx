@@ -153,7 +153,7 @@ export function FeedPage() {
       <AnimatePresence>
         {showCreate && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <GlassCard className="p-5">
+            <GlassCard variant="premium" className="p-5">
               <form onSubmit={handleCreatePost} className="space-y-4">
                 <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Заголовок поста"
                   className="glass-input text-sm" required />
@@ -192,8 +192,7 @@ export function FeedPage() {
 
         return (
           <motion.div key={post._id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.05, 0.3) }}>
-            <GlassCard className="overflow-hidden">
-              {/* Author */}
+            <GlassCard variant="premium" className="overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-gold to-accent-gold flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                   {author?.avatar ? (

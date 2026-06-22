@@ -261,7 +261,7 @@ export function AnalyticsPage() {
       {/* Settings Config Panel */}
       {showConfig && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-          <GlassCard className="p-4 sm:p-5">
+          <GlassCard variant="premium" className="p-4 sm:p-5">
             <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Settings className="w-4 h-4 text-accent-gold" /> Настройки расчётов
             </h3>
@@ -340,7 +340,7 @@ export function AnalyticsPage() {
 
       {/* Stock warning notifications */}
       {lowStock.length > 0 && (
-        <GlassCard className="p-3 sm:p-4 border-amber-500/20 bg-amber-500/5">
+        <GlassCard variant="premium" className="p-3 sm:p-4 border-amber-500/20 bg-amber-500/5">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-4 h-4 text-amber-400" />
             <span className="text-xs sm:text-sm font-semibold text-amber-400">⚠️ Предупреждение склада расходников</span>
@@ -365,7 +365,7 @@ export function AnalyticsPage() {
           { icon: Repeat, label: 'Retention Rate', value: `${retentionRate}%`, sub: 'вернувшиеся гости', color: 'text-amber-400', bg: 'bg-amber-500/10' },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }}>
-            <GlassCard className="p-3 sm:p-4">
+            <GlassCard variant="premium" className="p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${card.bg} flex items-center justify-center`}>
                   <card.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${card.color}`} />
@@ -383,7 +383,7 @@ export function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         
         {/* LTV & Predictive Analysis */}
-        <GlassCard className="p-4 sm:p-5">
+        <GlassCard variant="premium" className="p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-display font-semibold text-white mb-4 flex items-center gap-2">
             <Brain className="w-4 h-4 text-accent-gold" /> Предиктивный ИИ-Анализ & LTV
           </h3>
@@ -437,7 +437,7 @@ export function AnalyticsPage() {
         </GlassCard>
 
         {/* Heatmap & Occupancy per Zone */}
-        <GlassCard className="p-4 sm:p-5">
+        <GlassCard variant="premium" className="p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-display font-semibold text-white mb-4 flex items-center gap-2">
             <Flame className="w-4 h-4 text-orange-500" /> Тепловая карта популярности столов
           </h3>
@@ -488,7 +488,7 @@ export function AnalyticsPage() {
 
       {/* Original Expenses + Financial details list */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <GlassCard className="p-4 sm:p-5">
+        <GlassCard variant="premium" className="p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-display font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
             <TrendingDown className="w-4 h-4 text-red-400" /> Расшифровка расходов
           </h3>
@@ -533,7 +533,7 @@ export function AnalyticsPage() {
           </div>
         </GlassCard>
 
-        <GlassCard className="p-4 sm:p-5">
+        <GlassCard variant="premium" className="p-4 sm:p-5">
           <h3 className="text-xs sm:text-sm font-display font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-accent-gold" /> Детализация по сессиям
           </h3>
@@ -555,7 +555,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Raw Material Invoices Section */}
-      <GlassCard className="p-4 sm:p-5">
+      <GlassCard variant="premium" className="p-4 sm:p-5">
         <h3 className="text-xs sm:text-sm font-display font-semibold text-white mb-4 flex items-center gap-2">
           <Package className="w-4 h-4 text-accent-gold" /> Журнал закупок (ИП Восторгин А.В.)
         </h3>
@@ -608,7 +608,7 @@ export function AnalyticsPage() {
       </GlassCard>
 
       {/* Consumables Inventory */}
-      <GlassCard className="p-4 sm:p-5">
+      <GlassCard variant="premium" className="p-4 sm:p-5">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <h3 className="text-xs sm:text-sm font-display font-semibold text-white flex items-center gap-2">
             <Package className="w-4 h-4 text-amber-400" /> Учёт остатков склада

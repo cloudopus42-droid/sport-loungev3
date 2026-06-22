@@ -160,7 +160,7 @@ export function AdminLayout() {
                 exit={{ opacity: 0, width: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0.01 : 0.15 }}
               >
-                <h1 className="text-base font-display font-semibold text-white tracking-wide truncate">SPORT LOUNGE</h1>
+                <h1 className="text-base font-display font-bold text-white tracking-wide truncate">SPORT LOUNGE</h1>
                 <p className="text-[10px] text-white/30 uppercase tracking-wider truncate">Админ панель</p>
               </motion.div>
             )}
@@ -324,10 +324,9 @@ export function AdminLayout() {
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: prefersReducedMotion ? 0.01 : 0.25, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0, transition: prefersReducedMotion ? { duration: 0.01 } : { type: 'spring' as const, stiffness: 120, damping: 24, mass: 1 } }}
+              exit={{ opacity: 0, y: -8, transition: { duration: prefersReducedMotion ? 0.01 : 0.2, ease: [0.23, 1, 0.32, 1] } }}
             >
               <Outlet />
             </motion.div>

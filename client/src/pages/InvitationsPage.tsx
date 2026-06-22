@@ -70,7 +70,7 @@ export function InvitationsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <GlassCard className="overflow-hidden">
+              <GlassCard variant="premium" className="overflow-hidden">
                 {/* Image */}
                 {invitation.imageUrl && (
                   <div className="relative h-40 overflow-hidden">

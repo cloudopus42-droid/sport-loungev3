@@ -106,7 +106,7 @@ export function AdminBookingsPage() {
       </motion.div>
 
       {/* Filters */}
-      <GlassCard className="p-4">
+      <GlassCard variant="premium" className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="w-4 h-4 text-accent-gold" />
           <span className="text-sm font-medium text-white">Фильтры</span>
@@ -150,7 +150,7 @@ export function AdminBookingsPage() {
                 return (
                   <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.02 }}>
-                    <GlassCard className="p-4 border-glass-border/30">
+                    <GlassCard variant="premium" className="p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -202,7 +202,7 @@ export function AdminBookingsPage() {
 
         {/* Right Side: Stats and Hookah queue */}
         <div className="space-y-4">
-          <GlassCard className="p-4 space-y-4">
+          <GlassCard variant="premium" className="p-4 space-y-4">
             <h3 className="text-sm font-display font-semibold text-white flex items-center gap-2 border-b border-glass-border/10 pb-2">
               📊 Сводка заказов
             </h3>
@@ -227,7 +227,7 @@ export function AdminBookingsPage() {
           </GlassCard>
 
           {/* Active Hookah cooking board */}
-          <GlassCard className="p-4">
+          <GlassCard variant="premium" className="p-4">
             <h3 className="text-sm font-display font-semibold text-white flex items-center gap-2 mb-3 border-b border-glass-border/10 pb-2">
               <Flame className="w-4 h-4 text-orange-400 animate-pulse" /> Очередь приготовления
             </h3>

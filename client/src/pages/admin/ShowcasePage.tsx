@@ -124,7 +124,7 @@ export function AdminShowcasePage() {
 
       {/* Form */}
       {(showForm || editing !== null) && (
-        <GlassCard className="p-5 space-y-4">
+        <GlassCard variant="premium" className="p-5 space-y-4">
           <h3 className="text-sm font-semibold text-white">
             {editing ? 'Редактировать карточку' : 'Новая карточка'}
           </h3>
@@ -159,7 +159,7 @@ export function AdminShowcasePage() {
           <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
         </div>
       ) : items.length === 0 ? (
-        <GlassCard className="p-8 text-center">
+        <GlassCard variant="premium" className="p-8 text-center">
           <p className="text-sm text-white/40">Нет карточек витрины</p>
         </GlassCard>
       ) : (
@@ -176,7 +176,7 @@ export function AdminShowcasePage() {
               onDragOver={(e) => { e.preventDefault(); }}
               onDrop={() => { if (dragIndex !== null && dragIndex !== index) moveItem(dragIndex, index); setDragIndex(null); }}
             >
-              <GlassCard className="p-0 overflow-hidden">
+              <GlassCard variant="premium" className="p-0 overflow-hidden">
                 <div className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing p-1 rounded-lg bg-black/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
                   <GripVertical className="w-4 h-4 text-white/60" />
                 </div>

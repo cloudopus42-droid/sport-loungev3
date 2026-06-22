@@ -682,7 +682,7 @@ export function ProfilePage() {
 
       {/* Profile Header — Telegram style */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <GlassCard className="p-5 sm:p-6">
+        <GlassCard variant="premium" className="p-5 sm:p-6">
           <div className="flex flex-col items-center text-center">
             {/* Avatar circle */}
             <div className="relative mb-4">
@@ -766,7 +766,7 @@ export function ProfilePage() {
       {/* Settings Panel */}
       {showSettings && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-          <GlassCard className="p-4 sm:p-5 space-y-4">
+          <GlassCard variant="premium" className="p-4 sm:p-5 space-y-4">
             <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2 border-b border-white/5 pb-2">
               <Palette className="w-4 h-4 text-accent-gold" /> Персонализация профиля
             </h3>
