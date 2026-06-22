@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS admin_telegram_chats (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Индекс для быстрого поиска по chat_id
 CREATE INDEX IF NOT EXISTS idx_admin_telegram_chats_chat_id ON admin_telegram_chats (chat_id);
 
 COMMENT ON TABLE admin_telegram_chats IS 'Хранит chat_id администраторов Telegram для уведомлений админ-бота';
