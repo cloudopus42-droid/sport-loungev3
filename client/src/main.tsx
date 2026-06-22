@@ -27,33 +27,34 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
 // Register PWA service worker in production with update detection
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    const base = import.meta.env.BASE_URL;
-    navigator.serviceWorker.register(`${base}sw.js`).then((reg) => {
-      reg.addEventListener('updatefound', () => {
-        const sw = reg.installing;
-        if (!sw) return;
-        sw.addEventListener('statechange', () => {
-          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-            const toastDiv = document.createElement('div');
-            toastDiv.id = 'sw-update-toast';
-            toastDiv.innerHTML = '🆕 Доступна новая версия. <u>Нажмите для обновления</u>';
-            Object.assign(toastDiv.style, {
-              position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
-              zIndex: '99999', background: '#1a1a2e', color: '#d4af37', padding: '14px 24px',
-              borderRadius: '12px', border: '1px solid #d4af37', cursor: 'pointer',
-              fontFamily: 'Geist, sans-serif', fontSize: '14px', boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(12px)',
-            });
-            toastDiv.addEventListener('click', () => window.location.reload());
-            document.body.appendChild(toastDiv);
-            setTimeout(() => { if (toastDiv.parentNode) toastDiv.remove(); }, 15000);
-          }
-        });
+  const base = import.meta.env.BASE_URL;
+  navigator.serviceWorker.register(`${base}sw.js`, { updateViaCache: 'none' }).then((reg) => {
+    // Check for SW updates every 60s
+    setInterval(() => { reg.update(); }, 60000);
+
+    reg.addEventListener('updatefound', () => {
+      const sw = reg.installing;
+      if (!sw) return;
+      sw.addEventListener('statechange', () => {
+        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+          const toastDiv = document.createElement('div');
+          toastDiv.id = 'sw-update-toast';
+          toastDiv.innerHTML = '🆕 Доступна новая версия. <u>Нажмите для обновления</u>';
+          Object.assign(toastDiv.style, {
+            position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+            zIndex: '99999', background: '#1a1a2e', color: '#d4af37', padding: '14px 24px',
+            borderRadius: '12px', border: '1px solid #d4af37', cursor: 'pointer',
+            fontFamily: 'Geist, sans-serif', fontSize: '14px', boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(12px)',
+          });
+          toastDiv.addEventListener('click', () => window.location.reload());
+          document.body.appendChild(toastDiv);
+          setTimeout(() => { if (toastDiv.parentNode) toastDiv.remove(); }, 15000);
+        }
       });
-    }).catch((err) => {
-      console.log('SW registration failed: ', err);
     });
-  }, { once: true });
+  }).catch((err) => {
+    console.log('SW registration failed: ', err);
+  });
 }
 
