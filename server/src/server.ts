@@ -44,11 +44,9 @@ async function bootstrap(): Promise<void> {
     }
 
     // Start admin bot for order management
-    try {
-      startAdminBot();
-    } catch (err: any) {
+    startAdminBot().catch((err: any) => {
       console.error('❌ Failed to start admin bot:', err.message);
-    }
+    });
 
     // Start background orders delay tracker
     try {

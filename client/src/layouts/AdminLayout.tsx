@@ -84,6 +84,13 @@ export function AdminLayout() {
     return () => { socket.off('booking:created', handleNewBooking); };
   }, [socket, isAdmin]);
 
+  // Join admin room via Socket.IO so admin receives staff-targeted events
+  useEffect(() => {
+    if (socket && isAdmin && user) {
+      socket.emit('user:active', { id: user.id, name: user.name, role: user.role, isAdmin: true });
+    }
+  }, [socket, isAdmin, user]);
+
   useEffect(() => {
     if (!loading && !isAdmin) {
       navigate('/login', { replace: true });

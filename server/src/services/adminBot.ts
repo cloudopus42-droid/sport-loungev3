@@ -95,8 +95,34 @@ async function isAdminUser(telegramId: number, username?: string): Promise<boole
   return !!data;
 }
 
-function ensureAdminChatId(chatId: number) {
+async function ensureAdminChatId(chatId: number) {
   knownAdminChatIds.add(chatId);
+  try {
+    await supabase
+      .from('admin_telegram_chats')
+      .upsert(
+        { chat_id: chatId, updated_at: new Date().toISOString() },
+        { onConflict: 'chat_id' }
+      );
+  } catch (err: any) {
+    console.warn('⚠️ Failed to persist admin chat_id:', err.message);
+  }
+}
+
+async function loadAdminChatIds(): Promise<void> {
+  try {
+    const { data } = await supabase
+      .from('admin_telegram_chats')
+      .select('chat_id');
+    if (data) {
+      for (const row of data) {
+        knownAdminChatIds.add(Number(row.chat_id));
+      }
+      console.log(`💾 [Admin Bot] Loaded ${data.length} persisted admin chat IDs`);
+    }
+  } catch (err: any) {
+    console.warn('⚠️ [Admin Bot] Failed to load persisted chat IDs:', err.message);
+  }
 }
 
 function orderDetailText(order: any, userName?: string, phone?: string): string {
@@ -594,7 +620,7 @@ async function handleUpdate(update: any) {
       return;
     }
 
-    ensureAdminChatId(chatId);
+    await ensureAdminChatId(chatId);
     console.log(`👤 [Admin Bot] Command from ${user.first_name} (${chatId}): "${text}"`);
     await handleCommand(chatId, text);
   }
@@ -612,19 +638,22 @@ async function handleUpdate(update: any) {
       return;
     }
 
-    ensureAdminChatId(chatId);
+    await ensureAdminChatId(chatId);
     console.log(`🖱️ [Admin Bot] Callback from ${user.first_name}: "${data}"`);
     await handleCallback(chatId, cq.id, data);
   }
 }
 
-export function startAdminBot() {
+export async function startAdminBot() {
   if (!ADMIN_BOT_TOKEN) {
     console.log('⚠️ [Admin Bot] ADMIN_BOT_TOKEN not set, skipping.');
     return;
   }
 
   console.log('🤖 [Admin Bot] Starting service...');
+
+  // Load persisted admin chat IDs from Supabase
+  await loadAdminChatIds();
 
   let offset = 0;
   let isPolling = true;

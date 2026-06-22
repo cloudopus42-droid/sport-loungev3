@@ -54,6 +54,16 @@ async function runMigrations() {
       console.log('✅ restock_requests ok');
     }
   } catch {}
+
+  try {
+    const { error: atcErr } = await supabase.from('admin_telegram_chats').select('id').limit(1);
+    if (atcErr) {
+      console.log('⚠️ Таблица admin_telegram_chats отсутствует.');
+      console.log('   → Выполни SQL из server/src/migrations/003_admin_telegram_chats.sql в Supabase SQL Editor');
+    } else {
+      console.log('✅ admin_telegram_chats ok');
+    }
+  } catch {}
 }
 
 export async function connectDB(): Promise<void> {

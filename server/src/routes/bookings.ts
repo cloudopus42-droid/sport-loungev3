@@ -2,10 +2,11 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { sendBookingNotification } from '../services/telegram';
+import { adminNotifyNewOrder } from '../services/adminBot';
 import { z } from 'zod';
 import { getPagination, paginatedResponse } from '../utils/pagination';
 import { supabase } from '../config/supabase';
-import { getIO } from '../socket';
+import { getIO, getAdminRoom } from '../socket';
 
 
 const router = Router();
@@ -147,8 +148,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
       .eq('id', req.user!.id)
       .single();
 
-    // Telegram notifications are now disabled to focus purely on the real-time admin dashboard.
-    /*
+    // Telegram notifications for seat bookings
     if (user) {
       sendBookingNotification({
         seatLabel: data.seatLabel,
@@ -164,8 +164,30 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
         hookahCount: data.hookahCount,
         comment: data.comment,
       }).catch(() => {});
+      adminNotifyNewOrder(
+        booking!.id,
+        data.seatLabel,
+        data.seatZone,
+        user.name,
+        data.hookahMix || 'Индивидуальный микс',
+        `${data.date}T${data.time}:00`,
+      ).catch((err: any) => console.warn('⚠️ Admin bot notify failed:', err.message));
     }
-    */
+
+    // Broadcast booking:created to admin room for real-time notification
+    try {
+      const io = getIO();
+      io.to(getAdminRoom()).emit('booking:created', {
+        id: booking.id,
+        seatLabel: data.seatLabel,
+        seatZone: data.seatZone,
+        phone: data.phone,
+        hookahMix: data.hookahMix,
+        guestsCount: data.guestsCount,
+      });
+    } catch (socketErr: any) {
+      console.warn('⚠️ Socket emit booking:created failed:', socketErr.message);
+    }
 
     const populated = { ...booking, user };
 
@@ -488,7 +510,7 @@ router.put(
       try {
         const io = getIO();
         const progressMap: Record<string, number> = { accepted: 15, heating: 45, almost: 75, ready: 100 };
-        io.emit('booking:updated', {
+        io.to(getAdminRoom()).emit('booking:updated', {
           id: booking.id,
           userId: booking.user_id,
           hookahStatus,
@@ -661,7 +683,7 @@ router.post('/public-mix', async (req: Request, res: Response, next: NextFunctio
     // 3. Broadcast to admin panel via Socket.IO for real-time chime and toast
     try {
       const io = getIO();
-      io.emit('booking:created', {
+      io.to(getAdminRoom()).emit('booking:created', {
         id: booking.id,
         seatLabel: 'Микс-билет',
         seatZone: 'hall',
