@@ -52,7 +52,10 @@ window.__slBuildId = '${buildId}';
           .then(function() {
             // Re-register with updateViaCache=none
             navigator.serviceWorker.register('/sport-loungev3/sw.js', { updateViaCache: 'none' })
-              .then(function() { console.log('[SW] fresh registration OK'); })
+              .then(function() {
+                console.log('[SW] fresh registration OK — reloading for fresh content');
+                setTimeout(function() { location.reload(); }, 300);
+              })
               .catch(function(e) { console.log('[SW] register fail:', e); });
           });
       }
@@ -75,9 +78,9 @@ window.__slBuildId = '${buildId}';
             fontFamily:'Geist, sans-serif', fontSize:'14px', fontWeight:'600',
             textAlign:'center', cursor:'pointer'
           });
-          banner.onclick = function() { location.reload(true); };
+          banner.onclick = function() { location.reload(); };
           document.body.prepend(banner);
-          setTimeout(function() { location.reload(true); }, 2000);
+          setTimeout(function() { location.reload(); }, 2000);
         }
       }).catch(function(){});
   }, 20000);

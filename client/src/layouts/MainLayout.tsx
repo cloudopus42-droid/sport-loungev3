@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { InvitationBanner } from '@/components/InvitationBanner';
 import type { Invitation } from '@/types';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
+import { VersionBadge } from '@/components/VersionBadge';
 import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
 import { staggerContainer } from '@/lib/motion';
@@ -509,6 +510,8 @@ export function MainLayout() {
           </div>
         </motion.div>
       </nav>
+
+      <VersionBadge />
     </div>
   );
 }

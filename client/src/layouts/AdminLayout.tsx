@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 import { showToast } from '@/components/NotificationToast';
+import { VersionBadge } from '@/components/VersionBadge';
 import Tooltip from '@/components/ui/Tooltip';
 
 interface SidebarItem {
@@ -397,6 +398,8 @@ export function AdminLayout() {
           })}
         </div>
       </nav>
+
+      <VersionBadge />
     </div>
   );
 }
