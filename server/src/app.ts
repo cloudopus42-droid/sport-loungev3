@@ -139,8 +139,11 @@ const indexHtmlPath = path.join(clientDistPath, 'index.html');
 if (fs.existsSync(indexHtmlPath)) {
   app.use(express.static(clientDistPath, {
     setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.html') || path.basename(filePath) === 'index.html') {
+      const basename = path.basename(filePath);
+      if (filePath.endsWith('.html') || basename === 'index.html') {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      } else if (basename === 'sw.js' || basename === 'version.json') {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate');
       } else {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       }
