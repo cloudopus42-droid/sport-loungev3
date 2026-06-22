@@ -25,12 +25,20 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </QueryClientProvider>
 );
 
-// Register PWA service worker in production with update detection
+// Register PWA service worker with ZERO trust for stale cache
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   const base = import.meta.env.BASE_URL;
-  navigator.serviceWorker.register(`${base}sw.js`, { updateViaCache: 'none' }).then((reg) => {
-    // Check for SW updates every 60s
-    setInterval(() => { reg.update(); }, 60000);
+
+  // Step 1: Unregister ALL existing SWs to break stale-registration cycle
+  navigator.serviceWorker.getRegistrations().then((all) => {
+    const unregs = all.map((r) => r.unregister());
+    return Promise.all(unregs);
+  }).then(() => {
+    // Step 2: Fresh registration with bypass-cache option
+    return navigator.serviceWorker.register(`${base}sw.js`, { updateViaCache: 'none' });
+  }).then((reg) => {
+    // Check for SW updates every 30s
+    setInterval(() => { reg.update(); }, 30000);
 
     reg.addEventListener('updatefound', () => {
       const sw = reg.installing;
