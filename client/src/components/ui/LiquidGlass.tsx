@@ -8,9 +8,9 @@ type DepthLevel = 'flat' | 'raised' | 'deep';
 const variantClasses: Record<GlassVariant, string> = {
   card: 'glass-card',
   panel: 'glass-card-premium',
-  nav: 'backdrop-blur-glass bg-[#070707]/80 border-b border-[rgba(176,141,87,0.12)]',
-  sidebar: 'bg-[#0D0F13] border-r border-[rgba(176,141,87,0.12)]',
-  modal: 'bg-[#0D0F13] border border-[rgba(176,141,87,0.15)] rounded-[16px] shadow-glass',
+  nav: 'backdrop-blur-glass bg-dark-bg/80 border-b border-[rgba(176,141,87,0.12)]',
+  sidebar: 'bg-dark-surface border-r border-[rgba(176,141,87,0.12)]',
+  modal: 'bg-dark-surface border border-[rgba(176,141,87,0.15)] rounded-[16px] shadow-glass',
 };
 
 const depthShadows: Record<DepthLevel, string> = {

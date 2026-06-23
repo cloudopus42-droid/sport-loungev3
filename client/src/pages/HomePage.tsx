@@ -104,7 +104,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="overflow-x-hidden bg-[#070707]">
+    <div className="overflow-x-hidden bg-dark-bg">
       {/* ─── HERO ─── */}
       <section
         ref={heroRef}
@@ -184,7 +184,7 @@ export function HomePage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
             >
-              <div className="aspect-[4/5] max-w-md mx-auto relative bg-[#070707] rounded-[16px] overflow-hidden ring-1 ring-inset ring-white/5">
+              <div className="aspect-[4/5] max-w-md mx-auto relative bg-dark-bg rounded-[16px] overflow-hidden ring-1 ring-inset ring-white/5">
                 <HookahScene bowlIndex={bowlIndex} liquidIndex={liquidIndex} />
                 {/* Progress bar */}
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[rgba(176,141,87,0.1)]">
@@ -297,7 +297,7 @@ export function HomePage() {
               <motion.div
                 key={item.label}
                 variants={fadeUp}
-                className="bg-[#070707] p-8 lg:p-12 flex flex-col justify-between min-h-[240px]"
+                className="bg-dark-bg p-8 lg:p-12 flex flex-col justify-between min-h-[240px]"
               >
                 <p className="font-heading text-[clamp(32px,4vw,56px)] font-semibold text-[#B08D57] tracking-[-0.03em] leading-none">
                   {item.value}
