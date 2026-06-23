@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Send, X, Bot, Sparkles, LogIn, ChevronLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useFeature } from '@/contexts/FeatureContext';
 import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 
@@ -12,7 +13,9 @@ interface Message {
 
 export function ConciergeChat() {
   const { isAuthenticated } = useAuth();
+  const { isFeatureEnabled } = useFeature();
   const [isOpen, setIsOpen] = useState(false);
+  const conciergeEnabled = isFeatureEnabled('concierge_chat');
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -63,6 +66,8 @@ export function ConciergeChat() {
       setLoading(false);
     }
   };
+
+  if (!conciergeEnabled) return null;
 
   return (
     <div className="fixed right-0 z-[45] bottom-[88px] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2">

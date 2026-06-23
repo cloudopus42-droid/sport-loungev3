@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/hooks/useAuth';
+import { useFeature } from '@/contexts/FeatureContext';
 import { useSocket } from '@/hooks/useSocket';
 import { HookahScene } from '@/components/three/HookahScene';
 import api from '@/lib/api';
@@ -83,6 +84,7 @@ const stages = [
 export function BookingPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { isFeatureEnabled } = useFeature();
   const { socket } = useSocket();
 
   const [mixes, setMixes] = useState<Mix[]>([]);
@@ -483,6 +485,7 @@ export function BookingPage() {
           </div>
 
           {/* AI Mixologist */}
+          {isFeatureEnabled('ai_sommelier') && (
           <div className={`liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
             <div className="flex items-center gap-2 mb-3">
               <Bot className="w-3.5 h-3.5 text-[#FFBF00]" />
@@ -527,6 +530,7 @@ export function BookingPage() {
               <p className="text-[8px] text-white/20 text-center py-2">Выберите настроение для рекомендации</p>
             )}
           </div>
+          )}
 
           {/* Price & Order */}
           <div className="liquid-glass rounded-2xl p-5 border border-[rgba(255,191,0,0.12)] bg-gradient-to-br from-[rgba(255,191,0,0.03)] to-transparent">
