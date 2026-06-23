@@ -19,6 +19,8 @@ const LoginPage = lazy(() => import('@/pages/LoginPage').then(m => ({ default: m
 const RegisterPage = lazy(() => import('@/pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const LoginCallbackPage = lazy(() => import('@/pages/LoginCallbackPage').then(m => ({ default: m.LoginCallbackPage })));
 const OrderTrackerPage = lazy(() => import('@/pages/OrderTrackerPage').then(m => ({ default: m.OrderTrackerPage })));
+const LoyaltyPage = lazy(() => import('@/pages/LoyaltyPage').then(m => ({ default: m.LoyaltyPage })));
+const GalleryPage = lazy(() => import('@/pages/GalleryPage').then(m => ({ default: m.GalleryPage })));
 const NotFound = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFound })));
 
 const Dashboard = lazy(() => import('@/pages/admin/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -54,6 +56,8 @@ export default function App() {
                 <Route path="mixologist" element={<Navigate to="/booking" replace />} />
                 <Route path="order" element={<OrderTrackerPage />} />
                 <Route path="order-tracker" element={<OrderTrackerPage />} />
+                <Route path="loyalty" element={<LoyaltyPage />} />
+                <Route path="gallery" element={<GalleryPage />} />
                 <Route path="tobacco" element={<TobaccoPage />} />
                 <Route path="knowledge" element={<KnowledgeGraphPage />} />
                 <Route path="feed" element={<FeedPage />} />

@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Crown, LogOut, CalendarCheck, FlaskConical,
-  BookOpen, Sparkles
+  BookOpen, Sparkles, Image
 } from 'lucide-react';
 import { HomeIcon, MenuIcon, UserIcon, CloseIcon, ChevronRightIcon } from '@/components/icons';
 import clsx from 'clsx';
@@ -28,8 +28,9 @@ interface DesktopNavItem {
 
 const desktopNavItems: DesktopNavItem[] = [
   { label: 'Главная', to: '/' },
-  { label: 'Меню', hash: '#menu' },
   { label: 'Заказ', to: '/booking' },
+  { label: 'Галерея', to: '/gallery' },
+  { label: 'Лояльность', to: '/loyalty' },
   { label: 'ИИ-Миксолог', to: '/booking' },
   { label: 'Зоны', hash: '#zones' },
   { label: 'Контакты', hash: '#contacts' },
@@ -44,8 +45,8 @@ interface MobileTab {
 const mobileTabs: MobileTab[] = [
   { label: 'Главная', to: '/', icon: HomeIcon },
   { label: 'Заказ', to: '/booking', icon: CalendarCheck },
-  { label: 'Миксолог', to: '/booking', icon: FlaskConical },
-  { label: 'База', to: '/knowledge', icon: BookOpen },
+  { label: 'Галерея', to: '/gallery', icon: Image },
+  { label: 'Лояльность', to: '/loyalty', icon: Crown },
   { label: 'Профиль', to: '/profile', icon: UserIcon },
 ];
 
