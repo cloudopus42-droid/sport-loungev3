@@ -6,13 +6,14 @@ const config: Config = {
     extend: {
       colors: {
         dark: {
-          bg: '#070707',
+          bg: '#0b0807',
           surface: '#0D0F13',
           'surface-alt': '#13161C',
           border: 'rgba(176, 141, 87, 0.18)',
         },
         accent: {
           gold: '#B08D57',
+          'gold-bright': '#FFBF00',
           'gold-light': '#C4A46B',
           'gold-dark': '#8D6B3D',
           amber: '#B08D57',
@@ -26,10 +27,10 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        heading: ['Cormorant Garamond', 'Georgia', 'serif'],
+        heading: ['Playfair Display', 'Georgia', 'serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Cormorant Garamond', 'Georgia', 'serif'],
-        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        display: ['Playfair Display', 'Georgia', 'serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
       },
       boxShadow: {
         'elevated': '0 4px 12px rgba(0,0,0,0.3)',

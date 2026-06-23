@@ -1,10 +1,11 @@
 :root {
-  --color-bg: #070707;
+  --color-bg: #0b0807;
   --color-surface: #0D0F13;
   --color-surface-light: #13161C;
   --color-border: rgba(176, 141, 87, 0.18);
   --color-border-hover: rgba(176, 141, 87, 0.3);
   --color-gold-primary: #B08D57;
+  --color-gold-bright: #FFBF00;
   --color-gold-soft: #C4A46B;
   --color-gold-dark: #8D6B3D;
   --color-text-main: #F5F5F5;
@@ -37,7 +38,7 @@
 
 @layer base {
   body {
-    @apply bg-[#070707] text-[#F5F5F5] font-sans antialiased;
+    @apply bg-[#0b0807] text-[#F5F5F5] font-sans antialiased;
     overflow-x: hidden;
   }
 
@@ -47,10 +48,10 @@
   }
 
   ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: #070707; }
+  ::-webkit-scrollbar-track { background: #0b0807; }
   ::-webkit-scrollbar-thumb { background: rgba(176, 141, 87, 0.2); border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(176, 141, 87, 0.35); }
-  * { scrollbar-width: thin; scrollbar-color: rgba(176, 141, 87, 0.2) #070707; }
+  * { scrollbar-width: thin; scrollbar-color: rgba(176, 141, 87, 0.2) #0b0807; }
 }
 
 @layer components {
@@ -122,7 +123,7 @@
     gap: 8px;
     padding: 12px 28px;
     background: #B08D57;
-    color: #070707;
+    color: #0b0807;
     border-radius: var(--radius-md);
     font-size: 13px;
     font-weight: 600;
@@ -133,11 +134,12 @@
   }
 
   .btn-primary:hover {
-    background: #C4A46B;
+    background: #FFBF00;
+    box-shadow: 0 0 24px rgba(255, 191, 0, 0.15);
   }
 
   .btn-primary:active {
-    background: #8D6B3D;
+    background: #C4A46B;
   }
 
   .btn-secondary {
@@ -163,7 +165,7 @@
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #B08D57 0%, #C4A46B 50%, #8D6B3D 100%);
+    background: linear-gradient(135deg, #FFBF00 0%, #B08D57 40%, #C4A46B 70%, #8D6B3D 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -207,6 +209,27 @@
 
   .glass-btn-gold {
     background: #B08D57;
+  }
+
+  .glass-btn-gold-bright {
+    background: #FFBF00;
+    box-shadow: 0 0 24px rgba(255, 191, 0, 0.12);
+  }
+
+  .text-gold-bright {
+    color: #FFBF00;
+  }
+
+  .border-gold-bright {
+    border-color: #FFBF00;
+  }
+
+  .ring-gold-bright {
+    box-shadow: 0 0 0 1px rgba(255, 191, 0, 0.3);
+  }
+
+  .gold-bright-glow {
+    box-shadow: 0 0 20px rgba(255, 191, 0, 0.08), 0 0 60px rgba(255, 191, 0, 0.04);
   }
 }
 
