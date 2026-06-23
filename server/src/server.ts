@@ -55,6 +55,22 @@ async function bootstrap(): Promise<void> {
       console.error('❌ Failed to start order scheduler:', err.message);
     }
 
+    // Start BugHunter agent daemon (starts watching for file changes)
+    try {
+      const { startBugHunterDaemon } = require('./services/bughunterDaemon');
+      startBugHunterDaemon();
+    } catch (err: any) {
+      console.error('❌ Failed to start BugHunter daemon:', err.message);
+    }
+
+    // Start BugHunter daily digest (10:00 AM)
+    try {
+      const { startBugHunterDailyDigest } = require('./services/bughunterTelegram');
+      startBugHunterDailyDigest();
+    } catch (err: any) {
+      console.error('❌ Failed to start BugHunter daily digest:', err.message);
+    }
+
     // Auto-pinger to prevent Render.com from sleeping
     if (config.isProduction) {
       console.log('🤖 [Auto-Pinger] Started. Will ping self health check every 10 minutes.');

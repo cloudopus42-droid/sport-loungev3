@@ -155,5 +155,15 @@
         "y": 9
       }
     }
+  },
+  "bughunter": {
+    "status": "idle",
+    "cycle": 1,
+    "found": 140,
+    "fixed": 1,
+    "escalated": 135,
+    "lastScan": "2026-06-23 21:40",
+    "thought": "Ожидание",
+    "color": "#F44336"
   }
 }

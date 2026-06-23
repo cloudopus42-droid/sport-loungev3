@@ -49,6 +49,16 @@
       "tools": ["db-query", "migration-gen", "index-analyze", "supabase-api", "sheets-api", "n8n-api", "message-bus"],
       "triggers": ["new-model", "slow-query", "schema-change", "integration-request"],
       "memory": { "maxHistory": 50, "persistFile": "agents/agents/data-agent/memory.jsonl" }
+    },
+    "bughunter": {
+      "tools": ["file-read", "file-write", "regex-scan", "code-fix", "npm-build", "message-bus", "telegram-notify"],
+      "triggers": ["commit", "deploy", "ui-change", "timer:60s"],
+      "memory": { "maxHistory": 200, "persistFile": "agents/agents/bughunter/log.md" },
+      "config": {
+        "color": "#F44336",
+        "displayName": "BugBot",
+        "daemonScript": "agents/agents/bughunter/agent.js"
+      }
     }
   }
 }

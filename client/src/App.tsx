@@ -35,6 +35,7 @@ const OrdersAdmin = lazy(() => import('@/pages/admin/OrdersAdmin').then(m => ({ 
 const TobaccoAdmin = lazy(() => import('@/pages/admin/TobaccoAdmin').then(m => ({ default: m.TobaccoAdmin })));
 const SmartFeaturesPage = lazy(() => import('@/pages/admin/SmartFeaturesPage').then(m => ({ default: m.SmartFeaturesPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then(m => ({ default: m.AdminLogsPage })));
+const BugHunterPage = lazy(() => import('@/pages/admin/BugHunterPage').then(m => ({ default: m.BugHunterPage })));
 
 export default function App() {
   return (
@@ -81,8 +82,9 @@ export default function App() {
                 <Route path="orders" element={<OrdersAdmin />} />
                 <Route path="tobacco" element={<TobaccoAdmin />} />
                 <Route path="smart-features" element={<SmartFeaturesPage />} />
-                <Route path="logs" element={<AdminLogsPage />} />
-              </Route>
+          <Route path="logs" element={<AdminLogsPage />} />
+          <Route path="bughunter" element={<BugHunterPage />} />
+        </Route>
 
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />

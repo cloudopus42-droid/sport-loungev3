@@ -216,7 +216,7 @@ export function LoginPage() {
             >
               <form onSubmit={handleRegister} className="glass-card p-6 space-y-4">
                 <div className="flex items-center gap-2 border-b border-white/5 pb-3 mb-2">
-                  <button type="button" onClick={flip} className="p-1 rounded-lg hover:bg-white/5 transition-colors">
+                  <button aria-label="Назад" type="button" onClick={flip} className="p-1 rounded-lg hover:bg-white/5 transition-colors">
                     <ChevronLeft className="w-4 h-4 text-white/50" />
                   </button>
                   <div className="w-7 h-7 rounded-lg bg-[rgba(255,191,0,0.1)] flex items-center justify-center">
