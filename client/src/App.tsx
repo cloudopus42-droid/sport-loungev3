@@ -18,6 +18,7 @@ const ProfilePage = lazy(() => import('@/pages/ProfilePage').then(m => ({ defaul
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const LoginCallbackPage = lazy(() => import('@/pages/LoginCallbackPage').then(m => ({ default: m.LoginCallbackPage })));
+const OrderTrackerPage = lazy(() => import('@/pages/OrderTrackerPage').then(m => ({ default: m.OrderTrackerPage })));
 const NotFound = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFound })));
 
 const Dashboard = lazy(() => import('@/pages/admin/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -31,6 +32,7 @@ const AnalyticsPage = lazy(() => import('@/pages/admin/AnalyticsPage').then(m =>
 const OrdersAdmin = lazy(() => import('@/pages/admin/OrdersAdmin').then(m => ({ default: m.OrdersAdmin })));
 const TobaccoAdmin = lazy(() => import('@/pages/admin/TobaccoAdmin').then(m => ({ default: m.TobaccoAdmin })));
 const SmartFeaturesPage = lazy(() => import('@/pages/admin/SmartFeaturesPage').then(m => ({ default: m.SmartFeaturesPage })));
+const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then(m => ({ default: m.AdminLogsPage })));
 
 export default function App() {
   return (
@@ -38,8 +40,8 @@ export default function App() {
       <SocketProvider>
         <FeatureProvider>
           <Suspense fallback={
-            <div className="min-h-screen bg-[#080605] flex flex-col items-center justify-center text-white font-sans">
-              <div className="w-10 h-10 rounded-xl bg-[#B08D57] flex items-center justify-center mb-4">
+            <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center text-white font-sans">
+              <div className="w-10 h-10 rounded-xl bg-accent-gold flex items-center justify-center mb-4">
                 <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
               </div>
               <span className="text-xs uppercase tracking-[0.25em] text-white/50">Загрузка...</span>
@@ -50,7 +52,8 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path="booking" element={<BookingPage />} />
                 <Route path="mixologist" element={<Navigate to="/booking" replace />} />
-                <Route path="order" element={<Navigate to="/booking" replace />} />
+                <Route path="order" element={<OrderTrackerPage />} />
+                <Route path="order-tracker" element={<OrderTrackerPage />} />
                 <Route path="tobacco" element={<TobaccoPage />} />
                 <Route path="knowledge" element={<KnowledgeGraphPage />} />
                 <Route path="feed" element={<FeedPage />} />
@@ -74,6 +77,7 @@ export default function App() {
                 <Route path="orders" element={<OrdersAdmin />} />
                 <Route path="tobacco" element={<TobaccoAdmin />} />
                 <Route path="smart-features" element={<SmartFeaturesPage />} />
+                <Route path="logs" element={<AdminLogsPage />} />
               </Route>
 
               <Route path="/404" element={<NotFound />} />

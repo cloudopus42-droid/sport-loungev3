@@ -35,12 +35,12 @@ const statusLabels: Record<string, { text: string; color: 'green' | 'yellow' | '
 
 // Theme accent options
 const accentColors = [
-  { name: 'Gold', value: '#B08D57' },
+  { name: 'Gold Bright', value: '#FFBF00' },
+  { name: 'Gold Muted', value: '#B08D57' },
   { name: 'Amber', value: '#FFB800' },
   { name: 'Bronze', value: '#8A6623' },
   { name: 'Green', value: '#22c55e' },
   { name: 'Pink', value: '#ec4899' },
-  { name: 'Red', value: '#ef4444' },
 ];
 
 // VIP Card details mapping
@@ -200,7 +200,7 @@ export function ProfilePage() {
   const [editPhone, setEditPhone] = useState('');
   const [editBio, setEditBio] = useState('');
   const [saving, setSaving] = useState(false);
-  const [selectedAccent, setSelectedAccent] = useState('#B08D57');
+  const [selectedAccent, setSelectedAccent] = useState('#FFBF00');
   const [showSettings, setShowSettings] = useState(false);
 
   // VIP Club data states
@@ -285,7 +285,7 @@ export function ProfilePage() {
         const p = JSON.parse(prefs);
         setEditBio(p.bio || '');
         setEditPhone(p.phone || '');
-        setSelectedAccent(p.accent || '#B08D57');
+        setSelectedAccent(p.accent || '#FFBF00');
         setSelectedFrameId(p.frameId || 'none');
         setSelectedStatus(p.statusText || '');
       }
@@ -545,7 +545,7 @@ export function ProfilePage() {
             <span className="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold">Закрытый клуб VIP Resident</span>
             <button 
               onClick={() => setIsFlipped(!isFlipped)} 
-              className="text-[10px] text-accent-gold hover:text-white transition-all bg-white/5 border border-glass-border/30 px-2.5 py-0.5 rounded-full"
+              className="text-[10px] text-accent-gold-bright hover:text-white transition-all bg-white/5 border border-glass-border/30 px-2.5 py-0.5 rounded-full"
             >
               {isFlipped ? 'Показать Карту' : 'Привилегии'}
             </button>
@@ -600,7 +600,7 @@ export function ProfilePage() {
                 </div>
                 <div className="text-right">
                   <span className={`text-[9px] block ${cardTheme.text} uppercase tracking-wider`}>Очки лояльности</span>
-                  <span className="text-accent-gold text-lg sm:text-xl font-bold font-mono">{membership.points} XP</span>
+                  <span className="text-accent-gold-bright text-lg sm:text-xl font-bold font-mono">{membership.points} XP</span>
                 </div>
               </div>
             </motion.div>
@@ -646,7 +646,7 @@ export function ProfilePage() {
               </div>
               <div className="text-right flex flex-col">
                 <span className="text-white/40 uppercase text-[9px] tracking-wider font-bold">Следующий ранг</span>
-                <span className="text-accent-gold font-bold text-xs">{xpProgress.next}</span>
+                <span className="text-accent-gold-bright font-bold text-xs">{xpProgress.next}</span>
               </div>
             </div>
             
@@ -660,9 +660,9 @@ export function ProfilePage() {
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-white/40 font-mono">{membership.points} XP / {xpProgress.max} XP</span>
               {xpProgress.remaining > 0 ? (
-                <span className="text-accent-gold font-bold">Осталось {xpProgress.remaining} XP до повышения</span>
+                <span className="text-accent-gold-bright font-bold">Осталось {xpProgress.remaining} XP до повышения</span>
               ) : (
-                <span className="text-accent-gold font-bold">Уровень максимален! 👑</span>
+                <span className="text-accent-gold-bright font-bold">Уровень максимален! 👑</span>
               )}
             </div>
 
@@ -670,7 +670,7 @@ export function ProfilePage() {
             <div className="pt-2 border-t border-white/5 flex justify-center">
               <button 
                 onClick={() => setShowQrModal(true)}
-                className="w-full py-2 bg-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 text-accent-gold text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-2 bg-accent-gold-bright/5 border border-accent-gold-bright/20 hover:border-accent-gold-bright/40 text-accent-gold-bright text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Открыть Цифровой QR Пропуск</span>
@@ -749,7 +749,7 @@ export function ProfilePage() {
                 </div>
                 <div className="flex gap-2 mt-4 justify-center">
                   <button onClick={() => setEditing(true)}
-                    className="px-4 py-1.5 rounded-lg text-xs text-accent-gold border border-accent-gold/20 hover:bg-accent-gold/5 transition-all flex items-center gap-1.5">
+                    className="px-4 py-1.5 rounded-lg text-xs text-accent-gold-bright border border-accent-gold-bright/20 hover:bg-accent-gold-bright/5 transition-all flex items-center gap-1.5">
                     <Edit3 className="w-3 h-3" /> Редактировать
                   </button>
                   <button onClick={() => setShowSettings(!showSettings)}
@@ -767,7 +767,7 @@ export function ProfilePage() {
       {showSettings && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
           <GlassCard variant="premium" className="p-4 sm:p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2 border-b border-white/5 pb-2">
+            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2 border-b border-white/5 pb-2 font-heading">
               <Palette className="w-4 h-4 text-accent-gold" /> Персонализация профиля
             </h3>
 
@@ -782,7 +782,7 @@ export function ProfilePage() {
                   }}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all border ${
                       selectedStatus === s
-                        ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45'
+                        ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45'
                         : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -803,7 +803,7 @@ export function ProfilePage() {
                   }}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all border ${
                       selectedFrameId === f.id
-                        ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45 shadow-[0_0_8px_rgba(0,242,254,0.15)]'
+                        ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45 shadow-[0_0_8px_rgba(0,242,254,0.15)]'
                         : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -835,7 +835,7 @@ export function ProfilePage() {
               <div>
                 <div className="flex justify-between items-center mb-1 text-xs">
                   <span className="text-white/60">Размытие заднего фона (Blur)</span>
-                  <span className="text-accent-gold font-mono">{blurVal}px</span>
+                  <span className="text-accent-gold-bright font-mono">{blurVal}px</span>
                 </div>
                 <input 
                   type="range" 
@@ -850,7 +850,7 @@ export function ProfilePage() {
               <div>
                 <div className="flex justify-between items-center mb-1 text-xs">
                   <span className="text-white/60">Прозрачность стекла (Opacity)</span>
-                  <span className="text-accent-gold font-mono">{Math.round(opacityVal * 100)}%</span>
+                  <span className="text-accent-gold-bright font-mono">{Math.round(opacityVal * 100)}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -904,7 +904,7 @@ export function ProfilePage() {
                     <div key={index} className="flex flex-col space-y-1">
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-white/80 font-medium">{mixName}</span>
-                        <span className="text-[10px] font-mono text-accent-gold font-bold">Любимый выбор #{index + 1}</span>
+                        <span className="text-[10px] font-mono text-accent-gold-bright font-bold">Любимый выбор #{index + 1}</span>
                       </div>
                       <div className="relative w-full h-1.5 bg-stone-900 rounded-full overflow-hidden border border-white/5">
                         <div 
@@ -950,7 +950,7 @@ export function ProfilePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-1">
                         <h4 className="text-[11px] font-bold text-white truncate">{ach.name}</h4>
-                        {ach.unlocked && <span className="text-[8px] text-accent-gold font-bold font-mono">+{ach.points_reward} XP</span>}
+                        {ach.unlocked && <span className="text-[8px] text-accent-gold-bright font-bold font-mono">+{ach.points_reward} XP</span>}
                       </div>
                       <p className="text-[9px] text-white/50 leading-tight mt-0.5 line-clamp-2">{ach.description}</p>
                     </div>
@@ -974,7 +974,7 @@ export function ProfilePage() {
             onClick={() => setActiveTab('visits')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
               activeTab === 'visits'
-                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45 shadow-[0_0_12px_rgba(0,242,254,0.15)]'
+                ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45 shadow-[0_0_12px_rgba(0,242,254,0.15)]'
                 : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
             }`}
           >
@@ -984,7 +984,7 @@ export function ProfilePage() {
             onClick={() => setActiveTab('mixes')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
               activeTab === 'mixes'
-                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45'
+                ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45'
                 : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
             }`}
           >
@@ -1020,7 +1020,7 @@ export function ProfilePage() {
                               {booking.status === 'confirmed' && (
                                 <button 
                                   onClick={() => setReviewBookingId(booking._id)}
-                                  className="text-[10px] text-accent-gold border border-accent-gold/25 bg-accent-gold/5 px-2 py-0.5 rounded-md hover:bg-accent-gold/15 transition-all flex items-center gap-1 font-semibold"
+                                  className="text-[10px] text-accent-gold-bright border border-accent-gold-bright/25 bg-accent-gold-bright/5 px-2 py-0.5 rounded-md hover:bg-accent-gold-bright/15 transition-all flex items-center gap-1 font-semibold"
                                 >
                                   <Star className="w-2.5 h-2.5 fill-accent-gold" /> Оценить визит
                                 </button>
@@ -1044,8 +1044,8 @@ export function ProfilePage() {
                             <div className="mt-2.5 p-3 rounded-2xl bg-white/5 border border-glass-border/30">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-1.5">
-                                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-bounce animate-duration-1000" />
-                                  <span className="text-xs font-semibold text-white/95">Приготовление: <span className="text-accent-gold">{hs.hookahStatusLabel}</span></span>
+                                  <Flame className="w-3.5 h-3.5 text-accent-gold-bright animate-bounce animate-duration-1000" />
+                                  <span className="text-xs font-semibold text-white/95">Приготовление: <span className="text-accent-gold-bright">{hs.hookahStatusLabel}</span></span>
                                 </div>
                                 {hs.minutesLeft > 0 && <span className="text-[10px] text-white/40">{hs.minutesLeft} мин осталось</span>}
                               </div>
@@ -1105,21 +1105,21 @@ export function ProfilePage() {
                         <GlassCard className="p-4 border border-accent-gold/20 flex flex-col justify-between h-full hover:border-accent-gold/40 transition-colors">
                           <div>
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-[10px] font-mono text-accent-gold font-bold tracking-widest">{booking.seatId}</span>
+                              <span className="text-[10px] font-mono text-accent-gold-bright font-bold tracking-widest">{booking.seatId}</span>
                               <span className="text-[9px] text-white/30">{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
                             </div>
                             
                             {(booking as any).hookahMix && (
                               <div className="space-y-2 mt-2">
                                 <div className="text-xs text-white font-semibold flex items-center gap-1.5">
-                                  <Flame className="w-3.5 h-3.5 text-accent-gold" />
-                                  <span>Детали рецепта</span>
+                                <Flame className="w-3.5 h-3.5 text-accent-gold-bright" />
+                                <span>Детали рецепта</span>
                                 </div>
                                 <div className="text-[11px] text-white/70 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-glass-border/10 space-y-1">
                                   {(booking as any).hookahMix.split(' | ').map((line: string, idx: number) => {
                                     if (line.startsWith('Mix: ')) {
                                       return (
-                                        <div key={idx} className="mt-1 pt-1 border-t border-white/5 text-accent-gold">
+                                        <div key={idx} className="mt-1 pt-1 border-t border-white/5 text-accent-gold-bright">
                                           <strong>Вкусы:</strong> {line.replace('Mix: ', '')}
                                         </div>
                                       );
@@ -1139,9 +1139,9 @@ export function ProfilePage() {
                           <div className="mt-4 pt-3 border-t border-white/5 flex gap-2">
                             <button
                               onClick={() => handleRepeatMix(booking)}
-                              className="w-full py-2 bg-gradient-to-r from-accent-gold/10 to-amber-500/10 border border-accent-gold/30 hover:border-accent-gold/60 text-accent-gold text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                              className="w-full py-2 bg-gradient-to-r from-accent-gold-bright/10 to-amber-500/10 border border-accent-gold-bright/30 hover:border-accent-gold-bright/60 text-accent-gold-bright text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
                             >
-                              <Flame className="w-3.5 h-3.5 text-accent-gold animate-pulse" />
+                              <Flame className="w-3.5 h-3.5 text-accent-gold-bright animate-pulse" />
                               <span>Повторить микс</span>
                             </button>
                           </div>
@@ -1201,11 +1201,11 @@ export function ProfilePage() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
               <h3 className="text-base font-bold font-display text-white text-center mb-4 flex items-center justify-center gap-2">
-                <Star className="w-5 h-5 text-accent-gold fill-accent-gold" /> Оцените ваш визит
+                <Star className="w-5 h-5 text-accent-gold-bright fill-accent-gold-bright" /> Оцените ваш визит
               </h3>
               
               <p className="text-xs text-white/40 text-center mb-5 leading-normal">
-                Поделитесь впечатлениями о сервисе и кальянах. За отзыв вы получите <span className="text-accent-gold font-bold">+50 XP</span> лояльности и ачивку!
+                Поделитесь впечатлениями о сервисе и кальянах. За отзыв вы получите <span className="text-accent-gold-bright font-bold">+50 XP</span> лояльности и ачивку!
               </p>
 
               {/* Stars selector */}
@@ -1218,7 +1218,7 @@ export function ProfilePage() {
                   >
                     <Star 
                       className={`w-8 h-8 ${star <= reviewRating 
-                        ? 'text-accent-gold fill-accent-gold shadow-glow' 
+                        ? 'text-accent-gold-bright fill-accent-gold-bright shadow-glow' 
                         : 'text-stone-750'}`} 
                     />
                   </button>
@@ -1286,7 +1286,7 @@ export function ProfilePage() {
               <div className="relative z-10 space-y-5">
                 {/* Header */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-center gap-1.5 text-accent-gold">
+                  <div className="flex items-center justify-center gap-1.5 text-accent-gold-bright">
                     <Crown className="w-5 h-5 animate-pulse" />
                     <span className="text-xs uppercase tracking-[0.2em] font-bold">SPORT LOUNGE PASS</span>
                   </div>
@@ -1304,7 +1304,7 @@ export function ProfilePage() {
                   />
 
                   {/* Simulated detailed QR code vector using inline SVG */}
-                  <svg className="w-full h-full text-accent-gold opacity-90" viewBox="0 0 100 100" fill="currentColor">
+                  <svg className="w-full h-full text-accent-gold-bright opacity-90" viewBox="0 0 100 100" fill="currentColor">
                     {/* QR Finder patterns */}
                     <path d="M 0,0 H 25 V 25 H 0 Z M 5,5 H 20 V 20 H 5 Z M 9,9 H 16 V 16 H 9 Z" />
                     <path d="M 75,0 H 100 V 25 H 75 Z M 80,5 H 95 V 20 H 80 Z M 84,9 H 91 V 16 H 84 Z" />
@@ -1357,7 +1357,7 @@ export function ProfilePage() {
                   </div>
                   <div className="flex justify-between text-xs text-white/50">
                     <span>Статус карты:</span>
-                    <strong className="text-accent-gold uppercase tracking-wider">{membership?.memberships?.name || 'BRONZE RESIDENT'}</strong>
+                    <strong className="text-accent-gold-bright uppercase tracking-wider">{membership?.memberships?.name || 'BRONZE RESIDENT'}</strong>
                   </div>
                   <div className="flex justify-between text-xs text-white/50">
                     <span>Скидка:</span>
@@ -1404,7 +1404,7 @@ export function ProfilePage() {
 
               {/* Mix details summary */}
               <div className="bg-black/35 p-3 rounded-xl border border-glass-border/10 text-xs text-white/70 space-y-1.5">
-                <div className="text-[10px] text-accent-gold font-bold uppercase tracking-wider">Повторяемый микс:</div>
+                <div className="text-[10px] text-accent-gold-bright font-bold uppercase tracking-wider">Повторяемый микс:</div>
                 <div className="font-light leading-relaxed">{repeatBooking.hookahMix}</div>
               </div>
 
