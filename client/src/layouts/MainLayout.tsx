@@ -195,7 +195,7 @@ export function MainLayout() {
       };
 
   return (
-    <div className="min-h-screen pb-16 lg:pb-0 relative bg-dark-bg text-[#F5F5F5]">
+    <div className="min-h-screen pb-20 lg:pb-0 relative bg-dark-bg text-[#F5F5F5]">
       <SEO />
 
       <Suspense fallback={null}>

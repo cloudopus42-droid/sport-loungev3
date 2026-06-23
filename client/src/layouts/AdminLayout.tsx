@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  Image, Blend, Mail, Armchair, LogOut, Crown, Flame, Package, FileText
+  Image, Blend, Mail, Armchair, LogOut, Crown, Flame, Package, FileText, House
 } from 'lucide-react';
 import { DashboardIcon, ShowcaseIcon, PromoIcon, AnalyticsIcon, SettingsIcon, MenuIcon, CloseIcon, ChevronLeftIcon } from '@/components/icons';
 import clsx from 'clsx';
@@ -49,9 +49,38 @@ export function AdminLayout() {
   const location = useLocation();
   const prefersReducedMotion = useReducedMotion();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return false;
+  });
   const [collapsed, setCollapsed] = useState(false);
   const [hasNewOrders, setHasNewOrders] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return false;
+  });
+
+  // Sync sidebarOpen + isDesktop when resizing past the lg breakpoint
+  useEffect(() => {
+    let mql: MediaQueryList;
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => {
+      const matches = e.matches;
+      setSidebarOpen(matches);
+      setIsDesktop(matches);
+    };
+    try {
+      mql = window.matchMedia('(min-width: 1024px)');
+      handler(mql);
+      mql.addEventListener('change', handler);
+    } catch {}
+    return () => {
+      try { mql?.removeEventListener('change', handler); } catch {}
+    };
+  }, []);
 
   const ft = prefersReducedMotion ? { duration: 0.01 } : undefined;
   const springFast = prefersReducedMotion
@@ -144,10 +173,10 @@ export function AdminLayout() {
 
       {/* Desktop sidebar */}
       <motion.aside
-        className="fixed lg:static inset-y-0 left-0 z-50 bg-dark-surface/95 backdrop-blur-glass border-r border-glass-border flex flex-col overflow-hidden will-change-transform"
+        className={`${isDesktop ? 'static' : 'fixed'} inset-y-0 left-0 z-50 bg-dark-surface/95 backdrop-blur-glass border-r border-glass-border flex flex-col overflow-hidden will-change-transform`}
         animate={{
           width: collapsed ? 64 : 280,
-          x: sidebarOpen ? 0 : -280,
+          ...(isDesktop ? {} : { x: sidebarOpen ? 0 : -280 }),
         }}
         transition={{ duration: prefersReducedMotion ? 0.01 : 0.3, ease: 'easeInOut' }}
         aria-label="Админ панель"
@@ -272,10 +301,32 @@ export function AdminLayout() {
             );
           })}
 
-          {/* New: Smart Features is already in sidebarItems above */}
+          {/* Back to site */}
+          <div className="pt-2 mt-2 border-t border-glass-border">
+            <NavLink
+              to="/"
+              className={({ isActive }) => clsx(
+                'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+                isActive ? 'text-accent-gold bg-accent-gold/10' : 'text-white/40 hover:text-accent-gold hover:bg-accent-gold/5'
+              )}
+            >
+              <House className="w-[18px] h-[18px] flex-shrink-0" />
+              <AnimatePresence mode="wait">
+                {!collapsed && (
+                  <motion.span
+                    className="truncate"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: prefersReducedMotion ? 0.01 : 0.15 }}
+                  >
+                    На сайт
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </NavLink>
+          </div>
         </nav>
-
-        {/* User section */}
         <div className="px-2 py-4 border-t border-glass-border flex-shrink-0">
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-accent-gold flex items-center justify-center text-xs font-bold text-black flex-shrink-0">
@@ -317,14 +368,24 @@ export function AdminLayout() {
       >
         {/* Top header (mobile) */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-glass-border bg-dark-surface/80 backdrop-blur-glass sticky top-0 z-30">
-          <motion.button
-            className="p-2 rounded-xl bg-glass-bg border border-glass-border text-white/60 hover:text-white focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
-            onClick={() => setSidebarOpen(true)}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Открыть меню"
-          >
-            <MenuIcon className="w-5 h-5" />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <motion.button
+              className="p-2 rounded-xl bg-glass-bg border border-glass-border text-white/60 hover:text-white focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
+              onClick={() => setSidebarOpen(true)}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Открыть меню"
+            >
+              <MenuIcon className="w-5 h-5" />
+            </motion.button>
+            <NavLink
+              to="/"
+              className="p-2 rounded-xl bg-glass-bg border border-glass-border text-white/40 hover:text-accent-gold hover:border-accent-gold/30 transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
+              aria-label="На сайт"
+              title="На сайт"
+            >
+              <House className="w-4 h-4" />
+            </NavLink>
+          </div>
           <h1 className="text-sm font-display font-semibold text-white tracking-wide">SPORT LOUNGE</h1>
           <div className="w-9" />
         </header>
