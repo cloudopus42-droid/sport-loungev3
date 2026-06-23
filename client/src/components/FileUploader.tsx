@@ -102,7 +102,7 @@ export function FileUploader({
           className={clsx(
             'relative flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer',
             isDragOver
-              ? 'border-accent-gold bg-accent-gold/10 shadow-glow-gold'
+              ? 'border-accent-gold bg-accent-gold/10'
               : 'border-glass-border bg-glass-bg hover:border-accent-gold/40 hover:bg-accent-gold/5'
           )}
           onDrop={handleDrop}

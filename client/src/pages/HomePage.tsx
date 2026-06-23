@@ -1,15 +1,13 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { Flame, Sparkles, ChevronRight } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MixCarousel3D } from '@/components/MixCarousel3D';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
-import { GlowIcon } from '@/components/ui/GlowIcon';
-import { staggerContainer, scaleStagger, hoverLift, pageTransition } from '@/lib/motion';
+import { staggerContainer, fadeUp } from '@/lib/motion';
 
 type ShowcaseItem = {
   id: string;
@@ -21,52 +19,33 @@ type ShowcaseItem = {
   is_active: boolean;
 };
 
-const staggerHero = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 24 } },
-};
+const statItems = [
+  { value: '24/7', label: 'Работаем' },
+  { value: '120+', label: 'Вкусов' },
+  { value: '5000+', label: 'Гостей' },
+];
 
-const benefitItems = [
-  {
-    title: 'Премиальное качество',
-    desc: 'Только отборные табаки и качественные смеси',
-    iconName: 'award' as const,
-    span: 'lg:col-span-4',
-  },
-  {
-    title: 'Идеальная крепость',
-    desc: 'Готовим на 4 углях под баней без перегрева и горечи',
-    iconName: 'flame' as const,
-    span: 'lg:col-span-3',
-  },
-  {
-    title: 'Круглосуточно 24/7',
-    desc: 'Мы работаем для вас в любое время суток',
-    iconName: 'clock' as const,
-    span: 'lg:col-span-3',
-  },
-  {
-    title: 'Комфорт и атмосфера',
-    desc: 'Стильный интерьер и уютная атмосфера для отдыха',
-    iconName: 'compass' as const,
-    span: 'lg:col-span-2',
-  },
+const advantageItems = [
+  { value: '120+', label: 'вкусов', desc: 'Авторские миксы и премиальные табаки' },
+  { value: '24/7', label: 'работаем', desc: 'Без выходных и перерывов' },
+  { value: 'VIP', label: 'комнаты', desc: 'Приватные залы для особых гостей' },
+  { value: '4 мин', label: 'до подачи', desc: 'Быстрая подача к вашему столу' },
 ];
 
 export function HomePage() {
+  const prefersReducedMotion = useReducedMotion();
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const heroParallax = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
   const [promos, setPromos] = useState<Promo[]>([]);
   const [showcaseItems, setShowcaseItems] = useState<ShowcaseItem[]>([]);
-
-  const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null);
-  const [cardCoords, setCardCoords] = useState({ x: 0, y: 0 });
-
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setCardCoords({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -93,361 +72,467 @@ export function HomePage() {
   };
 
   return (
-    <motion.div
-      {...pageTransition}
-      className="space-y-12 pb-16 overflow-x-hidden bg-nocturnal bg-warm-glow"
-    >
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
-          src="/кальянhhs.mp4"
-        />
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/70 via-black/30 to-transparent backdrop-blur-[2px] z-0" />
-
-        <motion.div
-          className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-        >
-          <motion.div
-            className="glass-card-premium px-6 sm:px-10 py-8 sm:py-10 rounded-2xl"
-            variants={staggerHero}
-          >
-            <motion.div
-              className="flex items-center justify-center gap-2 mb-4"
-              variants={staggerHero}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
-              <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-bold">
-                SPORT LOUNGE • КРУГЛОСУТОЧНО 24/7
-              </span>
-            </motion.div>
-
-            <motion.h1
-              className="text-4xl sm:text-6xl md:text-7xl font-display font-black text-white leading-[1.08] uppercase tracking-tight"
-              variants={staggerHero}
-            >
-              ИСТИННЫЙ ВКУС <br />
-              <span className="gradient-text font-black">И КРЕПОСТЬ</span>
-            </motion.h1>
-
-            <motion.p
-              className="text-sm sm:text-base text-white/50 max-w-2xl mx-auto leading-relaxed font-light mt-6"
-              variants={staggerHero}
-            >
-              Премиальный лаунж с изысканным обслуживанием, авторскими кальянами и элитными чайными церемониями. Сделайте заказ прямо за свой стол в реальном времени.
-            </motion.p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6"
-              variants={staggerHero}
-            >
-              <NavLink to="/booking" className="w-full sm:w-auto">
-                <motion.button
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#080605] border-none font-bold text-sm shadow-[0_4px_24px_rgba(212,175,55,0.35)] flex items-center justify-center gap-1.5 transition-all"
-                  {...hoverLift}
-                >
-                  <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
-                </motion.button>
-              </NavLink>
-              <NavLink to="/booking" className="w-full sm:w-auto">
-                <motion.button
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white bg-transparent text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all"
-                  {...hoverLift}
-                >
-                  <GlowIcon name="flame" color="gold" size={16} animateOnHover /> ИИ-Миксолог
-                </motion.button>
-              </NavLink>
-            </motion.div>
-
-            <motion.div
-              className="flex flex-col sm:flex-row justify-center items-center gap-8 pt-8 text-xs text-white/40 font-mono tracking-widest"
-              variants={staggerHero}
-            >
-              <span className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors" onClick={handleAddressClick}>
-                <GlowIcon name="mappin" color="gold" size={14} /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
-              </span>
-              <span className="hidden sm:inline opacity-30">•</span>
-              <span className="flex items-center gap-1.5">
-                <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
-              </span>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Showcase Carousel */}
-      <section id="carousel" className="relative pt-8">
-        <div className="text-center space-y-2 mb-6 select-none">
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold">
-            <Flame className="w-3.5 h-3.5 inline mr-1 text-accent-gold animate-pressPop" /> НАША КОЛЛЕКЦИЯ
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
-            Выберите <span className="gradient-text font-semibold italic">свой вкус</span>
-          </h2>
-        </div>
-
-        <MixCarousel3D
-          items={showcaseItems.length > 0 ? showcaseItems.map(s => ({
-            id: s.id,
-            title: s.title,
-            subtitle: s.description,
-            imageUrl: s.image_url ? resolveImageUrl(s.image_url) : undefined,
-            linkUrl: s.link_url,
-          })) : [
-            { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' },
-            { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #2d1b69 0%, #1a1a2e 100%)' },
-            { id: '3', title: 'VIP-залы', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #3d1f00 0%, #1a1a2e 100%)' },
-          ]}
-          onItemClick={(item) => {
-            if (item.linkUrl) window.open(item.linkUrl, '_blank');
-            else if (item.id.length < 5) window.location.href = '/booking';
-          }}
-        />
-      </section>
-
-      {/* Why Us */}
-      <section id="why-us" className="relative pt-8">
-        <div className="text-center space-y-2 mb-10 select-none">
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-gold font-semibold flex items-center justify-center gap-1">
-            <GlowIcon name="flame" color="gold" size={14} /> НАШИ ПРЕИМУЩЕСТВА
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
-            Почему гости <span className="gradient-text font-semibold italic">выбирают нас</span>
-          </h2>
+    <div className="overflow-x-hidden bg-[#070707]">
+      {/* ─── HERO ─── */}
+      <section
+        ref={heroRef}
+        className="relative h-screen flex items-center overflow-hidden"
+      >
+        {/* Background image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=2070&auto=format&fit=crop"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#070707] via-[#070707]/70 to-[#070707]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#070707] via-transparent to-[#070707]/20" />
         </div>
 
         <motion.div
-          className="grid grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 relative"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
+          className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12"
+          style={prefersReducedMotion ? {} : { y: heroParallax, opacity: heroOpacity }}
         >
-          {benefitItems.map((item, index) => (
-            <motion.div
-              key={item.title}
-              variants={scaleStagger}
-              onMouseMove={(e) => handleCardMouseMove(e)}
-              onMouseEnter={() => setHoveredCardIndex(index)}
-              onMouseLeave={() => setHoveredCardIndex(null)}
-              className={`relative rounded-[28px] overflow-hidden group ${item.span}`}
-            >
-              {hoveredCardIndex === index && (
-                <div
-                  className="absolute pointer-events-none rounded-[28px] transition-opacity duration-300"
-                  style={{
-                    width: '320px',
-                    height: '320px',
-                    background: 'radial-gradient(120px circle at var(--x) var(--y), rgba(212, 175, 55, 0.15), transparent 80%)',
-                    left: `${cardCoords.x - 160}px`,
-                    top: `${cardCoords.y - 160}px`,
-                    mixBlendMode: 'screen',
-                    zIndex: 0,
-                    '--x': `${cardCoords.x}px`,
-                    '--y': `${cardCoords.y}px`,
-                  } as React.CSSProperties}
-                />
-              )}
-
-              <GlassCard variant="premium" hoverable className="p-6 h-full flex flex-col justify-between z-10 relative">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center mb-4">
-                    <GlowIcon name={item.iconName} color="gold" size={18} animateOnHover />
-                  </div>
-                  <h4 className="text-sm font-semibold text-white mb-2">{item.title}</h4>
-                  <p className="text-[11px] text-white/45 leading-relaxed font-light">{item.desc}</p>
-                </div>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* Booking CTA */}
-      <section id="events" className="relative pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch select-none">
-          <div className="lg:col-span-8">
-            <GlassCard variant="gold-ring" className="p-8 sm:p-10 h-full flex flex-col justify-between relative overflow-hidden group min-h-[320px]">
-              <div
-                className="absolute inset-0 bg-cover bg-center opacity-15 mix-blend-luminosity z-0 transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=800&auto=format&fit=crop')` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/45 to-black/10 z-0" />
-              <div className="absolute right-0 bottom-0 w-80 h-80 bg-accent-gold/5 rounded-full blur-[90px] pointer-events-none" />
-
-              <div className="space-y-4 max-w-xl z-10">
-                <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold font-semibold flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-accent-gold animate-pressPop" /> КОНСТРУКТОР ВКУСОВ
-                </span>
-                <h3 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider leading-none">
-                  Создайте идеальный <span className="gradient-text font-semibold italic">микс</span>
-                </h3>
-                <p className="text-xs sm:text-sm text-white/50 leading-relaxed font-light">
-                  Смешивайте крепость, чаши, жидкую основу и до 4 вкусов в реальном времени. Сгенерируйте QR-код и покажите вашему кальянному мастеру.
-                </p>
-              </div>
-
-              <div className="pt-6 z-10">
-                <NavLink to="/booking">
-                  <motion.button
-                    className="px-8 py-3.5 rounded-full border border-[#d4af37]/40 text-white bg-gradient-to-r from-[#b8962e] to-[#8a6d1b] hover:from-[#c9a032] hover:to-[#5c1818] shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 text-sm font-semibold transition-all w-full sm:w-auto"
-                    {...hoverLift}
-                  >
-                    <Flame className="w-4 h-4 text-accent-gold animate-pressPop" /> Открыть конструктор
-                  </motion.button>
-                </NavLink>
-              </div>
-            </GlassCard>
-          </div>
-
-          <div className="lg:col-span-4">
-            <GlassCard variant="gold-ring" className="p-8 h-full flex flex-col justify-between relative overflow-hidden text-center group min-h-[320px] z-10">
-              <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-accent-gold/60 pointer-events-none" />
-              <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-accent-gold/60 pointer-events-none" />
-              <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-accent-gold/60 pointer-events-none" />
-              <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-accent-gold/60 pointer-events-none" />
-
-              <div className="space-y-4 z-10 mt-4">
-                <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-accent-gold/90 font-bold block">Закрытый Клуб</span>
-                <h4 className="text-5xl font-display font-bold text-accent-gold tracking-widest animate-glowPulse">VIP</h4>
-                <p className="text-xs text-white font-medium uppercase tracking-wider mt-4">VIP-комната</p>
-                <p className="text-[11px] text-white/45 font-light leading-normal">
-                  для особых гостей
-                </p>
-              </div>
-
-              <div className="pt-6 z-10">
-                <NavLink
-                  to="/profile"
-                  className="inline-flex items-center gap-1.5 text-xs text-accent-gold hover:underline font-bold"
-                >
-                  <span>Подробнее</span>
-                  <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
-                </NavLink>
-              </div>
-            </GlassCard>
-          </div>
-        </div>
-      </section>
-
-      {/* Promos */}
-      {promos.length > 0 && (
-        <section className="pt-8">
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-accent-gold" /> Специальные предложения
-          </h2>
-          <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-            {promos.map((promo, i) => (
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left */}
+            <div className="space-y-8">
               <motion.div
-                key={promo._id}
-                className="flex-shrink-0 w-[260px] sm:w-[320px] lg:w-[360px]"
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * i, duration: 0.5 }}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
               >
-                <GlassCard variant="premium" className="p-3.5 h-full transition-all duration-300 flex flex-col justify-between">
-                  <div>
+                <span className="text-xs uppercase tracking-[0.25em] text-[#B08D57] font-medium">
+                  SPORT LOUNGE
+                </span>
+              </motion.div>
+
+              <motion.h1
+                className="font-heading text-[clamp(48px,6vw,96px)] font-semibold leading-[0.95] text-[#F5F5F5] tracking-[-0.03em]"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
+              >
+                Истинный вкус
+                <br />
+                <span className="gradient-text">и крепость</span>
+              </motion.h1>
+
+              <motion.p
+                className="text-[#9D9D9D] text-sm leading-relaxed max-w-md font-light"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              >
+                Премиальный лаунж с изысканным обслуживанием и авторскими кальянами. Сделайте заказ прямо за свой стол.
+              </motion.p>
+
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
+              >
+                <NavLink to="/booking">
+                  <button className="btn-primary px-8 py-3.5">
+                    Забронировать
+                  </button>
+                </NavLink>
+                <NavLink to="/booking">
+                  <button className="btn-secondary px-8 py-3.5">
+                    Конструктор вкусов
+                  </button>
+                </NavLink>
+              </motion.div>
+            </div>
+
+            {/* Right — hero visual */}
+            <motion.div
+              className="hidden lg:block relative"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <div className="aspect-[4/5] max-w-md mx-auto relative">
+                <img
+                  src="https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=800&auto=format&fit=crop"
+                  alt=""
+                  className="w-full h-full object-cover rounded-[16px]"
+                />
+                <div className="absolute inset-0 rounded-[16px] ring-1 ring-inset ring-white/5" />
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          <div className="w-px h-12 bg-gradient-to-b from-[#B08D57]/40 to-transparent" />
+        </motion.div>
+      </section>
+
+      {/* ─── STATS ─── */}
+      <section className="py-20 lg:py-28 border-b border-[rgba(176,141,87,0.08)]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <motion.div
+            className="grid grid-cols-3 gap-12 lg:gap-24"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: '-80px' }}
+          >
+            {statItems.map((item) => (
+              <motion.div key={item.label} variants={fadeUp} className="text-center">
+                <p className="font-heading text-[clamp(36px,5vw,72px)] font-semibold text-[#B08D57] tracking-[-0.03em] leading-none">
+                  {item.value}
+                </p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[#9D9D9D] mt-3 font-medium">
+                  {item.label}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── ADVANTAGES ─── */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <motion.div
+            className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[rgba(176,141,87,0.08)]"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: '-80px' }}
+          >
+            {advantageItems.map((item) => (
+              <motion.div
+                key={item.label}
+                variants={fadeUp}
+                className="bg-[#070707] p-8 lg:p-12 flex flex-col justify-between min-h-[240px]"
+              >
+                <p className="font-heading text-[clamp(32px,4vw,56px)] font-semibold text-[#B08D57] tracking-[-0.03em] leading-none">
+                  {item.value}
+                </p>
+                <div>
+                  <p className="text-sm uppercase tracking-[0.15em] text-[#F5F5F5] font-medium mb-1">
+                    {item.label}
+                  </p>
+                  <p className="text-xs text-[#9D9D9D] font-light leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── VIP BANNER ─── */}
+      <section className="h-[400px] lg:h-[500px] relative overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop"
+          alt=""
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#070707] via-[#070707]/60 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.p
+            className="font-heading text-[clamp(72px,12vw,180px)] font-semibold text-white/10 tracking-[-0.03em] select-none"
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+          >
+            VIP CLUB
+          </motion.p>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 max-w-7xl mx-auto">
+          <motion.p
+            className="font-heading text-[clamp(24px,3vw,40px)] font-semibold text-white tracking-[-0.02em]"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          >
+            Приватные залы для особых гостей
+          </motion.p>
+        </div>
+      </section>
+
+      {/* ─── SHOWCASE / COLLECTION ─── */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <motion.div
+            className="text-center space-y-3 mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+          >
+            <span className="text-xs uppercase tracking-[0.2em] text-[#B08D57] font-medium">
+              Коллекция
+            </span>
+            <h2 className="font-heading text-[clamp(28px,4vw,48px)] font-semibold text-[#F5F5F5] tracking-[-0.03em]">
+              Выберите свой вкус
+            </h2>
+          </motion.div>
+
+          <MixCarousel3D
+            items={showcaseItems.length > 0 ? showcaseItems.map(s => ({
+              id: s.id,
+              title: s.title,
+              subtitle: s.description,
+              imageUrl: s.image_url ? resolveImageUrl(s.image_url) : undefined,
+              linkUrl: s.link_url,
+            })) : [
+              { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #0D0F13 0%, #13161C 100%)' },
+              { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #0D0F13 0%, #13161C 100%)' },
+              { id: '3', title: 'VIP-залы', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #0D0F13 0%, #13161C 100%)' },
+            ]}
+            onItemClick={(item) => {
+              if (item.linkUrl) window.open(item.linkUrl, '_blank');
+              else if (item.id.length < 5) window.location.href = '/booking';
+            }}
+          />
+        </div>
+      </section>
+
+      {/* ─── CONSTRUCTOR CTA ─── */}
+      <section className="py-20 lg:py-28 border-t border-[rgba(176,141,87,0.08)]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <span className="text-xs uppercase tracking-[0.2em] text-[#B08D57] font-medium">
+                Конструктор вкусов
+              </span>
+              <h2 className="font-heading text-[clamp(28px,4vw,48px)] font-semibold text-[#F5F5F5] tracking-[-0.03em]">
+                Создайте идеальный микс
+              </h2>
+              <p className="text-sm text-[#9D9D9D] leading-relaxed font-light">
+                Смешивайте крепость, чаши и до 4 вкусов в реальном времени. 
+                Сгенерируйте QR-код и покажите вашему кальянному мастеру.
+              </p>
+              <NavLink to="/booking">
+                <button className="btn-primary px-8 py-3.5">
+                  Открыть конструктор
+                </button>
+              </NavLink>
+            </motion.div>
+
+            <motion.div
+              className="aspect-square max-w-sm mx-auto w-full relative"
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1588681664899-142c07d0c18a?q=80&w=800&auto=format&fit=crop"
+                alt=""
+                className="w-full h-full object-cover rounded-[16px]"
+              />
+              <div className="absolute inset-0 rounded-[16px] ring-1 ring-inset ring-white/5" />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── MENU ─── */}
+      <section className="py-20 lg:py-28 border-t border-[rgba(176,141,87,0.08)]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <motion.div
+            className="text-center space-y-3 mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+          >
+            <span className="text-xs uppercase tracking-[0.2em] text-[#B08D57] font-medium">
+              Меню
+            </span>
+            <h2 className="font-heading text-[clamp(28px,4vw,48px)] font-semibold text-[#F5F5F5] tracking-[-0.03em]">
+              Наши позиции
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {[
+              { name: 'Классический', desc: 'Традиционная табачная смесь', price: '1500 ₽', strength: 'Medium', img: 'https://images.unsplash.com/photo-1588681664899-142c07d0c18a?q=80&w=400&auto=format&fit=crop' },
+              { name: 'Премиум', desc: 'Элитные табаки high-end', price: '2500 ₽', strength: 'Strong', img: 'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=400&auto=format&fit=crop' },
+              { name: 'Фруктовый микс', desc: 'Микс на основе свежих фруктов', price: '1800 ₽', strength: 'Light', img: 'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=400&auto=format&fit=crop' },
+              { name: 'Авторский', desc: 'От шеф-миксолога заведения', price: '3000 ₽', strength: 'Medium', img: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=400&auto=format&fit=crop' },
+            ].map((item, i) => (
+              <motion.div
+                key={item.name}
+                className="group cursor-pointer"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.08, ease: [0.23, 1, 0.32, 1] }}
+              >
+                <div className="aspect-[4/5] relative overflow-hidden rounded-[16px] bg-[#0D0F13]">
+                  <img
+                    src={item.img}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#070707] via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-5">
+                    <p className="font-heading text-sm lg:text-base font-semibold text-white">{item.name}</p>
+                    <p className="text-xs text-[#9D9D9D] mt-1 font-light">{item.desc}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-[#B08D57] font-medium">{item.price}</span>
+                      <span className="text-[10px] text-[#9D9D9D]/60 uppercase tracking-wider">{item.strength}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CONTACTS ─── */}
+      <section className="py-20 lg:py-28 border-t border-[rgba(176,141,87,0.08)]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="grid lg:grid-cols-5 gap-12">
+            {/* Map */}
+            <motion.div
+              className="lg:col-span-3 rounded-[16px] overflow-hidden"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <iframe
+                src="https://yandex.ru/map-widget/v1/?ll=47.2725%2C56.1366&z=17&pt=47.2725%2C56.1366%2Cpm2rdm&lang=ru_RU"
+                width="100%"
+                height="400"
+                style={{ border: 0, display: 'block', filter: 'invert(1) hue-rotate(180deg) saturate(0.5) brightness(0.8)' }}
+                allowFullScreen
+                loading="lazy"
+                title="Sport Lounge на карте"
+              />
+            </motion.div>
+
+            {/* Contact info */}
+            <motion.div
+              className="lg:col-span-2 space-y-6 flex flex-col justify-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-[#B08D57] font-medium mb-2">
+                  Контакты
+                </p>
+                <p className="font-heading text-[clamp(20px,2.5vw,36px)] font-semibold text-[#F5F5F5] tracking-[-0.02em]">
+                  {CONTACT.address}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-[#9D9D9D] uppercase tracking-wider">Часы работы</p>
+                  <p className="text-sm text-[#F5F5F5] font-heading text-lg mt-1">{WORKING_HOURS}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-[#9D9D9D] uppercase tracking-wider">Telegram</p>
+                  <a
+                    href={CONTACT.telegramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#B08D57] font-heading text-xl font-semibold hover:text-[#C4A46B] transition-colors mt-1 block"
+                  >
+                    @{CONTACT.telegram}
+                  </a>
+                </div>
+              </div>
+
+              <button
+                onClick={handleAddressClick}
+                className="btn-primary mt-2"
+              >
+                Построить маршрут
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PROMOS ─── */}
+      {promos.length > 0 && (
+        <section className="py-20 border-t border-[rgba(176,141,87,0.08)]">
+          <div className="max-w-7xl mx-auto px-6 lg:px-12">
+            <motion.h2
+              className="font-heading text-[clamp(24px,3vw,40px)] font-semibold text-[#F5F5F5] tracking-[-0.03em] mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+            >
+              Специальные предложения
+            </motion.h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              {promos.map((promo, i) => (
+                <motion.div
+                  key={promo._id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.08, ease: [0.23, 1, 0.32, 1] }}
+                >
+                  <GlassCard variant="premium" className="p-4 h-full">
                     {promo.imageUrl && (
                       <img
                         src={resolveImageUrl(promo.imageUrl)}
                         alt={promo.title}
                         loading="lazy"
-                        className="w-full h-32 sm:h-40 object-cover rounded-xl mb-3.5"
+                        className="w-full h-32 object-cover rounded-[12px] mb-3"
                       />
                     )}
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <h4 className="text-sm sm:text-base font-semibold text-white truncate">{promo.title}</h4>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <h4 className="text-sm font-medium text-[#F5F5F5] truncate">{promo.title}</h4>
                       {promo.discountPercent && (
-                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-accent-gold/10 text-accent-gold border border-accent-gold/20">
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[rgba(176,141,87,0.1)] text-[#B08D57] border border-[rgba(176,141,87,0.2)]">
                           -{promo.discountPercent}%
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/50 leading-relaxed">{promo.description}</p>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            ))}
+                    <p className="text-xs text-[#9D9D9D] leading-relaxed">{promo.description}</p>
+                  </GlassCard>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* Contacts */}
-      <section id="contacts" className="relative pt-6">
-        <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
-          <GlowIcon name="mappin" color="gold" size={20} className="flex-shrink-0" /> Как нас найти
-        </h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <GlassCard variant="premium" className="overflow-hidden p-0">
-              <iframe
-                src="https://yandex.ru/map-widget/v1/?ll=47.2725%2C56.1366&z=17&pt=47.2725%2C56.1366%2Cpm2rdm&lang=ru_RU"
-                width="100%"
-                height="320"
-                style={{ border: 0, display: 'block', filter: 'invert(90%) hue-rotate(15deg) saturate(75%) brightness(70%) contrast(110%)' }}
-                allowFullScreen
-                loading="lazy"
-                title="Sport Lounge на карте"
-              />
-            </GlassCard>
-          </div>
-
-          <div className="space-y-4">
-            <GlassCard variant="premium" hoverable className="p-5.5 flex flex-col justify-between h-full">
-              <div className="space-y-4">
-                <h3 className="text-base sm:text-lg font-display font-semibold text-white">Адрес и Контакты</h3>
-
-                <div className="flex items-start gap-3.5">
-                  <GlowIcon name="mappin" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs sm:text-sm text-white font-medium">{CONTACT.address}</p>
-                    <a
-                      href="https://yandex.ru/maps/?pt=47.2725,56.1366&z=17&l=map"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-accent-gold hover:underline mt-1 inline-block"
-                    >
-                      Открыть в Яндекс.Картах →
-                    </a>
-                  </div>
-                </div>
-
-                <div className="h-px bg-glass-border" />
-
-                <div className="flex items-start gap-3.5">
-                  <GlowIcon name="clock" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
-                  <div className="text-xs sm:text-sm">
-                    <p className="text-white font-medium">{WORKING_HOURS}</p>
-                    <p className="text-[11px] text-white/30 mt-0.5">Работаем без выходных дней</p>
-                  </div>
-                </div>
-
-                <div className="h-px bg-glass-border" />
-
-                <a
-                  href={CONTACT.telegramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3.5 group"
-                >
-                  <GlowIcon name="send" color="gold" size={16} className="flex-shrink-0" />
-                  <div>
-                    <p className="text-xs sm:text-sm text-accent-gold group-hover:underline font-medium">@{CONTACT.telegram}</p>
-                    <p className="text-[11px] text-white/30">Написать нам в Telegram</p>
-                  </div>
-                </a>
-              </div>
-            </GlassCard>
-          </div>
+      {/* ─── FOOTER ─── */}
+      <footer className="py-12 border-t border-[rgba(176,141,87,0.08)]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
+          <p className="font-heading text-lg font-semibold text-[#B08D57] tracking-wider">
+            SPORT LOUNGE
+          </p>
+          <p className="text-xs text-[#9D9D9D] mt-2 font-light">
+            Премиальный лаунж. Чебоксары, ул. Гагарина 40А
+          </p>
         </div>
-      </section>
-    </motion.div>
+      </footer>
+    </div>
   );
 }

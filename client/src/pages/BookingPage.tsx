@@ -321,33 +321,33 @@ export function BookingPage() {
   ];
 
   return (
-    <div className="relative min-h-[85vh] bg-nocturnal text-white overflow-hidden rounded-[2rem] border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.1)] flex flex-col mb-20 font-sans backdrop-blur-xl bg-warm-glow">
+    <div className="relative min-h-[85vh] bg-dark-bg text-white overflow-hidden rounded-[16px] border border-glass-border flex flex-col mb-20 font-sans">
       
       {/* Background Decorative Elements */}
-      <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
+      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="luxGrid" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth="0.5"/>
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(176,141,87,0.15)" strokeWidth="0.5"/>
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#luxGrid)" />
         </svg>
       </div>
 
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#d4af37] opacity-[0.05] blur-[130px] rounded-full pointer-events-none z-0"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#d4af37] opacity-[0.05] blur-[120px] rounded-full pointer-events-none z-0"></div>
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#B08D57] opacity-[0.03] blur-[130px] rounded-full pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B08D57] opacity-[0.03] blur-[120px] rounded-full pointer-events-none z-0"></div>
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 lg:p-12 z-10 relative flex flex-col h-full">
         
         {/* Header */}
         <header className="mb-10 text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/5 text-[10px] font-semibold text-accent-gold uppercase tracking-[0.2em] mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-gold/20 bg-accent-gold/5 text-[10px] font-semibold text-accent-gold uppercase tracking-[0.2em] mb-4">
             <Sparkles className="w-3 h-3" /> Premium Hookah Service
           </div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-2">
-            Заказ <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#f3e5ab]">Кальяна</span>
+          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-2 font-heading">
+            Заказ <span className="text-accent-gold">Кальяна</span>
           </h1>
           <p className="text-white/50 text-sm max-w-xl">
             Выберите один из наших фирменных миксов от профессиональных миксологов или соберите свой с помощью ИИ.
@@ -416,15 +416,15 @@ export function BookingPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.05 }}
                         whileHover={{ y: -3, scale: 1.01 }}
-                        className="group relative p-5 rounded-2xl liquid-glass-gold border border-[#d4af37]/10 hover:border-[#d4af37]/40 transition-all cursor-pointer"
+                        className="group relative p-5 rounded-2xl liquid-glass-gold border border-[#B08D57]/10 hover:border-[#B08D57]/40 transition-all cursor-pointer"
                         onClick={() => handleMixSelect(mix)}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#B08D57]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div className="relative z-10 flex flex-col h-full justify-between">
                           <div>
                             <div className="flex justify-between items-start mb-3">
-                              <div className="w-9 h-9 rounded-full bg-[#d4af37]/10 flex items-center justify-center border border-[#d4af37]/20">
-                                <Flame className="w-4 h-4 text-[#d4af37]" />
+                              <div className="w-9 h-9 rounded-full bg-[#B08D57]/10 flex items-center justify-center border border-[#B08D57]/20">
+                                <Flame className="w-4 h-4 text-[#B08D57]" />
                               </div>
                               <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-accent-gold/80 border border-white/5">
                                 Крепость: {mix.strength}/10
@@ -548,14 +548,14 @@ export function BookingPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-[9px] text-white/40 uppercase tracking-wider font-semibold mb-1">Заказ</p>
-                      <p className="text-xs font-bold text-accent-gold uppercase bg-[#d4af37]/10 px-2.5 py-1 rounded-lg border border-[#d4af37]/20">#{activeOrder.id?.slice(0, 8)}</p>
+                      <p className="text-xs font-bold text-accent-gold uppercase bg-[#B08D57]/10 px-2.5 py-1 rounded-lg border border-[#B08D57]/20">#{activeOrder.id?.slice(0, 8)}</p>
                     </div>
                   </div>
 
                   {/* Stepper progress */}
                   <div className="relative pl-3 space-y-6">
                     {/* Vertical line connector */}
-                    <div className="absolute left-[20px] top-4 bottom-4 w-[1px] bg-gradient-to-b from-[#d4af37] to-white/10"></div>
+                    <div className="absolute left-[20px] top-4 bottom-4 w-[1px] bg-gradient-to-b from-[#B08D57] to-white/10"></div>
                     
                     {stages.map((stage, idx) => {
                       const stagesList = stages.map(s => s.id);
@@ -566,8 +566,8 @@ export function BookingPage() {
                       
                       return (
                         <div key={stage.id} className={`flex items-start gap-4 relative transition-all duration-300 ${isCompleted || isActive ? 'opacity-100' : 'opacity-25'}`}>
-                          <div className={`w-8 h-8 rounded-full border flex items-center justify-center bg-[#07050a] z-10 ${isActive ? 'border-[#d4af37] text-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.4)]' : isCompleted ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/20'}`}>
-                            {isCompleted ? <Check className="w-3 h-3 stroke-[3]" /> : <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#d4af37] animate-pulse' : 'bg-transparent'}`}></div>}
+                          <div className={`w-8 h-8 rounded-full border flex items-center justify-center bg-[#07050a] z-10 ${isActive ? 'border-accent-gold text-accent-gold' : isCompleted ? 'border-accent-gold text-accent-gold' : 'border-white/10 text-white/20'}`}>
+                            {isCompleted ? <Check className="w-3 h-3 stroke-[3]" /> : <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-accent-gold' : 'bg-transparent'}`}></div>}
                           </div>
                           <div className="pt-1.5">
                             <h5 className={`text-xs uppercase tracking-wider font-extrabold ${isActive ? 'text-accent-gold' : 'text-white'}`}>{stage.label}</h5>
@@ -582,7 +582,7 @@ export function BookingPage() {
                   <button 
                     onClick={handleCallMaster}
                     disabled={masterCalled}
-                    className="mt-8 w-full py-3.5 rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/5 hover:bg-[#d4af37]/15 disabled:bg-white/5 disabled:border-white/10 text-[10px] font-bold text-accent-gold disabled:text-white/30 uppercase tracking-[0.15em] transition-all duration-300"
+                    className="mt-8 w-full py-3.5 rounded-xl border border-[#B08D57]/30 bg-[#B08D57]/5 hover:bg-[#B08D57]/15 disabled:bg-white/5 disabled:border-white/10 text-[10px] font-bold text-accent-gold disabled:text-white/30 uppercase tracking-[0.15em] transition-all duration-300"
                   >
                     {masterCalled ? 'Вызов отправлен' : 'Позвать кальянного мастера'}
                   </button>
@@ -602,9 +602,9 @@ export function BookingPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-[#0e0c12] border border-[#d4af37]/30 rounded-3xl p-6 shadow-[0_0_60px_rgba(212,175,55,0.15)] relative overflow-hidden"
+              className="w-full max-w-md bg-dark-surface border border-glass-border rounded-[16px] p-6 shadow-glass relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-50"></div>
+              <div className="absolute top-0 left-0 w-full h-0.5 bg-accent-gold/20"></div>
               
               <h3 className="text-lg font-bold text-white mb-1">Детали заказа</h3>
               <p className="text-xs text-white/40 mb-6">Вы выбрали микс: <span className="text-accent-gold font-bold">{selectedMix.name}</span></p>
@@ -621,10 +621,10 @@ export function BookingPage() {
                         key={base.id} 
                         type="button" 
                         onClick={() => setValue('liquidBase', base.id, { shouldValidate: true })}
-                        className={`text-left p-3 rounded-xl border transition-all ${currentLiquidBase === base.id ? 'border-[#d4af37] bg-[#d4af37]/5' : 'border-white/5 hover:border-white/20 bg-white/[0.01]'}`}
+                        className={`text-left p-3 rounded-xl border transition-all ${currentLiquidBase === base.id ? 'border-[#B08D57] bg-[#B08D57]/5' : 'border-white/5 hover:border-white/20 bg-white/[0.01]'}`}
                       >
                         <div className="text-xs font-bold text-white">{base.name}</div>
-                        <div className="text-[9px] text-[#d4af37] mt-1">{base.price > 0 ? `+${base.price} ₽` : 'Включено'}</div>
+                        <div className="text-[9px] text-[#B08D57] mt-1">{base.price > 0 ? `+${base.price} ₽` : 'Включено'}</div>
                       </button>
                     ))}
                   </div>
@@ -637,7 +637,7 @@ export function BookingPage() {
                   <textarea 
                     {...register('specialNotes')} 
                     placeholder="Например: покислее, полегче, чаша на грейпфруте..." 
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white h-20 resize-none focus:border-[#d4af37] focus:outline-none transition-colors placeholder:text-white/25" 
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white h-20 resize-none focus:border-[#B08D57] focus:outline-none transition-colors placeholder:text-white/25" 
                   />
                   {errors.specialNotes && <p className="text-red-400 text-[10px] mt-1">{errors.specialNotes.message}</p>}
                 </div>
@@ -654,7 +654,7 @@ export function BookingPage() {
                   <button 
                     type="submit" 
                     disabled={loading} 
-                    className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#b89030] text-black font-extrabold text-[10px] uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+                    className="flex-1 py-3.5 rounded-xl bg-accent-gold text-black font-bold text-[10px] uppercase tracking-wider shadow-elevated hover:bg-accent-gold-light transition-all duration-300"
                   >
                     {loading ? 'Отправка...' : 'Заказать'}
                   </button>
@@ -673,7 +673,7 @@ export function BookingPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-lg bg-[#0e0c12] border border-[#d4af37]/30 rounded-3xl p-6 shadow-lg relative overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-lg bg-[#0e0c12] border border-[#B08D57]/30 rounded-3xl p-6 shadow-lg relative overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-lg font-bold text-white mb-4">Собрать свой микс</h3>
 
@@ -748,8 +748,8 @@ export function BookingPage() {
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.2); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.4); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(176,141,87,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(176,141,87,0.4); }
       `}</style>
     </div>
   );

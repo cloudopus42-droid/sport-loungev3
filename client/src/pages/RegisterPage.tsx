@@ -40,11 +40,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-
-      <div className="float-orb-1" />
-      <div className="float-orb-2" />
-      <div className="float-orb-3" />
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-dark-bg">
 
       <motion.div
         className="w-full max-w-sm relative"
@@ -59,7 +55,7 @@ export function RegisterPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-accent-gold via-yellow-500 to-accent-burgundy flex items-center justify-center shadow-glow-gold mb-4 border border-yellow-200/20">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-accent-gold flex items-center justify-center shadow-elevated mb-4">
             <Crown className="w-8 h-8 text-black" />
           </div>
           <h1 className="text-2xl font-heading font-bold text-white tracking-wide">SPORT LOUNGE</h1>

@@ -44,7 +44,7 @@ export function InvitationBanner({ invitation, onClose }: InvitationBannerProps)
           exit={{ y: -100, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         >
-          <div className="max-w-lg mx-auto bg-dark-surface/95 backdrop-blur-glass border border-accent-gold/30 rounded-2xl shadow-glow-gold overflow-hidden">
+          <div className="max-w-lg mx-auto bg-dark-surface/95 backdrop-blur-glass border border-accent-gold/30 rounded-2xl shadow-elevated overflow-hidden">
             <div className="flex items-start gap-3 p-4">
               <div className="w-10 h-10 rounded-full bg-accent-gold/20 flex items-center justify-center flex-shrink-0">
                 <PartyPopper className="w-5 h-5 text-accent-gold" />

@@ -312,7 +312,7 @@ export function MixesPage() {
             >
               <div
                 className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${
-                  status === 'active' ? 'left-[22px] bg-accent-gold shadow-glow-gold' : 'left-0.5 bg-white/30'
+                  status === 'active' ? 'left-[22px] bg-accent-gold' : 'left-0.5 bg-white/30'
                 }`}
               />
             </button>

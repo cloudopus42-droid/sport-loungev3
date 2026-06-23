@@ -7,14 +7,14 @@ interface BadgeProps {
 }
 
 const colorStyles = {
-  cyan: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10 shadow-[0_0_8px_rgba(212,175,55,0.2)]',
-  blue: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10 shadow-[0_0_8px_rgba(212,175,55,0.2)]',
-  purple: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10 shadow-[0_0_8px_rgba(212,175,55,0.2)]',
-  green: 'border-green-500/40 text-green-400 bg-green-500/10 shadow-[0_0_8px_rgba(34,197,94,0.2)]',
-  red: 'border-red-500/40 text-red-400 bg-red-500/10 shadow-[0_0_8px_rgba(239,68,68,0.2)]',
-  yellow: 'border-yellow-500/40 text-yellow-400 bg-yellow-500/10 shadow-[0_0_8px_rgba(234,179,8,0.2)]',
+  cyan: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10',
+  blue: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10',
+  purple: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10',
+  green: 'border-green-500/40 text-green-400 bg-green-500/10',
+  red: 'border-red-500/40 text-red-400 bg-red-500/10',
+  yellow: 'border-yellow-500/40 text-yellow-400 bg-yellow-500/10',
   gray: 'border-white/20 text-white/60 bg-white/5',
-  gold: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10 shadow-[0_0_8px_rgba(212,175,55,0.2)]',
+  gold: 'border-accent-gold/40 text-accent-gold bg-accent-gold/10',
 };
 
 const sizeStyles = {

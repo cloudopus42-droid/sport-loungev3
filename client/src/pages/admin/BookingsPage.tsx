@@ -171,7 +171,7 @@ export function AdminBookingsPage() {
                           {hs && booking.status !== 'cancelled' && (
                             <div className="flex items-center gap-2 mt-3">
                               <div className="flex-1 h-1.5 rounded-full bg-glass-bg overflow-hidden border border-white/5">
-                                <div className="h-full rounded-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 transition-all duration-500 shadow-[0_0_10px_rgba(212,175,55,0.4)]"
+                                <div className="h-full rounded-full bg-accent-gold transition-all duration-500"
                                   style={{ width: `${hs.progressPercent}%` }} />
                               </div>
                               <span className={`text-[10px] font-bold uppercase tracking-wider ${hookahStatusColors[hs.hookahStatus]}`}>
@@ -183,7 +183,7 @@ export function AdminBookingsPage() {
 
                         {booking.status === 'pending' && (
                           <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <GlowButton size="sm" onClick={() => updateStatus(booking._id, 'confirmed')} className="shadow-glow-gold-lg text-black font-bold">
+                            <GlowButton size="sm" onClick={() => updateStatus(booking._id, 'confirmed')} className="text-black font-bold">
                               Принять
                             </GlowButton>
                             <GlowButton size="sm" variant="danger" onClick={() => updateStatus(booking._id, 'cancelled')}>
@@ -245,7 +245,7 @@ export function AdminBookingsPage() {
                       </span>
                     </div>
                     <div className="h-1 rounded-full bg-dark-bg overflow-hidden border border-white/5">
-                      <motion.div className="h-full rounded-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 shadow-[0_0_8px_rgba(212,175,55,0.4)]"
+                      <motion.div className="h-full rounded-full bg-accent-gold"
                         animate={{ width: `${hs.progressPercent}%` }} transition={{ duration: 0.5 }} />
                     </div>
                     {hs.minutesLeft > 0 && (

@@ -9,9 +9,9 @@ export function showToast(message: string, variant: 'success' | 'error' | 'info'
   };
 
   const glowColors = {
-    success: 'border-green-500/30 shadow-glow-green',
-    error: 'border-red-500/30 shadow-glow-red',
-    info: 'border-accent-gold/30 shadow-glow-gold',
+    success: 'border-green-500/30',
+    error: 'border-red-500/30',
+    info: 'border-accent-gold/30',
   };
 
   toast.custom(

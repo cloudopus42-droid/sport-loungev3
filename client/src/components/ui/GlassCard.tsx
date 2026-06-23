@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
-import { fadeUp, hoverLift } from '@/lib/motion';
+import { fadeUp } from '@/lib/motion';
 
 type CardVariant = 'default' | 'premium' | 'gold-ring';
 
@@ -21,50 +21,24 @@ interface GlassCardProps {
 }
 
 export function GlassCard({
-  children,
-  className,
-  animate = true,
-  onClick,
-  variant = 'default',
-  hoverable = false,
+  children, className, animate = true, onClick, variant = 'default', hoverable = false,
 }: GlassCardProps) {
   const prefersReducedMotion = useReducedMotion();
-
-  const baseClasses = clsx(
-    variantClasses[variant],
-    onClick && 'cursor-pointer',
-    className
-  );
+  const baseClasses = clsx(variantClasses[variant], onClick && 'cursor-pointer', className);
 
   if (!animate || prefersReducedMotion) {
-    return (
-      <div className={baseClasses} onClick={onClick}>
-        {children}
-      </div>
-    );
+    return <div className={baseClasses} onClick={onClick}>{children}</div>;
   }
 
   const props = onClick ? { onClick } : {};
 
-  if (hoverable) {
-    return (
-      <motion.div
-        className={baseClasses}
-        {...fadeUp}
-        {...hoverLift}
-        {...props}
-      >
-        {children}
-      </motion.div>
-    );
-  }
+  const hoverMotion = hoverable ? {
+    whileHover: { y: -4, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] } },
+    whileTap: { scale: 0.99 },
+  } : {};
 
   return (
-    <motion.div
-      className={baseClasses}
-      {...fadeUp}
-      {...props}
-    >
+    <motion.div className={baseClasses} {...fadeUp} {...hoverMotion} {...props}>
       {children}
     </motion.div>
   );

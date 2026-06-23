@@ -297,7 +297,7 @@ export function PromosPage() {
                   onClick={() => setActive(!active)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${active ? 'bg-accent-gold/30' : 'bg-white/10'}`}
                 >
-                  <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${active ? 'left-[22px] bg-accent-gold shadow-glow-gold' : 'left-0.5 bg-white/30'}`} />
+                  <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${active ? 'left-[22px] bg-accent-gold' : 'left-0.5 bg-white/30'}`} />
                 </button>
               </div>
             </div>

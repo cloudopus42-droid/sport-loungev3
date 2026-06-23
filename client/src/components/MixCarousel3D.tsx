@@ -109,7 +109,7 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
               onClick={() => onItemClick?.(item)}
               className={`absolute cursor-pointer select-none rounded-2xl overflow-hidden border transition-shadow duration-300 ${
                 isActive
-                  ? 'border-accent-gold/40 shadow-[0_0_40px_rgba(212,175,55,0.2)] z-30'
+                  ? 'border-accent-gold/40 shadow-glass-lg z-30'
                   : 'border-glass-border/20 shadow-lg z-20 hover:border-accent-gold/20'
               }`}
               style={{

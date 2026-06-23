@@ -50,9 +50,9 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
           toastDiv.innerHTML = '🆕 Доступна новая версия. <u>Нажмите для обновления</u>';
           Object.assign(toastDiv.style, {
             position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
-            zIndex: '99999', background: '#1a1a2e', color: '#d4af37', padding: '14px 24px',
-            borderRadius: '12px', border: '1px solid #d4af37', cursor: 'pointer',
-            fontFamily: 'Geist, sans-serif', fontSize: '14px', boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+            zIndex: '99999', background: '#0D0F13', color: '#B08D57', padding: '14px 24px',
+            borderRadius: '12px', border: '1px solid rgba(176,141,87,0.3)', cursor: 'pointer',
+            fontFamily: 'Inter, sans-serif', fontSize: '14px', boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
             backdropFilter: 'blur(12px)',
           });
           toastDiv.addEventListener('click', () => window.location.reload());

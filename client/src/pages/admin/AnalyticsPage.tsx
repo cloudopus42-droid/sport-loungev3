@@ -401,7 +401,7 @@ export function AnalyticsPage() {
             </div>
 
             {/* Predictive Model Card */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-yellow-950/30 to-black border border-amber-500/20 shadow-[0_0_15px_rgba(212,175,55,0.1)]">
+            <div className="p-3.5 rounded-2xl bg-dark-surface border border-glass-border">
               <div className="flex items-center gap-2 mb-2 text-amber-300 font-semibold text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
                 <span>Прогноз ИИ на следующий месяц</span>

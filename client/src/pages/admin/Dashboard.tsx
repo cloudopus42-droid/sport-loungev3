@@ -204,7 +204,7 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6 pb-12 bg-nocturnal bg-warm-glow">
+    <div className="space-y-6 pb-12">
       
       {/* Header Panel */}
       <motion.div
@@ -260,8 +260,8 @@ export function Dashboard() {
               <svg className="w-full h-full absolute inset-0 z-10" viewBox="0 0 600 200" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="#B08D57" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="#B08D57" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
 
@@ -274,16 +274,16 @@ export function Dashboard() {
                 <path
                   d="M 0,160 Q 100,150 200,90 T 400,60 T 600,110"
                   fill="none"
-                  stroke="#D4AF37"
+                  stroke="#B08D57"
                   strokeWidth="3.5"
                   strokeLinecap="round"
                 />
 
-                <line x1="300" y1="20" x2="300" y2="200" stroke="rgba(212,175,55,0.3)" strokeWidth="1.5" strokeDasharray="4 4" />
-                <circle cx="300" cy="72" r="6" fill="#FFF" stroke="#D4AF37" strokeWidth="3" className="shadow-[0_0_15px_rgba(212,175,55,0.8)]" />
+                <line x1="300" y1="20" x2="300" y2="200" stroke="rgba(176,141,87,0.2)" strokeWidth="1.5" strokeDasharray="4 4" />
+                <circle cx="300" cy="72" r="6" fill="#B08D57" stroke="#B08D57" strokeWidth="3" />
               </svg>
 
-              <div className="absolute top-[35px] left-[46%] z-20 px-2.5 py-1 bg-gradient-to-r from-yellow-300 to-amber-500 rounded-full border border-yellow-200/25 shadow-lg flex items-center justify-center pointer-events-none">
+                <div className="absolute top-[35px] left-[46%] z-20 px-2.5 py-1 bg-accent-gold rounded-full shadow-lg flex items-center justify-center pointer-events-none">
                 <span className="text-[10px] font-bold text-black">802.00 ₽</span>
               </div>
 
@@ -392,7 +392,7 @@ export function Dashboard() {
                   transition={{ delay: idx * 0.1 }}
                 >
                   <GlassCard className="p-4 flex flex-col justify-between hover:border-accent-gold/25 transition-all group border-glass-border/30 liquid-glass">
-                    <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 border border-accent-gold/20 shadow-md group-hover:shadow-[0_0_12px_rgba(212,175,55,0.3)]">
+                    <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 border border-accent-gold/20">
                       <kpi.icon className="w-4 h-4 text-accent-gold" />
                     </div>
                     <div>

@@ -153,7 +153,7 @@ export function AdminLayout() {
         {/* Logo + collapse toggle */}
         <div className="flex items-center gap-3 px-4 py-5 border-b border-glass-border min-h-[68px] flex-shrink-0">
           <motion.div
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-yellow-300 via-accent-gold to-yellow-600 flex items-center justify-center shadow-[0_4px_16px_rgba(212,175,55,0.45)] border border-yellow-200/20 flex-shrink-0"
+            className="w-9 h-9 rounded-xl bg-[#0D0F13] flex items-center justify-center shadow-elevated border border-glass-border flex-shrink-0"
             whileHover={{ scale: 1.05 }}
             transition={springFast}
           >
@@ -276,7 +276,7 @@ export function AdminLayout() {
         {/* User section */}
         <div className="px-2 py-4 border-t border-glass-border flex-shrink-0">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 via-accent-gold to-yellow-600 flex items-center justify-center text-xs font-bold text-black border border-yellow-200/20 flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-accent-gold flex items-center justify-center text-xs font-bold text-black flex-shrink-0">
               {user?.name?.[0]?.toUpperCase() || 'A'}
             </div>
             <AnimatePresence mode="wait">
@@ -369,7 +369,7 @@ export function AdminLayout() {
                     transition={springFast}
                   >
                     <div className="relative">
-                      <Icon className={clsx('w-5 h-5', isActive && 'drop-shadow-[0_0_6px_rgba(212,175,55,0.5)]')} />
+                      <Icon className="w-5 h-5" />
                       {(tab.path === '/admin/orders' || tab.path === '/admin/bookings') && hasNewOrders && (
                         <motion.span
                           className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-dark-surface"
@@ -386,7 +386,7 @@ export function AdminLayout() {
                     </span>
                     {isActive && (
                       <motion.div
-                        className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold shadow-[0_0_4px_rgba(212,175,55,0.6)]"
+                        className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold"
                         layoutId="adminMobileNavDot"
                         transition={springFast}
                       />

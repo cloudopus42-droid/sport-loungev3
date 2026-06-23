@@ -11,9 +11,9 @@ interface GlowButtonProps extends HTMLMotionProps<'button'> {
 }
 
 const variantStyles = {
-  primary: 'bg-gradient-to-r from-accent-gold to-yellow-500 text-black font-bold shadow-glow-gold border border-yellow-200/20 hover:shadow-glow-gold-lg',
+  primary: 'bg-[#B08D57] text-black font-bold shadow-elevated hover:bg-[#C4A46B]',
   secondary: 'bg-white/5 hover:bg-white/10 text-white border border-white/10',
-  gold: 'bg-gradient-to-r from-accent-gold to-yellow-500 text-black font-bold shadow-glow-gold border border-yellow-200/20 hover:shadow-glow-gold-lg',
+  gold: 'bg-[#B08D57] text-black font-bold shadow-elevated hover:bg-[#C4A46B]',
   danger: 'bg-gradient-to-r from-red-600 to-red-500 shadow-[0_4px_20px_rgba(239,68,68,0.4)] border border-white/20 text-white',
 };
 

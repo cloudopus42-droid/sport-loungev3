@@ -193,12 +193,8 @@ export function MainLayout() {
       };
 
   return (
-    <div className="min-h-screen pb-16 lg:pb-0 relative bg-dark-bg text-[#F5F0E8]">
+    <div className="min-h-screen pb-16 lg:pb-0 relative bg-dark-bg text-[#F5F5F5]">
       <SEO />
-
-      <div className="float-orb-1" />
-      <div className="float-orb-2" />
-      <div className="float-orb-3" />
 
       <Suspense fallback={null}>
         <ThreeSmoke />
@@ -267,9 +263,9 @@ export function MainLayout() {
                   )}
                   <span className="hidden xl:inline">{user?.name || 'Профиль'}</span>
                 </NavLink>
-                <motion.button
+                  <motion.button
                   onClick={handleLogout}
-                  className="p-2 rounded-full hover:bg-accent-burgundy/20 text-white/40 hover:text-accent-gold transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
+                  className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-white/80 transition-all focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
                   title="Выйти"
                   aria-label="Выйти"
                   whileHover={{ scale: 1.05 }}
@@ -290,7 +286,7 @@ export function MainLayout() {
 
             <NavLink to="/booking" aria-label="Сделать заказ">
               <motion.button
-                className="accent-btn px-5 py-2 text-xs font-heading font-bold rounded-xl flex items-center gap-1.5"
+                className="btn-primary px-5 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 transition={springFast}
@@ -454,18 +450,24 @@ export function MainLayout() {
         </AnimatePresence>
       </main>
 
-      {/* Mobile bottom navigation */}
+      {/* Mobile bottom navigation — oval liquid glass panel */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 lg:hidden w-auto"
         aria-label="Мобильная навигация"
       >
         <motion.div
-          className="bg-dark-surface/90 backdrop-blur-xl border-t border-glass-border"
+          className="relative rounded-full bg-[rgba(15,12,10,0.5)] backdrop-blur-[20px] border border-[rgba(176,141,87,0.12)] shadow-[0_8px_32px_rgba(0,0,0,0.45)] overflow-hidden"
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={springGentle}
         >
-          <div className="max-w-lg mx-auto flex items-center justify-around px-1 py-1">
+          {/* Animated shimmer highlight */}
+          <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
+            <div
+              className="absolute inset-0 bg-[length:200%_100%] bg-[linear-gradient(90deg,transparent_0%,rgba(176,141,87,0.04)_30%,rgba(176,141,87,0.08)_50%,rgba(176,141,87,0.04)_70%,transparent_100%)] animate-shimmer"
+            />
+          </div>
+          <div className="relative flex items-center justify-around px-2 py-1.5 gap-0.5">
             {mobileTabs.map((tab) => {
               const to = getMobileTabTo(tab);
               const Icon = tab.icon;
@@ -474,30 +476,30 @@ export function MainLayout() {
                   key={tab.label}
                   to={to}
                   end={tab.to === '/'}
-                  className="relative flex-1 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 rounded-lg"
+                  className="relative flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 rounded-lg"
                   aria-label={tab.label}
                 >
                   {({ isActive }) => (
                     <motion.div
                       className={clsx(
-                        'flex flex-col items-center justify-center gap-0.5 min-h-[48px] min-w-[48px] rounded-xl transition-colors',
+                        'flex flex-col items-center justify-center gap-0.5 min-h-[44px] min-w-[52px] rounded-xl transition-colors',
                         isActive ? 'text-accent-gold' : 'text-white/40 hover:text-white/60'
                       )}
                       whileTap={{ scale: 0.88 }}
                       transition={springFast}
                     >
                       <div className="relative">
-                        <Icon className={clsx('w-5 h-5', isActive && 'drop-shadow-[0_0_6px_rgba(212,175,55,0.5)]')} />
+                        <Icon className="w-4 h-4" />
                       </div>
                       <span className={clsx(
-                        'text-[9px] font-heading font-semibold tracking-tight',
+                        'text-[8px] font-heading font-semibold tracking-tight',
                         isActive ? 'text-accent-gold' : 'text-white/40'
                       )}>
                         {tab.label}
                       </span>
                       {isActive && (
                         <motion.div
-                          className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold shadow-[0_0_4px_rgba(212,175,55,0.6)]"
+                          className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold"
                           layoutId="mobileNavDot"
                           transition={springFast}
                         />

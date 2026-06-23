@@ -44,13 +44,13 @@ export function NotFound() {
           animate={{ y: 0 }}
         >
           <motion.h1
-            className="text-7xl sm:text-8xl font-display font-bold bg-gradient-to-r from-[#d4af37] via-[#f0d68a] to-[#d4af37] bg-clip-text text-transparent mb-2"
+            className="text-7xl sm:text-8xl font-heading font-bold text-accent-gold mb-2"
             animate={{ opacity: [1, 0.7, 1] }}
             transition={{ duration: 3, repeat: Infinity }}
           >
             404
           </motion.h1>
-          <p className="text-lg text-[#d4af37]/80 mb-2 font-display font-medium">
+          <p className="text-lg text-accent-gold/80 mb-2 font-heading font-medium">
             Потерялись в дыму?
           </p>
           <p className="text-sm text-white/30 mb-8">

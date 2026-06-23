@@ -52,7 +52,7 @@ function SortableItem({ id, children }: SortableItemProps) {
       style={style}
       className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
         isDragging
-          ? 'bg-accent-gold/10 border-accent-gold/30 shadow-glow-gold'
+          ? 'bg-accent-gold/10 border-accent-gold/30'
           : 'bg-glass-bg border-glass-border hover:border-accent-gold/20'
       }`}
     >

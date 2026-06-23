@@ -110,7 +110,7 @@ function TabBar({ tabs, active, onSelect }: { tabs: { key: Tab; label: string; i
           {active === t.key && (
             <motion.div
               layoutId="tab-indicator"
-              className="absolute inset-0 bg-gradient-to-r from-accent-gold to-yellow-500 rounded-xl shadow-glow-gold"
+              className="absolute inset-0 bg-accent-gold/20 rounded-xl"
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             />
           )}
@@ -339,7 +339,7 @@ function TobaccoItemsPanel() {
               onClick={() => setAutoReorder(!autoReorder)}
               className={`relative w-11 h-6 rounded-full transition-colors ${autoReorder ? 'bg-accent-gold/30' : 'bg-white/10'}`}
             >
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${autoReorder ? 'left-[22px] bg-accent-gold shadow-glow-gold' : 'left-0.5 bg-white/30'}`} />
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${autoReorder ? 'left-[22px] bg-accent-gold' : 'left-0.5 bg-white/30'}`} />
             </button>
             <span className="text-xs text-white/40">{autoReorder ? 'Включено' : 'Выключено'}</span>
           </div>
@@ -658,7 +658,7 @@ function RestockPanel() {
                 key={req._id}
                 className={`p-4 rounded-2xl border transition-all ${
                   isPending
-                    ? 'bg-accent-gold/5 border-accent-gold/30 shadow-glow-gold'
+                    ? 'bg-accent-gold/5 border-accent-gold/30'
                     : 'bg-glass-bg border-glass-border'
                 }`}
               >

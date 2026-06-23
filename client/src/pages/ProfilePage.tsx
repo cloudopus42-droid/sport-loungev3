@@ -35,7 +35,7 @@ const statusLabels: Record<string, { text: string; color: 'green' | 'yellow' | '
 
 // Theme accent options
 const accentColors = [
-  { name: 'Gold', value: '#D4AF37' },
+  { name: 'Gold', value: '#B08D57' },
   { name: 'Amber', value: '#FFB800' },
   { name: 'Bronze', value: '#8A6623' },
   { name: 'Green', value: '#22c55e' },
@@ -73,12 +73,12 @@ const VIP_CARD_THEMES: Record<string, {
   },
   gold: {
     name: 'Gold Sovereign Passport',
-    gradient: 'from-yellow-600 via-amber-600 to-yellow-800',
-    border: 'border-yellow-400/60',
-    glow: 'shadow-[0_0_30px_rgba(212,175,55,0.4)]',
-    text: 'text-yellow-100/80',
-    badge: 'bg-yellow-600/30 text-yellow-200 border-yellow-500/20',
-    icon: <Crown className="w-5 h-5 text-yellow-400 animate-pulse" />
+    gradient: 'from-[#0D0F13] via-[#13161C] to-[#0D0F13]',
+    border: 'border-accent-gold/40',
+    glow: 'shadow-elevated',
+    text: 'text-accent-gold',
+    badge: 'bg-accent-gold/20 text-accent-gold border-accent-gold/30',
+    icon: <Crown className="w-5 h-5 text-accent-gold" />
   },
   black: {
     name: 'Black Obsidian Passport',
@@ -96,14 +96,14 @@ const VIP_CARD_THEMES: Record<string, {
     glow: 'shadow-[0_0_40px_rgba(128,0,32,0.6)]',
     text: 'text-red-200/90',
     badge: 'bg-red-900/40 text-red-300 border-red-800/40',
-    icon: <Sparkles className="w-5 h-5 text-accent-gold animate-spin animate-duration-[4000ms]" />
+    icon: <Sparkles className="w-5 h-5 text-accent-gold" />
   }
 };
 const AVATAR_FRAMES = [
   { id: 'none', name: 'Без рамки', style: '' },
-  { id: 'sovereign', name: 'Золотое Сияние', style: 'ring-4 ring-accent-gold shadow-[0_0_15px_rgba(212,175,55,0.6)] animate-pulse' },
-  { id: 'burgundy', name: 'Бургунди', style: 'ring-4 ring-accent-burgundy shadow-[0_0_20px_rgba(128,0,32,0.6)] animate-pulse' },
-  { id: 'goldburst', name: 'Золотой Всплеск', style: 'ring-4 ring-yellow-400 shadow-[0_0_20px_rgba(255,215,0,0.6)] animate-pulse animate-duration-[3000ms]' },
+  { id: 'sovereign', name: 'Золотое Сияние', style: 'ring-2 ring-accent-gold/40' },
+  { id: 'burgundy', name: 'Бургунди', style: 'ring-2 ring-[#8B3A3A]/40' },
+  { id: 'goldburst', name: 'Золотой Всплеск', style: 'ring-2 ring-accent-gold/60' },
   { id: 'ruby', name: 'Рубиновый Дым', style: 'ring-4 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)]' }
 ];
 
@@ -200,7 +200,7 @@ export function ProfilePage() {
   const [editPhone, setEditPhone] = useState('');
   const [editBio, setEditBio] = useState('');
   const [saving, setSaving] = useState(false);
-  const [selectedAccent, setSelectedAccent] = useState('#D4AF37');
+  const [selectedAccent, setSelectedAccent] = useState('#B08D57');
   const [showSettings, setShowSettings] = useState(false);
 
   // VIP Club data states
@@ -285,7 +285,7 @@ export function ProfilePage() {
         const p = JSON.parse(prefs);
         setEditBio(p.bio || '');
         setEditPhone(p.phone || '');
-        setSelectedAccent(p.accent || '#D4AF37');
+        setSelectedAccent(p.accent || '#B08D57');
         setSelectedFrameId(p.frameId || 'none');
         setSelectedStatus(p.statusText || '');
       }
@@ -652,7 +652,7 @@ export function ProfilePage() {
             
             <div className="relative w-full h-2 bg-stone-900 rounded-full overflow-hidden border border-white/5">
               <div 
-                className="h-full rounded-full bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-300 shadow-[0_0_12px_rgba(212,175,55,0.7)]" 
+                className="h-full rounded-full bg-accent-gold" 
                 style={{ width: `${xpProgress.progress}%` }} 
               />
             </div>
@@ -670,7 +670,7 @@ export function ProfilePage() {
             <div className="pt-2 border-t border-white/5 flex justify-center">
               <button 
                 onClick={() => setShowQrModal(true)}
-                className="w-full py-2 bg-gradient-to-r from-yellow-400/10 to-amber-500/10 border border-accent-gold/30 hover:border-accent-gold/60 text-accent-gold text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-glow-gold/10"
+                className="w-full py-2 bg-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 text-accent-gold text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Открыть Цифровой QR Пропуск</span>
@@ -782,7 +782,7 @@ export function ProfilePage() {
                   }}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all border ${
                       selectedStatus === s
-                        ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45 shadow-[0_0_8px_rgba(212,175,55,0.15)]'
+                        ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45'
                         : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -886,7 +886,7 @@ export function ProfilePage() {
                   {preferences.topFlavors.map((flavor, index) => (
                     <span 
                       key={index} 
-                      className="px-3 py-1 rounded-full text-xs font-semibold text-accent-gold bg-accent-gold/10 border border-accent-gold/30 flex items-center gap-1 shadow-[0_0_8px_rgba(212,175,55,0.1)] transition-transform hover:scale-105"
+                      className="px-3 py-1 rounded-full text-xs font-semibold text-accent-gold bg-accent-gold/10 border border-accent-gold/30 flex items-center gap-1 transition-transform hover:scale-105"
                     >
                       <span>💨</span>
                       <span>{flavor}</span>
@@ -908,7 +908,7 @@ export function ProfilePage() {
                       </div>
                       <div className="relative w-full h-1.5 bg-stone-900 rounded-full overflow-hidden border border-white/5">
                         <div 
-                          className="h-full rounded-full bg-gradient-to-r from-amber-600 to-accent-gold shadow-[0_0_8px_rgba(212,175,55,0.4)]" 
+                          className="h-full rounded-full bg-accent-gold" 
                           style={{ width: `${85 - index * 20}%` }} 
                         />
                       </div>
@@ -937,7 +937,7 @@ export function ProfilePage() {
                 <GlassCard 
                   key={ach.id} 
                   className={`p-3.5 border transition-all ${ach.unlocked 
-                    ? 'border-accent-gold/40 bg-accent-gold/5 shadow-[0_0_15px_rgba(212,175,55,0.15)]' 
+                    ? 'border-accent-gold/40 bg-accent-gold/5' 
                     : 'border-glass-border/10 bg-black/20 opacity-60'}`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -984,7 +984,7 @@ export function ProfilePage() {
             onClick={() => setActiveTab('mixes')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
               activeTab === 'mixes'
-                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45 shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/45'
                 : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
             }`}
           >
@@ -1078,7 +1078,7 @@ export function ProfilePage() {
                               </div>
 
                               <div className="h-1.5 rounded-full bg-stone-900 overflow-hidden">
-                                <motion.div className="h-full rounded-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 shadow-[0_0_10px_rgba(212,175,55,0.7)]"
+                                <motion.div className="h-full rounded-full bg-accent-gold"
                                   initial={{ width: 0 }} animate={{ width: `${hs.progressPercent}%` }}
                                   transition={{ duration: 0.8, ease: 'easeOut' }} />
                               </div>
@@ -1298,7 +1298,7 @@ export function ProfilePage() {
                   
                   {/* Laser line scanning effect */}
                   <motion.div 
-                    className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent-gold to-transparent shadow-[0_0_8px_#D4AF37] z-20"
+                    className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent-gold to-transparent z-20"
                     animate={{ top: ['0%', '100%', '0%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                   />

@@ -193,7 +193,7 @@ export function OrdersAdmin() {
                   className={`mafia-card p-5 border-l-4 ${
                     timerInfo.delayed 
                       ? 'border-l-red-600 border-red-950/20 bg-red-950/5' 
-                      : 'border-l-[#d4af37]'
+                      : 'border-l-accent-gold'
                   }`}
                 >
                   <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -294,7 +294,7 @@ export function OrdersAdmin() {
                           {order.status === 'delivering' && (
                             <button
                               onClick={() => handleUpdateStatus(order.id, 'done')}
-                              className="flex-1 py-2 rounded-lg bg-[#d4af37] text-black font-extrabold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
+                              className="flex-1 py-2 rounded-lg bg-accent-gold text-black font-extrabold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
                             >
                               <Check className="w-3.5 h-3.5 stroke-[3]" /> Подано
                             </button>
