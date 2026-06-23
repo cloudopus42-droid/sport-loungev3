@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MixCarousel3D } from '@/components/MixCarousel3D';
+import { HookahScene } from '@/components/three/HookahScene';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
@@ -35,14 +36,45 @@ const advantageItems = [
 export function HomePage() {
   const prefersReducedMotion = useReducedMotion();
   const heroRef = useRef<HTMLDivElement>(null);
+  const hookahSectionRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ['start start', 'end start'],
   });
 
+  const { scrollYProgress: hookahProgress } = useScroll({
+    target: hookahSectionRef,
+    offset: ['start center', 'end center'],
+  });
+
   const heroParallax = useTransform(scrollYProgress, [0, 1], [0, 120]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const [bowlIndex, setBowlIndex] = useState(0);
+  const [liquidIndex, setLiquidIndex] = useState(0);
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const unsub1 = hookahProgress.on('change', (v) => {
+      const clamped = Math.min(1, Math.max(0, v));
+      const idx = Math.min(4, Math.floor(clamped * 5));
+      setBowlIndex(idx);
+      setLiquidIndex(idx);
+    });
+    return () => { unsub1(); };
+  }, [hookahProgress, prefersReducedMotion]);
+
+  const hookahScale = useTransform(hookahProgress, [0, 1], [0.85, 1]);
+  const hookahOpacity = useTransform(hookahProgress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]);
+
+  const BOWL_INFO = useMemo(() => [
+    { name: 'Cosmo Bowl', desc: 'Классическая глиняная чаша с матовой поверхностью для идеального прогрева', liquid: 'Вода с блёстками' },
+    { name: 'Грейпфрут', desc: 'Свежая половинка грейпфрута с текстурой цедры для цитрусовой ноты', liquid: 'Вино' },
+    { name: 'Кактус', desc: 'Маленький зелёный кактус с колючками — экзотическая подача', liquid: 'Кола' },
+    { name: 'Ананас', desc: 'Тропический ананас с лиственной короной для яркой сервировки', liquid: 'Апельсиновый сок' },
+    { name: 'Апельсин', desc: 'Сочная апельсиновая чаша с насыщенной текстурой кожуры', liquid: 'Чистая вода' },
+  ], []);
 
   const [promos, setPromos] = useState<Promo[]>([]);
   const [showcaseItems, setShowcaseItems] = useState<ShowcaseItem[]>([]);
@@ -145,20 +177,22 @@ export function HomePage() {
               </motion.div>
             </div>
 
-            {/* Right — hero visual */}
+            {/* Right — hookah 3D scene */}
             <motion.div
               className="hidden lg:block relative"
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
             >
-              <div className="aspect-[4/5] max-w-md mx-auto relative">
-                <img
-                  src="https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=800&auto=format&fit=crop"
-                  alt=""
-                  className="w-full h-full object-cover rounded-[16px]"
-                />
-                <div className="absolute inset-0 rounded-[16px] ring-1 ring-inset ring-white/5" />
+              <div className="aspect-[4/5] max-w-md mx-auto relative bg-[#070707] rounded-[16px] overflow-hidden ring-1 ring-inset ring-white/5">
+                <HookahScene bowlIndex={bowlIndex} liquidIndex={liquidIndex} />
+                {/* Progress bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[rgba(176,141,87,0.1)]">
+                  <motion.div
+                    className="h-full bg-[#B08D57] origin-left"
+                    style={{ scaleX: hookahProgress }}
+                  />
+                </div>
               </div>
             </motion.div>
           </div>
@@ -173,6 +207,56 @@ export function HomePage() {
         >
           <div className="w-px h-12 bg-gradient-to-b from-[#B08D57]/40 to-transparent" />
         </motion.div>
+      </section>
+
+      {/* ─── HOOKAH SHOWCASE ─── */}
+      <section ref={hookahSectionRef} className="relative border-b border-[rgba(176,141,87,0.08)]">
+        <div className="relative h-[500vh]">
+          <div className="sticky top-0 h-screen flex items-center overflow-hidden">
+            <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+              {/* Left — hookah scene */}
+              <motion.div
+                className="h-[50vh] lg:h-[70vh] relative"
+                style={{ scale: hookahScale, opacity: hookahOpacity }}
+              >
+                <HookahScene bowlIndex={bowlIndex} liquidIndex={liquidIndex} />
+                {/* Progress dots */}
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+                  {BOWL_INFO.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-2 h-2 rounded-full transition-colors duration-700 ${i <= bowlIndex ? 'bg-[#B08D57]' : 'bg-[rgba(255,255,255,0.08)]'}`}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Right — bowl description */}
+              <motion.div
+                className="hidden lg:flex flex-col justify-center space-y-6"
+                key={bowlIndex}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+                viewport={{ once: false }}
+              >
+                <span className="text-xs uppercase tracking-[0.25em] text-[#B08D57] font-medium">
+                  Чаша {bowlIndex + 1} / {BOWL_INFO.length}
+                </span>
+                <h2 className="font-heading text-[clamp(28px,4vw,56px)] font-semibold text-[#F5F5F5] leading-[1.1] tracking-[-0.02em]">
+                  {BOWL_INFO[bowlIndex].name}
+                </h2>
+                <p className="text-[#9D9D9D] text-sm leading-relaxed max-w-md font-light">
+                  {BOWL_INFO[bowlIndex].desc}
+                </p>
+                <div className="flex items-center gap-3 text-xs text-[#9D9D9D]">
+                  <span className="text-[#B08D57]">Жидкость:</span>
+                  <span>{BOWL_INFO[bowlIndex].liquid}</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ─── STATS ─── */}
