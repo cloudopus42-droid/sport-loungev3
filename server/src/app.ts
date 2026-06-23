@@ -44,6 +44,8 @@ import telegramRoutes from './routes/telegram';
 import monitoringRoutes from './routes/monitoring';
 import adminLogRoutes from './routes/adminLog';
 import bughunterRoutes from './routes/bughunter';
+import webscoutRoutes from './routes/webscout';
+import healthAgentsRoutes from './routes/healthAgents';
 
 const app = express();
 
@@ -130,6 +132,8 @@ app.use('/api/telegram', telegramRoutes);
 app.use('/api/monitoring', monitoringRoutes);
 app.use('/api/admin/logs', adminLogRoutes);
 app.use('/api/bughunter', bughunterRoutes);
+app.use('/api/webscout', webscoutRoutes);
+app.use('/api/agents', healthAgentsRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

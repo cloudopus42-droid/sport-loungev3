@@ -1,0 +1,14 @@
+{
+  "agentId": "omni-fixer",
+  "displayName": "OmniFixer",
+  "color": "#7C4DFF",
+  "scanIntervalMs": 120000,
+  "enabled": true,
+  "confidenceThreshold": 90,
+  "autoFix": true,
+  "maxConcurrentFixes": 3,
+  "scanPaths": ["client/src"],
+  "excludePaths": ["node_modules", "dist", ".git"],
+  "fixCategories": ["import", "typescript", "css", "config"],
+  "createdAt": "2026-06-24T00:00:00Z"
+}

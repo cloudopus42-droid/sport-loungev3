@@ -1,0 +1,17 @@
+{
+  "agentId": "webscout",
+  "displayName": "WebScout",
+  "color": "#00BFA5",
+  "scanIntervalMs": 300000,
+  "enabled": true,
+  "rateLimitPerMin": 20,
+  "cacheTtlMs": 3600000,
+  "maxCacheSize": 500,
+  "stealthMode": true,
+  "userAgentRotate": true,
+  "allowedDomains": [],
+  "blockedDomains": [],
+  "maxConcurrency": 3,
+  "requestTimeoutMs": 15000,
+  "createdAt": "2026-06-24T00:00:00Z"
+}

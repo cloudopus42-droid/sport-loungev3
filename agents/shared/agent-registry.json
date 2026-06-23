@@ -59,6 +59,46 @@
         "displayName": "BugBot",
         "daemonScript": "agents/agents/bughunter/agent.js"
       }
+    },
+    "webscout": {
+      "tools": ["file-read", "file-write", "url-fetch", "html-parse", "cache-manage", "message-bus"],
+      "triggers": ["webscout:scrape", "timer:300s", "url-change"],
+      "memory": { "maxHistory": 100, "persistFile": "agents/agents/webscout/log.md" },
+      "config": {
+        "color": "#00BFA5",
+        "displayName": "WebScout",
+        "daemonScript": "agents/agents/webscout/agent.js"
+      }
+    },
+    "cache-purger": {
+      "tools": ["file-read", "file-write", "sw-cache-manage", "cdn-api", "version-check", "message-bus"],
+      "triggers": ["deploy", "build-complete", "timer:60s"],
+      "memory": { "maxHistory": 50, "persistFile": "agents/agents/cache-purger/log.md" },
+      "config": {
+        "color": "#FF9800",
+        "displayName": "CachePurger",
+        "daemonScript": "agents/agents/cache-purger/agent.js"
+      }
+    },
+    "health-checker": {
+      "tools": ["file-read", "url-fetch", "version-compare", "telegram-notify", "message-bus"],
+      "triggers": ["timer:60s", "deploy", "agent-status-change"],
+      "memory": { "maxHistory": 100, "persistFile": "agents/agents/health-checker/log.md" },
+      "config": {
+        "color": "#E040FB",
+        "displayName": "HealthChecker",
+        "daemonScript": "agents/agents/health-checker/agent.js"
+      }
+    },
+    "omni-fixer": {
+      "tools": ["file-read", "file-write", "typescript-check", "npm-build", "import-analyze", "message-bus"],
+      "triggers": ["build-fail", "timer:120s", "bughunter-escalate"],
+      "memory": { "maxHistory": 100, "persistFile": "agents/agents/omni-fixer/log.md" },
+      "config": {
+        "color": "#7C4DFF",
+        "displayName": "OmniFixer",
+        "daemonScript": "agents/agents/omni-fixer/agent.js"
+      }
     }
   }
 }

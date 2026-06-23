@@ -14,6 +14,7 @@ import { InvitationBanner } from '@/components/InvitationBanner';
 import type { Invitation } from '@/types';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { NotificationCardStack } from '@/components/ui/NotificationCardStack';
+import { CookieBanner } from '@/components/ui/CookieBanner';
 import { VersionBadge } from '@/components/VersionBadge';
 import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
@@ -204,6 +205,7 @@ export function MainLayout() {
 
       <ConciergeChat />
       <NotificationCardStack />
+      <CookieBanner />
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Desktop & Mobile Header */}

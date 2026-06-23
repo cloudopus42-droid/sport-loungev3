@@ -22,6 +22,7 @@ const OrderTrackerPage = lazy(() => import('@/pages/OrderTrackerPage').then(m =>
 const LoyaltyPage = lazy(() => import('@/pages/LoyaltyPage').then(m => ({ default: m.LoyaltyPage })));
 const GalleryPage = lazy(() => import('@/pages/GalleryPage').then(m => ({ default: m.GalleryPage })));
 const NotFound = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFound })));
+const CookiePolicyPage = lazy(() => import('@/pages/CookiePolicyPage').then(m => ({ default: m.CookiePolicyPage })));
 
 const Dashboard = lazy(() => import('@/pages/admin/Dashboard').then(m => ({ default: m.Dashboard })));
 const PostsPage = lazy(() => import('@/pages/admin/PostsPage').then(m => ({ default: m.PostsPage })));
@@ -36,6 +37,8 @@ const TobaccoAdmin = lazy(() => import('@/pages/admin/TobaccoAdmin').then(m => (
 const SmartFeaturesPage = lazy(() => import('@/pages/admin/SmartFeaturesPage').then(m => ({ default: m.SmartFeaturesPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then(m => ({ default: m.AdminLogsPage })));
 const BugHunterPage = lazy(() => import('@/pages/admin/BugHunterPage').then(m => ({ default: m.BugHunterPage })));
+const WebScoutPage = lazy(() => import('@/pages/admin/WebScoutPage').then(m => ({ default: m.WebScoutPage })));
+const AgentHealthPage = lazy(() => import('@/pages/admin/AgentHealthPage').then(m => ({ default: m.AgentHealthPage })));
 
 export default function App() {
   return (
@@ -64,6 +67,7 @@ export default function App() {
                 <Route path="feed" element={<FeedPage />} />
                 <Route path="invitations" element={<InvitationsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="cookie-policy" element={<CookiePolicyPage />} />
               </Route>
 
               <Route path="/login" element={<LoginPage />} />
@@ -84,6 +88,8 @@ export default function App() {
                 <Route path="smart-features" element={<SmartFeaturesPage />} />
           <Route path="logs" element={<AdminLogsPage />} />
           <Route path="bughunter" element={<BugHunterPage />} />
+          <Route path="webscout" element={<WebScoutPage />} />
+          <Route path="agent-health" element={<AgentHealthPage />} />
         </Route>
 
               <Route path="/404" element={<NotFound />} />
