@@ -5,6 +5,7 @@ import { registerSchema, loginSchema, profileUpdateSchema } from '../schemas/aut
 import { auth } from '../middleware/auth';
 import { config } from '../config/env';
 import { supabase } from '../config/supabase';
+import { getIO } from '../socket';
 import { uploadSingle, uploadToSupabase, deleteFromSupabase } from '../middleware/upload';
 import fs from 'fs';
 import path from 'path';
@@ -58,6 +59,15 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
       res.status(500).json({ error: 'Ошибка при создании пользователя: ' + insertError?.message, status: 500 });
       return;
     }
+
+    try {
+      getIO().emit('new_user', {
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (_) { /* socket not ready */ }
 
     const token = generateToken(user);
 

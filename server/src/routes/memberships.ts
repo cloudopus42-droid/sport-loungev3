@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { auth } from '../middleware/auth';
 import { supabase } from '../config/supabase';
 import { getPagination, paginatedResponse } from '../utils/pagination';
+import { getIO } from '../socket';
 
 const router = Router();
 
@@ -269,6 +270,17 @@ router.post('/reviews', auth, async (req: Request, res: Response, next: NextFunc
       res.status(409).json({ error: 'Вы уже оставили отзыв для этого бронирования.' });
       return;
     }
+
+    try {
+      const { data: user } = await supabase.from('users').select('name').eq('id', userId).single();
+      getIO().emit('new_review', {
+        id: review.id,
+        user_name: user?.name || 'Гость',
+        rating,
+        text: text || '',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (_) { /* socket not ready */ }
 
     const [memResult, achResult] = await Promise.all([
       supabase.from('users_membership').select('points').eq('user_id', userId).single(),

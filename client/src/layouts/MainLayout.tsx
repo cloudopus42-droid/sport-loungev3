@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { InvitationBanner } from '@/components/InvitationBanner';
 import type { Invitation } from '@/types';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
+import { NotificationCardStack } from '@/components/ui/NotificationCardStack';
 import { VersionBadge } from '@/components/VersionBadge';
 import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
@@ -202,6 +203,7 @@ export function MainLayout() {
       </Suspense>
 
       <ConciergeChat />
+      <NotificationCardStack />
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
       {/* Desktop & Mobile Header */}
