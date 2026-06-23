@@ -39,3 +39,6 @@ github-token.txt
 
 # Scratch scripts
 *.ps1
+
+# Session summary (auto-generated)
+.summary.md
