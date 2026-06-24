@@ -12,7 +12,8 @@ import * as z from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeature } from '@/contexts/FeatureContext';
 import { useSocket } from '@/hooks/useSocket';
-import { HookahLayers } from '@/components/three/HookahLayers';
+import { CssSmoke } from '@/components/CssSmoke';
+import premiumHookah from '../premium_hookah.png';
 import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
 
@@ -305,8 +306,13 @@ export function BookingPage() {
               ))}
             </div>
 
-            <div className="w-full h-full relative">
-              <HookahLayers bowlIndex={bowlIndex} size="compact" />
+            <div className="w-full h-full relative flex items-center justify-center">
+              <CssSmoke count={12} />
+              <img
+                src={premiumHookah}
+                alt="Sport Lounge Premium Hookah"
+                className="max-h-[280px] w-auto object-contain z-10 animate-breathe-image"
+              />
               {/* Gold progress bar */}
               <div className="absolute bottom-8 left-[15%] right-[15%] h-px bg-[rgba(255,191,0,0.12)]">
                 <motion.div
