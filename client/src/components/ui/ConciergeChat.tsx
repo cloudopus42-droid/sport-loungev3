@@ -77,17 +77,17 @@ export function ConciergeChat() {
         className="relative h-[440px] lg:h-[520px]"
       >
         {/* Glass background layer */}
-        <div className="absolute inset-0 bg-[rgba(13,15,19,0.82)] backdrop-blur-[24px] border border-[rgba(176,141,87,0.1)] border-r-0 rounded-l-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] overflow-hidden" />
+        <div className="absolute inset-0 bg-[rgba(13,15,19,0.82)] backdrop-blur-[24px] border border-[rgba(255,191,0,0.1)] border-r-0 rounded-l-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] overflow-hidden" />
 
         {/* Shimmer overlay */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-l-xl">
-          <div className="absolute inset-0 bg-[length:200%_100%] bg-[linear-gradient(90deg,transparent_0%,rgba(176,141,87,0.03)_30%,rgba(176,141,87,0.06)_50%,rgba(176,141,87,0.03)_70%,transparent_100%)] animate-shimmer" />
+          <div className="absolute inset-0 bg-[length:200%_100%] bg-[linear-gradient(90deg,transparent_0%,rgba(255,191,0,0.03)_30%,rgba(255,191,0,0.06)_50%,rgba(255,191,0,0.03)_70%,transparent_100%)] animate-shimmer" />
         </div>
 
         {/* Flag handle — always visible on the right edge */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="absolute right-0 top-0 bottom-0 w-7 flex flex-col items-center justify-center gap-2 cursor-pointer z-20 bg-[rgba(15,12,10,0.3)] backdrop-blur-[20px] rounded-l-xl border-l border-[rgba(176,141,87,0.06)] hover:bg-[rgba(15,12,10,0.5)] transition-colors"
+          className="absolute right-0 top-0 bottom-0 w-7 flex flex-col items-center justify-center gap-2 cursor-pointer z-20 bg-[rgba(15,12,10,0.3)] backdrop-blur-[20px] rounded-l-xl border-l border-[rgba(255,191,0,0.06)] hover:bg-[rgba(15,12,10,0.5)] transition-colors"
           aria-label={isOpen ? 'Закрыть чат' : 'Открыть чат'}
         >
           <MessageSquare className="w-4 h-4 text-accent-gold" />
@@ -107,7 +107,7 @@ export function ConciergeChat() {
               className="absolute left-0 right-7 top-0 bottom-0 flex flex-col"
             >
               {/* Header */}
-              <div className="border-b border-[rgba(176,141,87,0.08)] px-4 py-3 flex items-center justify-between">
+              <div className="border-b border-[rgba(255,191,0,0.08)] px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-accent-gold/10 flex items-center justify-center border border-accent-gold/20">
                     <Bot className="w-3.5 h-3.5 text-accent-gold" />
@@ -165,7 +165,7 @@ export function ConciergeChat() {
               </div>
 
               {/* Input */}
-              <div className="p-3 border-t border-[rgba(176,141,87,0.08)]">
+              <div className="p-3 border-t border-[rgba(255,191,0,0.08)]">
                 {isAuthenticated ? (
                   <form onSubmit={handleSend} className="flex gap-2">
                     <input

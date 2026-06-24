@@ -23,7 +23,7 @@ export function CookieBanner() {
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="fixed bottom-5 right-5 z-[100] max-w-sm"
           >
-            <div className="rounded-xl p-4 bg-[#000000] border border-[#4d4d4d]/30">
+            <div className="rounded-xl p-4 bg-[#1a1815] border border-[#4d4d4d]/30">
               <p className="text-sm text-white/80 leading-relaxed mb-4" style={{ fontFamily: 'Georgia, serif' }}>
                 Мы используем куки для корректной работы сайта и улучшения вашего опыта.{' '}
                 <a href="/cookie-policy" className="underline text-[#c6c6c6] hover:text-white transition-colors">

@@ -22,7 +22,7 @@ function ToggleSwitch({
       onClick={onChange}
       disabled={loading}
       className="relative w-14 h-7 rounded-full transition-colors flex-shrink-0"
-      style={{ backgroundColor: enabled ? '#B08D57' : 'rgba(255,255,255,0.1)' }}
+      style={{ backgroundColor: enabled ? '#FFBF00' : 'rgba(255,255,255,0.1)' }}
     >
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 64 28" fill="none">
         <motion.circle

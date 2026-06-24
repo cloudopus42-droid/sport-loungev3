@@ -260,8 +260,8 @@ export function Dashboard() {
               <svg className="w-full h-full absolute inset-0 z-10" viewBox="0 0 600 200" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#B08D57" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#B08D57" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="#FFBF00" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="#FFBF00" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
 
@@ -274,13 +274,13 @@ export function Dashboard() {
                 <path
                   d="M 0,160 Q 100,150 200,90 T 400,60 T 600,110"
                   fill="none"
-                  stroke="#B08D57"
+                  stroke="#FFBF00"
                   strokeWidth="3.5"
                   strokeLinecap="round"
                 />
 
-                <line x1="300" y1="20" x2="300" y2="200" stroke="rgba(176,141,87,0.2)" strokeWidth="1.5" strokeDasharray="4 4" />
-                <circle cx="300" cy="72" r="6" fill="#B08D57" stroke="#B08D57" strokeWidth="3" />
+                <line x1="300" y1="20" x2="300" y2="200" stroke="rgba(255,191,0,0.2)" strokeWidth="1.5" strokeDasharray="4 4" />
+                <circle cx="300" cy="72" r="6" fill="#FFBF00" stroke="#FFBF00" strokeWidth="3" />
               </svg>
 
                 <div className="absolute top-[35px] left-[46%] z-20 px-2.5 py-1 bg-accent-gold rounded-full shadow-lg flex items-center justify-center pointer-events-none">

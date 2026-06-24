@@ -98,13 +98,13 @@ export function HomePage() {
   };
 
   return (
-    <div className="overflow-x-hidden bg-[#000000]">
+    <div className="overflow-x-hidden bg-[#1a1815]">
       {/* ─── HERO — Active Theory: void canvas + GSAP layers centerpiece ─── */}
       <section
         ref={heroRef}
         className="relative h-screen flex items-center justify-center overflow-hidden"
       >
-        <div className="absolute inset-0 z-0 bg-[#000000]" />
+        <div className="absolute inset-0 z-0 bg-[#1a1815]" />
 
         <motion.div
           className="relative z-10 w-full max-w-3xl mx-auto px-6"
@@ -216,7 +216,7 @@ export function HomePage() {
             {advantages.map((item) => (
               <div
                 key={item.label}
-                className="bg-[#000000] p-8 lg:p-12 flex flex-col justify-between min-h-[240px]"
+                className="bg-[#1a1815] p-8 lg:p-12 flex flex-col justify-between min-h-[240px]"
               >
                 <p className="font-heading text-[clamp(32px,4vw,56px)] font-semibold text-white tracking-[-0.03em] leading-none">
                   {item.value}
@@ -256,9 +256,9 @@ export function HomePage() {
               imageUrl: s.image_url ? resolveImageUrl(s.image_url) : undefined,
               linkUrl: s.link_url,
             })) : [
-              { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #000000 0%, #0A0C0E 100%)' },
-              { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #000000 0%, #0A0C0E 100%)' },
-              { id: '3', title: 'VIP-залы', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #000000 0%, #0A0C0E 100%)' },
+              { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #1a1815 0%, #12100d 100%)' },
+              { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #1a1815 0%, #12100d 100%)' },
+              { id: '3', title: 'VIP-залы', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #1a1815 0%, #12100d 100%)' },
             ]}
             onItemClick={(item) => {
               if (item.linkUrl) window.open(item.linkUrl, '_blank');
@@ -296,19 +296,19 @@ export function HomePage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.08, ease: [0.23, 1, 0.32, 1] }}
               >
-                <div className="aspect-[4/5] relative overflow-hidden bg-[#000000] border border-white/5">
+                <div className="aspect-[4/5] relative overflow-hidden bg-[#1a1815] border border-white/5">
                   <img
                     src={item.img || item.image_url}
                     alt=""
                     loading="lazy"
                     className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-80"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#000000] via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1815] via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-5">
                     <p className="font-heading text-sm lg:text-base font-semibold text-white">{item.name}</p>
                     <p className="font-mono text-[10px] text-white/40 mt-1">{item.desc || item.description}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-mono text-[10px] text-[#B08D57]">{item.price || `${item.price_value} ₽`}</span>
+                      <span className="font-mono text-[10px] text-[#FFBF00]">{item.price || `${item.price_value} ₽`}</span>
                       <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">{item.strength}</span>
                     </div>
                   </div>
@@ -390,7 +390,7 @@ export function HomePage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: i * 0.08, ease: [0.23, 1, 0.32, 1] }}
                 >
-                  <div className="p-4 h-full border border-white/5 bg-[#000000]">
+                  <div className="p-4 h-full border border-white/5 bg-[#1a1815]">
                     {promo.imageUrl && (
                       <img
                         src={resolveImageUrl(promo.imageUrl)}
@@ -402,7 +402,7 @@ export function HomePage() {
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <h4 className="font-mono text-[11px] text-white/80 truncate">{promo.title}</h4>
                       {promo.discountPercent && (
-                        <span className="font-mono text-[10px] px-2 py-0.5 border border-[#B08D57]/20 text-[#B08D57]">
+                        <span className="font-mono text-[10px] px-2 py-0.5 border border-[#FFBF00]/20 text-[#FFBF00]">
                           -{promo.discountPercent}%
                         </span>
                       )}

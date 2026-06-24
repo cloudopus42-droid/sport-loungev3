@@ -15,6 +15,7 @@ import type { Invitation } from '@/types';
 import { ConciergeChat } from '@/components/ui/ConciergeChat';
 import { NotificationCardStack } from '@/components/ui/NotificationCardStack';
 import { CookieBanner } from '@/components/ui/CookieBanner';
+import { SparkleParticles } from '@/components/ui/SparkleParticles';
 import { VersionBadge } from '@/components/VersionBadge';
 import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
@@ -197,8 +198,9 @@ export function MainLayout() {
       };
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-0 relative bg-[#000000] text-white">
+    <div className="min-h-screen pb-20 lg:pb-0 relative bg-[#1a1815] text-white">
       <SEO />
+      <SparkleParticles count={8} />
 
       <ConciergeChat />
       <NotificationCardStack />
@@ -210,7 +212,7 @@ export function MainLayout() {
 
       {/* Desktop & Mobile Header — instrument-panel style */}
       <header className="sticky top-0 z-50">
-        <div className="absolute inset-0 bg-[#000000]/90 backdrop-blur-xl border-b border-white/5" />
+        <div className="absolute inset-0 bg-[#1a1815]/90 backdrop-blur-xl border-b border-white/5" />
         <div className="relative max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-3 gap-4">
 
           {/* Logo — minimal label */}
@@ -317,7 +319,7 @@ export function MainLayout() {
               aria-hidden="true"
             />
             <motion.div
-              className="absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] bg-[#000000]/95 backdrop-blur-xl border-l border-white/5 shadow-2xl flex flex-col"
+              className="absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] bg-[#1a1815]/95 backdrop-blur-xl border-l border-white/5 shadow-2xl flex flex-col"
               id="mobile-menu"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -443,7 +445,7 @@ export function MainLayout() {
         aria-label="Мобильная навигация"
       >
         <motion.div
-          className="relative rounded-full bg-[#000000]/80 backdrop-blur-[20px] border border-white/5 overflow-hidden"
+          className="relative rounded-full bg-[#1a1815]/80 backdrop-blur-[20px] border border-white/5 overflow-hidden"
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={smoothGentle}

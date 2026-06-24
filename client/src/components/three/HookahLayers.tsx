@@ -4,117 +4,80 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const COLOR_PALETTES = [
-  { inner: '#B08D57', glow: 'rgba(176,141,87,0.12)', particle: '#C4A46B', label: 'Warm Amber' },
-  { inner: '#FF6B52', glow: 'rgba(255,107,82,0.10)', particle: '#FF8C7A', label: 'Coral' },
-  { inner: '#4CAF50', glow: 'rgba(76,175,80,0.10)', particle: '#6ECF73', label: 'Emerald' },
-  { inner: '#D4A017', glow: 'rgba(212,160,23,0.10)', particle: '#E0B840', label: 'Gold' },
-  { inner: '#FF8C00', glow: 'rgba(255,140,0,0.10)', particle: '#FFA833', label: 'Amber' },
-];
+const HOOKAH_SVG = `<svg viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Base / tray -->
+  <ellipse cx="100" cy="370" rx="55" ry="12" fill="#FFBF0015" stroke="#FFBF0030" stroke-width="1"/>
+  <rect x="45" y="358" width="110" height="12" rx="6" fill="#FFBF0010" stroke="#FFBF0025" stroke-width="0.8"/>
+  
+  <!-- Stem (column) -->
+  <rect x="92" y="180" width="16" height="180" rx="8" fill="#FFBF0008" stroke="#FFBF0020" stroke-width="0.8"/>
+  
+  <!-- Decorative rings on stem -->
+  <ellipse cx="100" cy="220" rx="12" ry="3" fill="none" stroke="#FFBF0030" stroke-width="0.6"/>
+  <ellipse cx="100" cy="260" rx="12" ry="3" fill="none" stroke="#FFBF0025" stroke-width="0.6"/>
+  <ellipse cx="100" cy="300" rx="12" ry="3" fill="none" stroke="#FFBF0020" stroke-width="0.6"/>
+  
+  <!-- Bowl (top) -->
+  <path d="M70 180 Q70 145 100 135 Q130 145 130 180 Z" fill="#FFBF0012" stroke="#FFBF0028" stroke-width="1"/>
+  <ellipse cx="100" cy="135" rx="30" ry="8" fill="#FFBF0010" stroke="#FFBF0035" stroke-width="0.8"/>
+  
+  <!-- Bowl rim -->
+  <ellipse cx="100" cy="130" rx="28" ry="6" fill="none" stroke="#FFBF0040" stroke-width="1.2"/>
+  
+  <!-- Hose port -->
+  <circle cx="130" cy="200" r="5" fill="#FFBF0010" stroke="#FFBF0030" stroke-width="0.8"/>
+  
+  <!-- Hose curve -->
+  <path d="M135 200 Q160 195 170 210 Q180 230 165 250" fill="none" stroke="#FFBF0020" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Mouthpiece -->
+  <rect x="155" y="245" width="14" height="4" rx="2" fill="#FFBF0015" stroke="#FFBF0030" stroke-width="0.8" transform="rotate(-15 162 247)"/>
+</svg>`;
 
 interface HookahLayersProps {
-  bowlIndex?: number;
-  liquidIndex?: number;
   scrollMode?: boolean;
   scrollTarget?: React.RefObject<HTMLDivElement>;
   scrollOffset?: [string, string];
-  onBowlChange?: (index: number) => void;
   className?: string;
   size?: 'hero' | 'compact';
 }
 
-function GlassOrb({ palette, size }: { palette: typeof COLOR_PALETTES[number]; size: 'hero' | 'compact' }) {
-  const isHero = size === 'hero';
-  const orbSize = isHero ? 'w-56 h-56 lg:w-80 lg:h-80' : 'w-40 h-40 lg:w-56 lg:h-56';
+function SmokeWisp({ index, total }: { index: number; total: number }) {
+  const offset = (index - total / 2) * 18;
+  const delay = index * 0.7;
+  const duration = 3.5 + (index % 3) * 0.8;
 
   return (
-    <div className="relative flex items-center justify-center">
-      {/* Outer glow aura */}
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        left: `calc(50% + ${offset}px)`,
+        bottom: '58%',
+        width: '40px',
+        height: '80px',
+        animation: `smokeRise ${duration}s ease-in-out ${delay}s infinite`,
+      }}
+    >
       <div
-        className={`absolute ${orbSize} rounded-full opacity-60`}
+        className="w-full h-full rounded-full"
         style={{
-          background: `radial-gradient(circle, ${palette.glow}, transparent 70%)`,
-          filter: 'blur(40px)',
-          animation: 'liquidPulse 6s ease-in-out infinite',
+          background: `radial-gradient(ellipse at center, rgba(255,191,0,0.08), rgba(255,191,0,0.02) 60%, transparent 80%)`,
+          filter: 'blur(12px)',
         }}
       />
-
-      {/* Main glass orb */}
-      <div
-        className={`${orbSize} rounded-full relative overflow-hidden`}
-        style={{
-          background: 'rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          border: '0.5px solid rgba(255,255,255,0.12)',
-          boxShadow: `
-            0 8px 32px rgba(0,0,0,0.12),
-            0 2px 8px rgba(0,0,0,0.06),
-            inset 0 1px 0 rgba(255,255,255,0.08),
-            inset 0 -2px 8px rgba(0,0,0,0.04)
-          `,
-        }}
-      >
-        {/* Inner liquid gradient */}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `radial-gradient(ellipse at 35% 35%, ${palette.inner}18, ${palette.inner}08 50%, transparent 70%)`,
-            animation: 'liquidShift 8s ease-in-out infinite',
-          }}
-        />
-
-        {/* Specular highlight — top-left */}
-        <div
-          className="absolute top-[12%] left-[18%] w-[35%] h-[45%] rounded-full"
-          style={{
-            background: 'linear-gradient(160deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 50%, transparent)',
-            filter: 'blur(8px)',
-            transform: 'rotate(-15deg)',
-          }}
-        />
-
-        {/* Secondary highlight — bottom-right */}
-        <div
-          className="absolute bottom-[15%] right-[20%] w-[20%] h-[25%] rounded-full"
-          style={{
-            background: 'linear-gradient(340deg, rgba(255,255,255,0.06), transparent)',
-            filter: 'blur(6px)',
-            transform: 'rotate(20deg)',
-          }}
-        />
-
-        {/* Light sweep animation */}
-        <div
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{
-            background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 55%, transparent 60%)',
-            backgroundSize: '200% 100%',
-            animation: 'lightSweep 6s ease-in-out infinite',
-          }}
-        />
-
-        {/* Noise texture overlay */}
-        <div
-          className="absolute inset-0 rounded-full opacity-[0.015] pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
     </div>
   );
 }
 
-function FloatingParticles({ palette, count = 8 }: { palette: typeof COLOR_PALETTES[number]; count?: number }) {
+function GoldenParticles({ count = 6 }: { count?: number }) {
   const particles = useMemo(() =>
     Array.from({ length: count }, (_, i) => ({
       id: i,
-      size: 3 + (i % 3) * 2,
-      x: Math.cos((i / count) * Math.PI * 2) * (60 + (i % 3) * 20),
-      y: Math.sin((i / count) * Math.PI * 2) * (60 + (i % 3) * 20),
-      delay: i * 0.8,
-      duration: 4 + (i % 3) * 2,
+      size: 2 + (i % 3),
+      x: Math.cos((i / count) * Math.PI * 2) * (80 + (i % 2) * 30),
+      y: Math.sin((i / count) * Math.PI * 2) * (40 + (i % 3) * 15),
+      delay: i * 0.6,
+      duration: 3 + (i % 3),
     })),
     [count]
   );
@@ -128,10 +91,10 @@ function FloatingParticles({ palette, count = 8 }: { palette: typeof COLOR_PALET
           style={{
             width: `${p.size}px`,
             height: `${p.size}px`,
-            background: `radial-gradient(circle, ${palette.particle}88, ${palette.particle}22)`,
-            boxShadow: `0 0 ${p.size * 2}px ${palette.particle}44`,
+            background: `radial-gradient(circle, #FFBF0088, #FFBF0022)`,
+            boxShadow: `0 0 ${p.size * 3}px #FFBF0044`,
             left: `calc(50% + ${p.x}px)`,
-            top: `calc(50% + ${p.y}px)`,
+            top: `calc(45% + ${p.y}px)`,
             animation: `particleFloat ${p.duration}s ease-in-out ${p.delay}s infinite alternate`,
           }}
         />
@@ -140,78 +103,92 @@ function FloatingParticles({ palette, count = 8 }: { palette: typeof COLOR_PALET
   );
 }
 
-function AmbientRings() {
+function AuraGlow() {
   return (
-    <div className="absolute inset-0 pointer-events-none">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{
-            width: `${280 + i * 80}px`,
-            height: `${280 + i * 80}px`,
-            border: `0.5px solid rgba(255,255,255,${0.04 - i * 0.01})`,
-            animation: `ringPulse ${5 + i}s ease-in-out ${i * 1.5}s infinite alternate`,
-          }}
-        />
-      ))}
-    </div>
+    <>
+      <div
+        className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 w-72 h-72 lg:w-96 lg:h-96 rounded-full opacity-40"
+        style={{
+          background: 'radial-gradient(circle, rgba(255,191,0,0.12), transparent 70%)',
+          filter: 'blur(50px)',
+          animation: 'liquidPulse 6s ease-in-out infinite',
+        }}
+      />
+      <div
+        className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 lg:w-64 lg:h-64 rounded-full opacity-25"
+        style={{
+          background: 'radial-gradient(circle, rgba(255,213,79,0.10), transparent 60%)',
+          filter: 'blur(30px)',
+          animation: 'liquidShift 8s ease-in-out infinite',
+        }}
+      />
+    </>
   );
 }
 
 export function HookahLayers({
-  bowlIndex = 0,
   scrollMode = false,
   scrollTarget,
   scrollOffset = ['start center', 'end center'],
-  onBowlChange,
   className = '',
   size = 'hero',
 }: HookahLayersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const swapTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const svgRef = useRef<HTMLDivElement>(null);
 
-  const handleIndexChange = useCallback((newIndex: number) => {
-    setActiveIndex(newIndex);
-    onBowlChange?.(newIndex);
-  }, [onBowlChange]);
+  const isHero = size === 'hero';
+  const svgSize = isHero ? 'w-52 h-[320px] lg:w-72 lg:h-[420px]' : 'w-36 h-[240px] lg:w-48 lg:h-[320px]';
 
   useEffect(() => {
-    if (!scrollMode || !scrollTarget?.current || !containerRef.current) return;
+    if (!scrollMode || !scrollTarget?.current || !svgRef.current) return;
     const target = scrollTarget.current;
+    const el = svgRef.current;
+
     const st = ScrollTrigger.create({
       trigger: target,
       start: scrollOffset[0],
       end: scrollOffset[1],
       onUpdate: (self) => {
-        const idx = Math.min(4, Math.floor(self.progress * 5));
-        handleIndexChange(idx);
+        const p = self.progress;
+        gsap.set(el, {
+          y: p * -20,
+          scale: 1 + p * 0.03,
+          opacity: 0.7 + p * 0.3,
+        });
       },
     });
     return () => { st.kill(); };
-  }, [scrollMode, scrollTarget, scrollOffset, handleIndexChange]);
-
-  useEffect(() => {
-    return () => {
-      if (swapTimerRef.current) clearTimeout(swapTimerRef.current);
-    };
-  }, []);
-
-  const palette = COLOR_PALETTES[bowlIndex] || COLOR_PALETTES[0];
+  }, [scrollMode, scrollTarget, scrollOffset]);
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative w-full h-full ${className}`}
-    >
+    <div ref={containerRef} className={`relative w-full h-full ${className}`}>
       <div className="relative w-full h-full flex items-center justify-center">
-        <AmbientRings />
-        <FloatingParticles palette={palette} />
-        <GlassOrb palette={palette} size={size} />
+        <AuraGlow />
+        <GoldenParticles count={6} />
+
+        {/* Smoke wisps */}
+        <div className="absolute inset-0 pointer-events-none">
+          {Array.from({ length: 5 }, (_, i) => (
+            <SmokeWisp key={i} index={i} total={5} />
+          ))}
+        </div>
+
+        {/* Hookah silhouette */}
+        <div
+          ref={svgRef}
+          className={`relative ${svgSize} opacity-90`}
+          dangerouslySetInnerHTML={{ __html: HOOKAH_SVG }}
+        />
+
+        {/* Subtle gold rim light at base */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 bottom-[22%] w-32 h-1 rounded-full opacity-30"
+          style={{
+            background: 'linear-gradient(90deg, transparent, #FFBF00, transparent)',
+            filter: 'blur(4px)',
+          }}
+        />
       </div>
     </div>
   );
 }
-
-export { COLOR_PALETTES };

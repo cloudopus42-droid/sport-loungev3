@@ -36,7 +36,7 @@ const statusLabels: Record<string, { text: string; color: 'green' | 'yellow' | '
 // Theme accent options
 const accentColors = [
   { name: 'Gold Bright', value: '#FFBF00' },
-  { name: 'Gold Muted', value: '#B08D57' },
+  { name: 'Gold Muted', value: '#FFBF00' },
   { name: 'Amber', value: '#FFB800' },
   { name: 'Bronze', value: '#8A6623' },
   { name: 'Green', value: '#22c55e' },
