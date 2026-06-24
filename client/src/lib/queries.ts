@@ -150,9 +150,9 @@ export function useToggleSmartFeature() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
-      api.put(`/api/smart-features/${id}`, { is_enabled: enabled }),
+      api.put(`/api/smart-features/${id}`, { enabled }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['smart-features'] });
+      qc.invalidateQueries({ queryKey: ['smart-features', 'status'] });
     },
   });
 }

@@ -89,6 +89,11 @@ export function SmartFeaturesPage() {
 
   const handleToggle = async (feature: SmartFeature) => {
     const newEnabled = !feature.enabled;
+    const featureId = feature.id || feature.feature_key;
+    if (!featureId) {
+      showToast('Ошибка: ID функции не найден', 'error');
+      return;
+    }
     setTogglingIds((prev) => new Set(prev).add(feature.id));
     setFeatures((prev) =>
       prev.map((f) => (f.id === feature.id ? { ...f, enabled: newEnabled } : f))
@@ -99,11 +104,11 @@ export function SmartFeaturesPage() {
         `${feature.name} ${newEnabled ? 'включена' : 'отключена'}`,
         'success'
       );
-    } catch {
+    } catch (err: any) {
       setFeatures((prev) =>
         prev.map((f) => (f.id === feature.id ? { ...f, enabled: !newEnabled } : f))
       );
-      showToast(`Ошибка обновления ${feature.name}`, 'error');
+      showToast(`Ошибка обновления ${feature.name}: ${err?.message || 'неизвестная ошибка'}`, 'error');
     } finally {
       setTogglingIds((prev) => {
         const next = new Set(prev);

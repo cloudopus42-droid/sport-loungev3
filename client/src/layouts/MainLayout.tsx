@@ -153,17 +153,17 @@ export function MainLayout() {
           to={item.to}
           end={item.to === '/'}
           className={({ isActive }) => clsx(
-            'relative px-3 py-2 text-xs font-medium tracking-wide transition-all duration-300',
-            isActive ? 'text-accent-gold' : 'text-white/60 hover:text-accent-gold hover:scale-[1.02]'
+            'relative px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] transition-all duration-300',
+            isActive ? 'text-white' : 'text-white/40 hover:text-white/60'
           )}
         >
           {({ isActive }) => (
             <>
               <span className="relative z-10">{item.label}</span>
-                  {isActive && (
+              {isActive && (
                 <motion.div
                   layoutId="nav-underline"
-                  className="absolute bottom-0 left-2 right-2 h-[2px] bg-accent-gold rounded-full"
+                  className="absolute bottom-0 left-2 right-2 h-px bg-white/30"
                   transition={smoothFast}
                 />
               )}
@@ -176,7 +176,7 @@ export function MainLayout() {
       <button
         key={item.label}
         onClick={(e) => { e.preventDefault(); handleNavClick(item.hash!); }}
-        className="relative px-3 py-2 text-xs font-medium tracking-wide text-white/60 hover:text-accent-gold hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+        className="relative px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 hover:text-white/60 transition-all duration-300 cursor-pointer"
       >
         {item.label}
       </button>
@@ -197,7 +197,7 @@ export function MainLayout() {
       };
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-0 relative bg-dark-bg text-text-primary">
+    <div className="min-h-screen pb-20 lg:pb-0 relative bg-[#000000] text-white">
       <SEO />
 
       <Suspense fallback={null}>
@@ -209,40 +209,33 @@ export function MainLayout() {
       <CookieBanner />
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
-      {/* Gold accent line at top */}
-      <div className="fixed top-0 left-0 right-0 z-[60] h-px bg-gradient-to-r from-transparent via-gold-DEFAULT/20 to-transparent pointer-events-none" />
+      {/* Hairline top accent */}
+      <div className="fixed top-0 left-0 right-0 z-[60] h-px bg-white/5 pointer-events-none" />
 
-      {/* Desktop & Mobile Header */}
+      {/* Desktop & Mobile Header — instrument-panel style */}
       <header className="sticky top-0 z-50">
-        <div className="absolute inset-0 bg-dark-bg/70 backdrop-blur-xl border-b border-glass-border" />
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gold-fade pointer-events-none" />
+        <div className="absolute inset-0 bg-[#000000]/90 backdrop-blur-xl border-b border-white/5" />
         <div className="relative max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-3 gap-4">
 
-          {/* Logo with pulse */}
+          {/* Logo — minimal label */}
           <NavLink
             to="/"
             className="flex items-center gap-1.5 flex-shrink-0 select-none group"
             aria-label="На главную"
           >
-            <span className="text-sm font-display font-bold tracking-[0.15em] text-white group-hover:text-accent-gold transition-colors duration-300">SPORT</span>
-            <motion.span
-              className="text-sm font-display font-black italic tracking-[0.1em] text-accent-gold"
-              whileHover={{ scale: [1, 1.04, 1] }}
-              transition={{ duration: 0.6, ease: 'easeInOut' }}
-            >
-              LOUNGE
-            </motion.span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 group-hover:text-white transition-colors duration-300">SPORT</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white">LOUNGE</span>
           </NavLink>
 
-          {/* Desktop nav */}
+          {/* Desktop nav — monospace labels with hairline connector */}
           <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center" aria-label="Основная навигация">
             {desktopNavItems.map(renderDesktopNavLink)}
             {user?.role === 'admin' && (
               <NavLink
                 to="/admin"
                 className={({ isActive }) => clsx(
-                  'relative flex items-center gap-1 px-3 py-2 text-xs font-bold tracking-wide transition-all duration-300',
-                  isActive ? 'text-accent-gold' : 'text-accent-gold/80 hover:text-accent-gold hover:scale-[1.02]'
+                  'relative flex items-center gap-1 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] transition-all duration-300',
+                  isActive ? 'text-white' : 'text-white/40 hover:text-white/60'
                 )}
               >
                 <Crown className="w-3 h-3" />
@@ -257,66 +250,57 @@ export function MainLayout() {
               <>
                 <NavLink
                   to="/profile"
-                  className="group hidden sm:flex items-center gap-2 text-xs font-semibold text-white/60 hover:text-accent-gold transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg px-2 py-1"
+                  className="group hidden sm:flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 hover:text-white transition-all duration-300 px-2 py-1"
                   aria-label="Профиль"
                 >
                   {user?.avatar ? (
                     <img
                       src={resolveImageUrl(user.avatar)}
                       alt={user.name}
-                      className="w-6 h-6 rounded-full object-cover ring-1 ring-accent-gold/30 group-hover:ring-accent-gold/60 transition-all"
+                      className="w-5 h-5 rounded-full object-cover border border-white/10 group-hover:border-white/30 transition-all"
                     />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-accent-gold/20 flex items-center justify-center text-accent-gold text-[10px] font-bold">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-white/60 text-[8px] font-bold">
                       {user?.name?.[0]?.toUpperCase() || 'U'}
                     </div>
                   )}
                   <span className="hidden xl:inline">{user?.name || 'Профиль'}</span>
                 </NavLink>
-                  <motion.button
+                <button
                   onClick={handleLogout}
-                  className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-white/80 transition-all focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
+                  className="p-2 text-white/30 hover:text-white/60 transition-all"
                   title="Выйти"
                   aria-label="Выйти"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={smoothFast}
                 >
-                  <LogOut className="w-4 h-4" />
-                </motion.button>
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
               </>
             ) : (
               <NavLink
                 to="/login"
-                className="text-xs font-semibold text-white/60 hover:text-accent-gold transition-all duration-300 px-3 py-1.5 focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
+                className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 hover:text-white transition-all duration-300 px-3 py-1.5"
               >
                 Sign In
               </NavLink>
             )}
 
             <NavLink to="/booking" aria-label="Сделать заказ">
-              <motion.button
-                className="btn-primary px-5 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={smoothFast}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
+              <button className="btn-primary px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3" />
                 Заказ
-              </motion.button>
+              </button>
             </NavLink>
 
-            <motion.button
+            <button
               ref={menuButtonRef}
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-white/60 hover:text-accent-gold transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
+              className="lg:hidden p-2 text-white/40 hover:text-white transition-all"
               aria-label="Открыть меню"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              whileTap={{ scale: 0.9 }}
             >
-              <MenuIcon className="w-5 h-5" />
-            </motion.button>
+              <MenuIcon className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </header>
@@ -332,12 +316,12 @@ export function MainLayout() {
             transition={ft || { duration: 0.2 }}
           >
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
             <motion.div
-              className="absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] bg-dark-surface/95 backdrop-blur-xl border-l border-glass-border shadow-2xl flex flex-col"
+              className="absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] bg-[#000000]/95 backdrop-blur-xl border-l border-white/5 shadow-2xl flex flex-col"
               id="mobile-menu"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -347,16 +331,15 @@ export function MainLayout() {
               aria-modal="true"
               aria-label="Навигация"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-glass-border">
-                <span className="text-sm font-heading font-bold tracking-wider text-accent-gold">Навигация</span>
-                <motion.button
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">Навигация</span>
+                <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-white/60 hover:text-accent-gold transition-colors focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
+                  className="p-2 text-white/40 hover:text-white transition-colors"
                   aria-label="Закрыть меню"
-                  whileTap={{ scale: 0.9 }}
                 >
-                  <CloseIcon className="w-5 h-5" />
-                </motion.button>
+                  <CloseIcon className="w-4 h-4" />
+                </button>
               </div>
 
               <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Мобильное меню">
@@ -370,13 +353,12 @@ export function MainLayout() {
                         end={item.to === '/'}
                         onClick={() => setMobileMenuOpen(false)}
                         className={({ isActive }) => clsx(
-                          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                          'flex items-center gap-3 px-4 py-3 font-mono text-[11px] uppercase tracking-wider transition-all',
                           isActive
-                            ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/20'
-                            : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                            ? 'text-white bg-white/5 border border-white/10'
+                            : 'text-white/40 hover:text-white/60 hover:bg-white/3 border border-transparent'
                         )}
                       >
-                        <ChevronRightIcon className={clsx('w-3.5 h-3.5 transition-all', 'opacity-0 -ml-1')} />
                         {item.label}
                       </NavLink>
                     );
@@ -385,9 +367,8 @@ export function MainLayout() {
                     <button
                       key={item.label}
                       onClick={() => { handleNavClick(item.hash!); setMobileMenuOpen(false); }}
-                      className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all border border-transparent text-left"
+                      className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-white/40 hover:text-white/60 hover:bg-white/3 transition-all border border-transparent text-left"
                     >
-                      <ChevronRightIcon className="w-3.5 h-3.5 opacity-0 -ml-1" />
                       {item.label}
                     </button>
                   );
@@ -395,49 +376,49 @@ export function MainLayout() {
 
                 {user?.role === 'admin' && (
                   <>
-                    <div className="h-px bg-gradient-to-r from-transparent via-accent-gold/20 to-transparent my-2" />
+                    <div className="h-px bg-white/5 my-2" />
                     <NavLink
                       to="/admin"
                       onClick={() => setMobileMenuOpen(false)}
                       className={({ isActive }) => clsx(
-                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all',
+                        'flex items-center gap-3 px-4 py-3 font-mono text-[11px] uppercase tracking-wider transition-all',
                         isActive
-                          ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/20'
-                          : 'text-accent-gold/80 hover:text-accent-gold hover:bg-accent-gold/5 border border-transparent'
+                          ? 'text-white bg-white/5 border border-white/10'
+                          : 'text-white/40 hover:text-white/60 border border-transparent'
                       )}
                     >
-                      <Crown className="w-4 h-4" />
+                      <Crown className="w-3.5 h-3.5" />
                       Панель админа
                     </NavLink>
                   </>
                 )}
               </nav>
 
-              <div className="px-3 py-4 border-t border-glass-border">
+              <div className="px-3 py-4 border-t border-white/5">
                 {isAuthenticated ? (
                   <div className="flex items-center gap-3 px-4 py-2">
                     {user?.avatar ? (
-                      <img src={resolveImageUrl(user.avatar)} alt="" className="w-8 h-8 rounded-full object-cover ring-1 ring-accent-gold/30" />
+                      <img src={resolveImageUrl(user.avatar)} alt="" className="w-7 h-7 rounded-full object-cover border border-white/10" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-accent-gold/20 flex items-center justify-center text-accent-gold text-xs font-bold">
+                      <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 text-[9px] font-bold">
                         {user?.name?.[0]?.toUpperCase() || 'U'}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-                      <p className="text-[10px] text-white/40 truncate">{user?.email}</p>
+                      <p className="font-mono text-[11px] text-white/60 truncate">{user?.name}</p>
+                      <p className="font-mono text-[9px] text-white/30 truncate">{user?.email}</p>
                     </div>
-                    <button onClick={handleLogout} className="p-1.5 text-white/30 hover:text-red-400 transition-colors" aria-label="Выйти">
-                      <LogOut className="w-4 h-4" />
+                    <button onClick={handleLogout} className="p-1.5 text-white/20 hover:text-red-400 transition-colors" aria-label="Выйти">
+                      <LogOut className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ) : (
                   <NavLink
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-accent-gold/10 border border-accent-gold/25 text-accent-gold text-sm font-semibold hover:bg-accent-gold/20 transition-all"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-white/10 text-white/40 font-mono text-[11px] uppercase tracking-wider hover:text-white hover:border-white/20 transition-all"
                   >
-                    <UserIcon className="w-4 h-4" />
+                    <UserIcon className="w-3.5 h-3.5" />
                     Sign In
                   </NavLink>
                 )}
@@ -460,23 +441,17 @@ export function MainLayout() {
         </AnimatePresence>
       </main>
 
-      {/* Mobile bottom navigation — oval liquid glass panel */}
+      {/* Mobile bottom navigation — minimal pill */}
       <nav
         className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 lg:hidden w-auto"
         aria-label="Мобильная навигация"
       >
         <motion.div
-          className="relative rounded-full bg-[rgba(15,12,10,0.5)] backdrop-blur-[20px] border border-[rgba(176,141,87,0.12)] shadow-[0_8px_32px_rgba(0,0,0,0.45)] overflow-hidden"
+          className="relative rounded-full bg-[#000000]/80 backdrop-blur-[20px] border border-white/5 overflow-hidden"
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={smoothGentle}
         >
-          {/* Animated shimmer highlight */}
-          <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
-            <div
-              className="absolute inset-0 bg-[length:200%_100%] bg-[linear-gradient(90deg,transparent_0%,rgba(176,141,87,0.04)_30%,rgba(176,141,87,0.08)_50%,rgba(176,141,87,0.04)_70%,transparent_100%)] animate-shimmer"
-            />
-          </div>
           <div className="relative flex items-center justify-around px-2 py-1.5 gap-0.5">
             {mobileTabs.map((tab) => {
               const to = getMobileTabTo(tab);
@@ -486,35 +461,27 @@ export function MainLayout() {
                   key={tab.label}
                   to={to}
                   end={tab.to === '/'}
-                  className="relative flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 rounded-lg"
+                  className="relative flex items-center justify-center"
                   aria-label={tab.label}
                 >
                   {({ isActive }) => (
-                    <motion.div
+                    <div
                       className={clsx(
                         'flex flex-col items-center justify-center gap-0.5 min-h-[44px] min-w-[52px] rounded-xl transition-colors',
-                        isActive ? 'text-accent-gold' : 'text-white/40 hover:text-white/60'
+                        isActive ? 'text-white' : 'text-white/30 hover:text-white/50'
                       )}
-                      whileTap={{ scale: 0.88 }}
-                      transition={smoothFast}
                     >
-                      <div className="relative">
-                        <Icon className="w-4 h-4" />
-                      </div>
+                      <Icon className="w-4 h-4" />
                       <span className={clsx(
-                        'text-[8px] font-heading font-semibold tracking-tight',
-                        isActive ? 'text-accent-gold' : 'text-white/40'
+                        'font-mono text-[8px] uppercase tracking-wider',
+                        isActive ? 'text-white' : 'text-white/30'
                       )}>
                         {tab.label}
                       </span>
                       {isActive && (
-                        <motion.div
-                          className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold"
-                          layoutId="mobileNavDot"
-                          transition={smoothFast}
-                        />
+                        <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white/60" />
                       )}
-                    </motion.div>
+                    </div>
                   )}
                 </NavLink>
               );

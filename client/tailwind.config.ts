@@ -6,12 +6,12 @@ const config: Config = {
     extend: {
       colors: {
         dark: {
-          bg: '#070707',
-          surface: '#0A0C0E',
-          'surface-alt': '#0F1216',
+          bg: '#000000',
+          surface: '#000000',
+          'surface-alt': '#0A0C0E',
           'surface-elevated': '#14181E',
-          border: 'rgba(176, 141, 87, 0.12)',
-          'border-medium': 'rgba(176, 141, 87, 0.18)',
+          border: 'rgba(77, 77, 77, 0.3)',
+          'border-medium': 'rgba(128, 128, 128, 0.3)',
         },
         gold: {
           DEFAULT: '#B08D57',
@@ -22,16 +22,16 @@ const config: Config = {
           glow: 'rgba(176, 141, 87, 0.06)',
         },
         glass: {
-          bg: 'rgba(10, 12, 14, 0.55)',
-          'bg-dark': 'rgba(7, 7, 7, 0.75)',
-          border: 'rgba(176, 141, 87, 0.08)',
-          'border-hover': 'rgba(176, 141, 87, 0.18)',
+          bg: 'rgba(0, 0, 0, 0.55)',
+          'bg-dark': 'rgba(0, 0, 0, 0.75)',
+          border: 'rgba(77, 77, 77, 0.3)',
+          'border-hover': 'rgba(128, 128, 128, 0.4)',
         },
         text: {
-          primary: '#F5F0EA',
-          secondary: '#9D978E',
-          muted: 'rgba(157, 151, 142, 0.35)',
-          inverse: '#070707',
+          primary: '#ffffff',
+          secondary: '#c6c6c6',
+          muted: 'rgba(198, 198, 198, 0.5)',
+          inverse: '#000000',
         },
         accent: {
           gold: '#B08D57',
@@ -48,6 +48,8 @@ const config: Config = {
         heading: ['Cormorant Garamond', 'Georgia', 'serif'],
         display: ['Cormorant Garamond', 'Georgia', 'serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['"Space Mono"', 'ui-monospace', 'monospace'],
+        label: ['"Space Mono"', 'ui-monospace', 'monospace'],
       },
       boxShadow: {
         'elevated': '0 4px 16px rgba(0,0,0,0.3)',
@@ -111,8 +113,8 @@ const config: Config = {
         'gap-xl': '64px',
       },
       backgroundImage: {
-        'vignette': 'radial-gradient(ellipse at center, transparent 40%, rgba(7,7,7,0.6) 100%)',
-        'vignette-strong': 'radial-gradient(ellipse at center, transparent 30%, rgba(7,7,7,0.8) 100%)',
+        'vignette': 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)',
+        'vignette-strong': 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.8) 100%)',
         'gold-gradient': 'linear-gradient(135deg, #B08D57 0%, #C4A46B 30%, #B08D57 60%, #8D6B3D 100%)',
         'gold-fade': 'linear-gradient(180deg, rgba(176,141,87,0.08) 0%, transparent 100%)',
         'gold-divider': 'linear-gradient(90deg, transparent, rgba(176,141,87,0.15), transparent)',

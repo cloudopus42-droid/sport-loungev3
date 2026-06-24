@@ -14,14 +14,14 @@ const updateFeatureSchema = z.object({
 function mapFeature(f: any) {
   return {
     id: f.id,
-    featureKey: f.feature_key,
+    feature_key: f.feature_key,
     name: f.name,
     description: f.description,
     enabled: f.enabled,
-    isPublic: f.is_public,
+    is_public: f.is_public,
     config: f.config,
-    createdAt: f.created_at,
-    updatedAt: f.updated_at,
+    created_at: f.created_at,
+    updated_at: f.updated_at,
   };
 }
 
