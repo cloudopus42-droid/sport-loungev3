@@ -1,8 +1,10 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (deprecated — use deploy-cloudflare.yml)
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  # Disabled for Cloudflare Pages migration
+  # push:
+  #   branches:
+  #     - main
 permissions:
   contents: read
   pages: write

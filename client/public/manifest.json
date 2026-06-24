@@ -4,9 +4,10 @@
   "description": "Круглосуточный премиальный компьютерный клуб и кальянная",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#080604",
-  "theme_color": "#0A0A0F",
+  "background_color": "#070707",
+  "theme_color": "#070707",
   "orientation": "portrait",
+  "scope": "/",
   "icons": [
     {
       "src": "/icon-192.png",

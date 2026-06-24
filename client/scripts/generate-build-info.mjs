@@ -44,6 +44,9 @@ window.__slBuildId = '${buildId}';
   var bld = window.__slBuildId;
   if (!bld) return;
 
+  // Derive base path from current location (works for any subpath or root)
+  var base = location.pathname.replace(/\\/[^\\/]*\\/?$/, '/');
+
   // Only run cycle when buildId actually changed (avoids infinite reload loops)
   var storedBld = localStorage.getItem('_sl_bld');
   if (storedBld !== bld) {
@@ -51,18 +54,16 @@ window.__slBuildId = '${buildId}';
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(regs) {
         if (regs.length) {
-          // Old SW exists — unregister, register fresh with updateViaCache=none, then reload
           Promise.all(regs.map(function(r) { return r.unregister(); }))
             .then(function() {
-              return navigator.serviceWorker.register('/sport-loungev3/sw.js', { updateViaCache: 'none' });
+              return navigator.serviceWorker.register(base + 'sw.js', { updateViaCache: 'none' });
             })
             .then(function() {
               setTimeout(function() { location.reload(); }, 300);
             })
             .catch(function(e) { console.log('[SW] fail:', e); });
         } else {
-          // No existing SW — just register with correct options
-          navigator.serviceWorker.register('/sport-loungev3/sw.js', { updateViaCache: 'none' })
+          navigator.serviceWorker.register(base + 'sw.js', { updateViaCache: 'none' })
             .catch(function(e) { console.log('[SW] fail:', e); });
         }
       });
@@ -70,7 +71,7 @@ window.__slBuildId = '${buildId}';
   }
 
   // Check for new version immediately (catches stale HTML cache)
-  fetch('/sport-loungev3/version.json?' + Date.now() + Math.random(), { cache: 'no-store' })
+  fetch(base + 'version.json?' + Date.now() + Math.random(), { cache: 'no-store' })
     .then(function(r) { return r.json(); })
     .then(function(v) {
       if (v.buildId && v.buildId !== bld) {
@@ -81,7 +82,7 @@ window.__slBuildId = '${buildId}';
 
   // Poll for new version every 20s
   var poll = setInterval(function() {
-    fetch('/sport-loungev3/version.json?' + Date.now() + Math.random(), { cache: 'no-store' })
+    fetch(base + 'version.json?' + Date.now() + Math.random(), { cache: 'no-store' })
       .then(function(r) { return r.json(); })
       .then(function(v) {
         if (v.buildId && v.buildId !== bld) {
