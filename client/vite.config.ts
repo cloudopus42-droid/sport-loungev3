@@ -4,7 +4,7 @@ import viteCompression from 'vite-plugin-compression';
 import path from 'path';
 
 export default defineConfig({
-  base: '/',
+  base: '/sport-loungev3/',
   plugins: [
     react(),
     viteCompression({ algorithm: 'gzip', threshold: 1024 }),

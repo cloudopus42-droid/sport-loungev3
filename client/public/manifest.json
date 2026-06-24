@@ -2,21 +2,21 @@
   "name": "SPORT LOUNGE",
   "short_name": "Sport Lounge",
   "description": "Круглосуточный премиальный компьютерный клуб и кальянная",
-  "start_url": "/",
+  "start_url": "/sport-loungev3/",
   "display": "standalone",
   "background_color": "#070707",
   "theme_color": "#070707",
   "orientation": "portrait",
-  "scope": "/",
+  "scope": "/sport-loungev3/",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/sport-loungev3/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/sport-loungev3/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

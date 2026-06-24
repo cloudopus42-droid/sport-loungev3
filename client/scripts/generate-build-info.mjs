@@ -16,17 +16,42 @@ const swJs = `// SPORT LOUNGE SW - Build ${buildId}
 const B = '${buildId}';
 const SC = 'sl-' + B + '-s';
 const ASSET_RE = /\\.(js|css|woff2?|ttf|png|jpg|jpeg|webp|svg|ico|gif)(\\?.*)?$/;
+
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((k) => Promise.all(k.filter((x) => !x.startsWith('sl-' + B)).map((x) => caches.delete(x)))).then(() => self.clients.claim()));
+  e.waitUntil(
+    caches.keys().then((k) => Promise.all(
+      k.filter((x) => !x.startsWith('sl-' + B)).map((x) => caches.delete(x))
+    )).then(() => self.clients.claim())
+  );
 });
+
 self.addEventListener('fetch', (e) => {
   const u = new URL(e.request.url);
+
+  // Never cache: API, version checks, HTML documents
   if (u.pathname.includes('/api/') || u.pathname.endsWith('/version.json')) return;
-  if (u.pathname.includes('/assets/') && ASSET_RE.test(u.pathname)) {
-    e.respondWith(caches.open(SC).then((c) => c.match(e.request).then((h) => h || fetch(e.request, { cache: 'no-cache' }).then((r) => { if (r.status === 200) c.put(e.request, r.clone()); return r; }))));
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request, { cache: 'no-store' }).catch(() => caches.match(e.request)));
     return;
   }
+
+  // Cache-first for hashed assets (immutable)
+  if (u.pathname.includes('/assets/') && ASSET_RE.test(u.pathname)) {
+    e.respondWith(
+      caches.open(SC).then((c) =>
+        c.match(e.request).then((h) =>
+          h || fetch(e.request, { cache: 'no-cache' }).then((r) => {
+            if (r.status === 200) c.put(e.request, r.clone());
+            return r;
+          })
+        )
+      )
+    );
+    return;
+  }
+
+  // Network-first for everything else
   e.respondWith(fetch(e.request, { cache: 'no-cache' }).catch(() => caches.match(e.request)));
 });
 `;
@@ -44,45 +69,64 @@ window.__slBuildId = '${buildId}';
   var bld = window.__slBuildId;
   if (!bld) return;
 
-  // Derive base path from current location (works for any subpath or root)
   var base = location.pathname.replace(/\\/[^\\/]*\\/?$/, '/');
-
-  // Only run cycle when buildId actually changed (avoids infinite reload loops)
   var storedBld = localStorage.getItem('_sl_bld');
+
+  // Force reload if buildId changed
+  if (storedBld && storedBld !== bld) {
+    localStorage.setItem('_sl_bld', bld);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(r) {
+        return Promise.all(r.map(function(x) { return x.unregister(); }));
+      }).then(function() {
+        location.reload();
+      });
+    } else {
+      location.reload();
+    }
+    return;
+  }
+
+  // Register SW on first visit or new build
   if (storedBld !== bld) {
     localStorage.setItem('_sl_bld', bld);
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        if (regs.length) {
-          Promise.all(regs.map(function(r) { return r.unregister(); }))
-            .then(function() {
-              return navigator.serviceWorker.register(base + 'sw.js', { updateViaCache: 'none' });
-            })
-            .then(function() {
-              setTimeout(function() { location.reload(); }, 300);
-            })
-            .catch(function(e) { console.log('[SW] fail:', e); });
-        } else {
-          navigator.serviceWorker.register(base + 'sw.js', { updateViaCache: 'none' })
-            .catch(function(e) { console.log('[SW] fail:', e); });
-        }
-      });
+      navigator.serviceWorker.register(base + 'sw.js', { updateViaCache: 'none' })
+        .catch(function(){});
     }
   }
 
-  // Check for new version immediately (catches stale HTML cache)
-  fetch(base + 'version.json?' + Date.now() + Math.random(), { cache: 'no-store' })
-    .then(function(r) { return r.json(); })
-    .then(function(v) {
-      if (v.buildId && v.buildId !== bld) {
-        localStorage.removeItem('_sl_bld');
-        location.reload();
-      }
-    }).catch(function(){});
+  // Multi-signal version check: fetch version.json + deploy timestamp
+  function checkVersion() {
+    var ts = Date.now();
+    // Signal 1: version.json (may be CDN-cached)
+    fetch(base + 'version.json?_=' + ts, { cache: 'no-store', headers: {'Cache-Control':'no-cache'} })
+      .then(function(r) { return r.json(); })
+      .then(function(v) {
+        if (v.buildId && v.buildId !== bld) {
+          localStorage.removeItem('_sl_bld');
+          location.reload();
+        }
+      }).catch(function(){});
 
-  // Poll for new version every 20s
+    // Signal 2: index.html itself — if server returns different content, CDN updated
+    fetch(base + '?_=' + ts, { cache: 'no-store', headers: {'Cache-Control':'no-cache'} })
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        var match = html.match(/__slBuildId\\s*=\\s*['"]([^'"]+)['"]/);
+        if (match && match[1] !== bld) {
+          localStorage.removeItem('_sl_bld');
+          location.reload();
+        }
+      }).catch(function(){});
+  }
+
+  // Check immediately
+  checkVersion();
+
+  // Poll every 10s
   var poll = setInterval(function() {
-    fetch(base + 'version.json?' + Date.now() + Math.random(), { cache: 'no-store' })
+    fetch(base + 'version.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function(r) { return r.json(); })
       .then(function(v) {
         if (v.buildId && v.buildId !== bld) {
@@ -101,7 +145,7 @@ window.__slBuildId = '${buildId}';
           setTimeout(function() { location.reload(); }, 2000);
         }
       }).catch(function(){});
-  }, 20000);
+  }, 10000);
 })();
 </script>`;
 
