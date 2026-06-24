@@ -36,7 +36,6 @@ export function HomePage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const [bowlIndex, setBowlIndex] = useState(0);
-  const [liquidIndex, setLiquidIndex] = useState(0);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
@@ -44,7 +43,6 @@ export function HomePage() {
       const clamped = Math.min(1, Math.max(0, v));
       const idx = Math.min(4, Math.floor(clamped * 5));
       setBowlIndex(idx);
-      setLiquidIndex(idx);
     });
     return () => { unsub1(); };
   }, [hookahProgress, prefersReducedMotion]);
@@ -53,11 +51,11 @@ export function HomePage() {
   const hookahOpacity = useTransform(hookahProgress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]);
 
   const BOWL_INFO = useMemo(() => [
-    { name: 'Cosmo Bowl', desc: 'Классическая глиняная чаша с матовой поверхностью для идеального прогрева', liquid: 'Вода с блёстками' },
-    { name: 'Грейпфрут', desc: 'Свежая половинка грейпфрута с текстурой цедры для цитрусовой ноты', liquid: 'Вино' },
-    { name: 'Кактус', desc: 'Маленький зелёный кактус с колючками — экзотическая подача', liquid: 'Кола' },
-    { name: 'Ананас', desc: 'Тропический ананас с лиственной короной для яркой сервировки', liquid: 'Апельсиновый сок' },
-    { name: 'Апельсин', desc: 'Сочная апельсиновая чаша с насыщенной текстурой кожуры', liquid: 'Чистая вода' },
+    { name: 'Тёплый янтарь', desc: 'Глубокий золотистый оттенок с мягным сиянием' },
+    { name: 'Коралл', desc: 'Тёплый коралловый с нежным свечением' },
+    { name: 'Изумруд', desc: 'Свежий зелёный с глубоким блеском' },
+    { name: 'Золото', desc: 'Насыщенный золотой с мягкими оттенками' },
+    { name: 'Янтарь', desc: 'Тёплый янтарный с глубоким свечением' },
   ], []);
 
   const [promos, setPromos] = useState<Promo[]>([]);
@@ -113,7 +111,7 @@ export function HomePage() {
           style={prefersReducedMotion ? {} : { opacity: heroOpacity }}
         >
           <div className="aspect-square max-w-lg mx-auto relative">
-            <HookahLayers bowlIndex={bowlIndex} liquidIndex={liquidIndex} size="hero" />
+            <HookahLayers bowlIndex={bowlIndex} size="hero" />
           </div>
         </motion.div>
 
@@ -159,12 +157,12 @@ export function HomePage() {
                 className="h-[50vh] lg:h-[70vh] relative"
                 style={{ scale: hookahScale, opacity: hookahOpacity }}
               >
-                <HookahLayers bowlIndex={bowlIndex} liquidIndex={liquidIndex} size="hero" />
+                <HookahLayers bowlIndex={bowlIndex} size="hero" />
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
                   {BOWL_INFO.map((_, i) => (
                     <div
                       key={i}
-                      className={`w-2 h-2 rounded-full transition-colors duration-700 ${i <= bowlIndex ? 'bg-[#FFBF00]/60' : 'bg-white/10'}`}
+                      className={`w-2 h-2 rounded-full transition-colors duration-700 ${i <= bowlIndex ? 'bg-white/60' : 'bg-white/10'}`}
                     />
                   ))}
                 </div>
@@ -179,7 +177,7 @@ export function HomePage() {
                 viewport={{ once: false }}
               >
                 <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/40">
-                  Чаша {bowlIndex + 1} / {BOWL_INFO.length}
+                  Позиция {bowlIndex + 1} / {BOWL_INFO.length}
                 </span>
                 <h2 className="font-heading text-[clamp(28px,4vw,56px)] font-semibold text-white leading-[1.1] tracking-[-0.02em]">
                   {BOWL_INFO[bowlIndex].name}
@@ -187,10 +185,6 @@ export function HomePage() {
                 <p className="text-white/60 text-sm leading-relaxed max-w-md font-light">
                   {BOWL_INFO[bowlIndex].desc}
                 </p>
-                <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40">
-                  <span className="text-[#B08D57]">Жидкость:</span>
-                  <span>{BOWL_INFO[bowlIndex].liquid}</span>
-                </div>
               </motion.div>
             </div>
           </div>

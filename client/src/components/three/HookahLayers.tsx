@@ -1,18 +1,16 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const BOWL_COLORS = [
-  { primary: '#C4956A', secondary: '#A67B5B', accent: '#8B6241', label: 'Cosmo Bowl', desc: 'Классическая глина' },
-  { primary: '#FF6B52', secondary: '#E85A42', accent: '#CC4A35', label: 'Грейпфрут', desc: 'Цитрусовая свежесть' },
-  { primary: '#4CAF50', secondary: '#3D8B40', accent: '#2E6B30', label: 'Кактус', desc: 'Экзотическая подача' },
-  { primary: '#D4A017', secondary: '#B88C14', accent: '#9C7810', label: 'Ананас', desc: 'Тропический вкус' },
-  { primary: '#FF8C00', secondary: '#E07B00', accent: '#C46A00', label: 'Апельсин', desc: 'Сочная классика' },
+const COLOR_PALETTES = [
+  { inner: '#B08D57', glow: 'rgba(176,141,87,0.12)', particle: '#C4A46B', label: 'Warm Amber' },
+  { inner: '#FF6B52', glow: 'rgba(255,107,82,0.10)', particle: '#FF8C7A', label: 'Coral' },
+  { inner: '#4CAF50', glow: 'rgba(76,175,80,0.10)', particle: '#6ECF73', label: 'Emerald' },
+  { inner: '#D4A017', glow: 'rgba(212,160,23,0.10)', particle: '#E0B840', label: 'Gold' },
+  { inner: '#FF8C00', glow: 'rgba(255,140,0,0.10)', particle: '#FFA833', label: 'Amber' },
 ];
-
-const LIQUID_COLORS = ['#87CEEB', '#8B0000', '#3C1414', '#FFA500', '#B0E0E6'];
 
 interface HookahLayersProps {
   bowlIndex?: number;
@@ -25,45 +23,82 @@ interface HookahLayersProps {
   size?: 'hero' | 'compact';
 }
 
-function BowlLayer({ config, visible }: { config: typeof BOWL_COLORS[number]; visible: boolean }) {
+function GlassOrb({ palette, size }: { palette: typeof COLOR_PALETTES[number]; size: 'hero' | 'compact' }) {
+  const isHero = size === 'hero';
+  const orbSize = isHero ? 'w-56 h-56 lg:w-80 lg:h-80' : 'w-40 h-40 lg:w-56 lg:h-56';
+
   return (
-    <div
-      className="absolute inset-0 flex items-center justify-center transition-opacity duration-500"
-      style={{ opacity: visible ? 1 : 0, zIndex: visible ? 10 : 0 }}
-    >
-      <div className="relative">
-        {/* Bowl body */}
+    <div className="relative flex items-center justify-center">
+      {/* Outer glow aura */}
+      <div
+        className={`absolute ${orbSize} rounded-full opacity-60`}
+        style={{
+          background: `radial-gradient(circle, ${palette.glow}, transparent 70%)`,
+          filter: 'blur(40px)',
+          animation: 'liquidPulse 6s ease-in-out infinite',
+        }}
+      />
+
+      {/* Main glass orb */}
+      <div
+        className={`${orbSize} rounded-full relative overflow-hidden`}
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '0.5px solid rgba(255,255,255,0.12)',
+          boxShadow: `
+            0 8px 32px rgba(0,0,0,0.12),
+            0 2px 8px rgba(0,0,0,0.06),
+            inset 0 1px 0 rgba(255,255,255,0.08),
+            inset 0 -2px 8px rgba(0,0,0,0.04)
+          `,
+        }}
+      >
+        {/* Inner liquid gradient */}
         <div
-          className="w-32 h-32 lg:w-48 lg:h-48 rounded-full relative"
+          className="absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(ellipse at 30% 30%, ${config.primary}, ${config.secondary} 60%, ${config.accent})`,
-            boxShadow: `0 0 40px ${config.primary}22, inset 0 -8px 24px ${config.accent}88`,
+            background: `radial-gradient(ellipse at 35% 35%, ${palette.inner}18, ${palette.inner}08 50%, transparent 70%)`,
+            animation: 'liquidShift 8s ease-in-out infinite',
           }}
-        >
-          {/* Bowl rim */}
-          <div
-            className="absolute -top-2 left-1/2 -translate-x-1/2 w-[90%] h-4 rounded-t-full"
-            style={{
-              background: `linear-gradient(180deg, ${config.primary}cc, ${config.secondary})`,
-              border: `1px solid ${config.accent}66`,
-            }}
-          />
-          {/* Bowl reflection */}
-          <div
-            className="absolute top-4 left-6 w-8 h-12 rounded-full opacity-30"
-            style={{
-              background: `linear-gradient(180deg, white, transparent)`,
-              filter: 'blur(6px)',
-              transform: 'rotate(-15deg)',
-            }}
-          />
-        </div>
-        {/* Bowl shadow */}
+        />
+
+        {/* Specular highlight — top-left */}
         <div
-          className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[80%] h-3 rounded-full opacity-40"
+          className="absolute top-[12%] left-[18%] w-[35%] h-[45%] rounded-full"
           style={{
-            background: `radial-gradient(ellipse, ${config.accent}88, transparent)`,
-            filter: 'blur(4px)',
+            background: 'linear-gradient(160deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 50%, transparent)',
+            filter: 'blur(8px)',
+            transform: 'rotate(-15deg)',
+          }}
+        />
+
+        {/* Secondary highlight — bottom-right */}
+        <div
+          className="absolute bottom-[15%] right-[20%] w-[20%] h-[25%] rounded-full"
+          style={{
+            background: 'linear-gradient(340deg, rgba(255,255,255,0.06), transparent)',
+            filter: 'blur(6px)',
+            transform: 'rotate(20deg)',
+          }}
+        />
+
+        {/* Light sweep animation */}
+        <div
+          className="absolute inset-0 rounded-full pointer-events-none"
+          style={{
+            background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 55%, transparent 60%)',
+            backgroundSize: '200% 100%',
+            animation: 'lightSweep 6s ease-in-out infinite',
+          }}
+        />
+
+        {/* Noise texture overlay */}
+        <div
+          className="absolute inset-0 rounded-full opacity-[0.015] pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
           }}
         />
       </div>
@@ -71,22 +106,33 @@ function BowlLayer({ config, visible }: { config: typeof BOWL_COLORS[number]; vi
   );
 }
 
-function SmokeLayer({ active }: { active: boolean }) {
+function FloatingParticles({ palette, count = 8 }: { palette: typeof COLOR_PALETTES[number]; count?: number }) {
+  const particles = useMemo(() =>
+    Array.from({ length: count }, (_, i) => ({
+      id: i,
+      size: 3 + (i % 3) * 2,
+      x: Math.cos((i / count) * Math.PI * 2) * (60 + (i % 3) * 20),
+      y: Math.sin((i / count) * Math.PI * 2) * (60 + (i % 3) * 20),
+      delay: i * 0.8,
+      duration: 4 + (i % 3) * 2,
+    })),
+    [count]
+  );
+
   return (
-    <div
-      className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-700"
-      style={{ opacity: active ? 0.6 : 0, zIndex: active ? 15 : 0 }}
-    >
-      {[...Array(8)].map((_, i) => (
+    <div className="absolute inset-0 pointer-events-none">
+      {particles.map((p) => (
         <div
-          key={i}
+          key={p.id}
           className="absolute rounded-full"
           style={{
-            width: `${20 + i * 6}px`,
-            height: `${20 + i * 6}px`,
-            background: `radial-gradient(circle, rgba(255,255,255,${0.08 - i * 0.008}), transparent)`,
-            filter: `blur(${8 + i * 2}px)`,
-            transform: `translate(${(i - 4) * 12}px, ${-20 - i * 8}px)`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            background: `radial-gradient(circle, ${palette.particle}88, ${palette.particle}22)`,
+            boxShadow: `0 0 ${p.size * 2}px ${palette.particle}44`,
+            left: `calc(50% + ${p.x}px)`,
+            top: `calc(50% + ${p.y}px)`,
+            animation: `particleFloat ${p.duration}s ease-in-out ${p.delay}s infinite alternate`,
           }}
         />
       ))}
@@ -94,99 +140,27 @@ function SmokeLayer({ active }: { active: boolean }) {
   );
 }
 
-function ParticleLayer({ active, color }: { active: boolean; color: string }) {
+function AmbientRings() {
   return (
-    <div
-      className="absolute inset-0 pointer-events-none transition-opacity duration-500"
-      style={{ opacity: active ? 1 : 0, zIndex: active ? 20 : 0 }}
-    >
-      {[...Array(12)].map((_, i) => {
-        const angle = (i / 12) * Math.PI * 2;
-        const radius = 40 + Math.random() * 30;
-        return (
-          <div
-            key={i}
-            className="absolute w-1 h-1 rounded-full"
-            style={{
-              background: color,
-              boxShadow: `0 0 4px ${color}`,
-              left: `calc(50% + ${Math.cos(angle) * radius}px)`,
-              top: `calc(50% + ${Math.sin(angle) * radius}px)`,
-              opacity: 0.6,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-function ShaftLayer() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1 }}>
-      <div className="relative flex flex-col items-center">
-        {/* Stem */}
-        <div className="w-1.5 h-28 lg:h-40 bg-gradient-to-b from-[#2A2A2A] via-[#3A3A3A] to-[#2A2A2A] rounded-sm border border-white/5" />
-        {/* Tray */}
-        <div className="w-20 h-3 lg:w-28 lg:h-4 -mt-1 rounded-sm bg-gradient-to-b from-[#1A1A1A] to-[#252525] border border-white/8" />
-      </div>
-    </div>
-  );
-}
-
-function FlaskLayer({ liquidColor }: { liquidColor: string }) {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
-      <div className="relative">
-        {/* Glass body */}
+    <div className="absolute inset-0 pointer-events-none">
+      {[0, 1, 2].map((i) => (
         <div
-          className="w-28 h-28 lg:w-40 lg:h-40 rounded-full relative overflow-hidden"
+          key={i}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
-            background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 60%)`,
-            border: '1px solid rgba(255,255,255,0.08)',
+            width: `${280 + i * 80}px`,
+            height: `${280 + i * 80}px`,
+            border: `0.5px solid rgba(255,255,255,${0.04 - i * 0.01})`,
+            animation: `ringPulse ${5 + i}s ease-in-out ${i * 1.5}s infinite alternate`,
           }}
-        >
-          {/* Liquid fill */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-[60%] rounded-b-full transition-colors duration-700"
-            style={{
-              background: `linear-gradient(180deg, ${liquidColor}44, ${liquidColor}88)`,
-            }}
-          />
-          {/* Glass highlight */}
-          <div
-            className="absolute top-3 left-4 w-6 h-10 rounded-full opacity-15"
-            style={{
-              background: 'linear-gradient(180deg, white, transparent)',
-              filter: 'blur(4px)',
-              transform: 'rotate(-20deg)',
-            }}
-          />
-        </div>
-        {/* Base ring */}
-        <div className="w-32 lg:w-44 h-4 -mt-2 mx-auto rounded-b-full bg-gradient-to-b from-[#1A1A1A] to-[#111111] border-t border-white/5" />
-      </div>
-    </div>
-  );
-}
-
-function BaseLayer() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 0 }}>
-      <div className="relative flex flex-col items-center mt-20 lg:mt-28">
-        {/* Base plate */}
-        <div className="w-28 h-6 lg:w-36 lg:h-8 rounded-full bg-gradient-to-b from-[#1A1A1A] to-[#111111] border border-white/8" />
-        {/* Gold ring */}
-        <div className="w-24 h-1.5 lg:w-32 -mt-0.5 rounded-full bg-gradient-to-r from-[#B08D57] via-[#C4A46B] to-[#B08D57] opacity-60" />
-        <div className="w-20 h-3 lg:w-28 -mt-0.5 rounded-b-full bg-gradient-to-b from-[#2A2A2A] to-[#1A1A1A] border border-white/5" />
-      </div>
+        />
+      ))}
     </div>
   );
 }
 
 export function HookahLayers({
   bowlIndex = 0,
-  liquidIndex = 0,
   scrollMode = false,
   scrollTarget,
   scrollOffset = ['start center', 'end center'],
@@ -195,13 +169,11 @@ export function HookahLayers({
   size = 'hero',
 }: HookahLayersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [swapActive, setSwapActive] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const swapTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleBowlChange = useCallback((newIndex: number) => {
-    setSwapActive(true);
-    if (swapTimerRef.current) clearTimeout(swapTimerRef.current);
-    swapTimerRef.current = setTimeout(() => setSwapActive(false), 800);
+  const handleIndexChange = useCallback((newIndex: number) => {
+    setActiveIndex(newIndex);
     onBowlChange?.(newIndex);
   }, [onBowlChange]);
 
@@ -214,11 +186,11 @@ export function HookahLayers({
       end: scrollOffset[1],
       onUpdate: (self) => {
         const idx = Math.min(4, Math.floor(self.progress * 5));
-        handleBowlChange(idx);
+        handleIndexChange(idx);
       },
     });
     return () => { st.kill(); };
-  }, [scrollMode, scrollTarget, scrollOffset, handleBowlChange]);
+  }, [scrollMode, scrollTarget, scrollOffset, handleIndexChange]);
 
   useEffect(() => {
     return () => {
@@ -226,25 +198,20 @@ export function HookahLayers({
     };
   }, []);
 
-  const bowlConfig = BOWL_COLORS[bowlIndex] || BOWL_COLORS[0];
-  const liquidColor = LIQUID_COLORS[liquidIndex] || LIQUID_COLORS[0];
-  const isHero = size === 'hero';
+  const palette = COLOR_PALETTES[bowlIndex] || COLOR_PALETTES[0];
 
   return (
     <div
       ref={containerRef}
-      className={`relative ${isHero ? 'w-full h-full' : 'w-full h-full'} ${className}`}
+      className={`relative w-full h-full ${className}`}
     >
-      <div className="relative w-full h-full">
-        <BaseLayer />
-        <FlaskLayer liquidColor={liquidColor} />
-        <ShaftLayer />
-        <BowlLayer config={bowlConfig} visible={!swapActive} />
-        <SmokeLayer active={swapActive} />
-        <ParticleLayer active={swapActive} color={bowlConfig.primary} />
+      <div className="relative w-full h-full flex items-center justify-center">
+        <AmbientRings />
+        <FloatingParticles palette={palette} />
+        <GlassOrb palette={palette} size={size} />
       </div>
     </div>
   );
 }
 
-export { BOWL_COLORS, LIQUID_COLORS };
+export { COLOR_PALETTES };

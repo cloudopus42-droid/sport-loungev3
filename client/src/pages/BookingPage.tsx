@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Check, Flame, Clock, Sparkles, AlertCircle,
   Bot, ThumbsUp, ShoppingCart, ChevronRight,
-  Droplets, Leaf, Star, Zap
+  Leaf, Star, Zap
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,26 +29,17 @@ type Flavor = {
 };
 
 const bookingFormSchema = z.object({
-  liquidBase: z.string().min(1, 'Укажите базу'),
   specialNotes: z.string().max(500, 'Максимум 500 символов').optional(),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
 const BOWL_OPTIONS = [
-  { index: 0, name: 'Cosmo Bowl', icon: '🏺', desc: 'Классическая глина', color: '#C4956A' },
-  { index: 1, name: 'Грейпфрут', icon: '🍊', desc: 'Цитрусовая свежесть', color: '#FF6B52' },
-  { index: 2, name: 'Кактус', icon: '🌵', desc: 'Экзотическая подача', color: '#4CAF50' },
-  { index: 3, name: 'Ананас', icon: '🍍', desc: 'Тропический вкус', color: '#D4A017' },
-  { index: 4, name: 'Апельсин', icon: '🍊', desc: 'Сочная классика', color: '#FF8C00' },
-];
-
-const LIQUID_OPTIONS = [
-  { index: 0, name: 'Вода с блёстками', color: '#87CEEB', desc: 'Лёгкое сияние' },
-  { index: 1, name: 'Вино', color: '#8B0000', desc: 'Рубиновый цвет' },
-  { index: 2, name: 'Кола', color: '#3C1414', desc: 'Активные пузырьки' },
-  { index: 3, name: 'Сок', color: '#FFA500', desc: 'Яркий цитрус' },
-  { index: 4, name: 'Вода', color: '#B0E0E6', desc: 'Чистая прозрачность' },
+  { index: 0, name: 'Классика', icon: '✦', desc: 'Традиционный стиль', color: '#C4956A' },
+  { index: 1, name: 'Фрукты', icon: '◈', desc: 'Свежие ноты', color: '#FF6B52' },
+  { index: 2, name: 'Ягоды', icon: '◆', desc: 'Лесные вкусы', color: '#4CAF50' },
+  { index: 3, name: 'Десерт', icon: '◇', desc: 'Сладкие акценты', color: '#D4A017' },
+  { index: 4, name: 'Авторский', icon: '⬥', desc: 'Уникальный микс', color: '#FF8C00' },
 ];
 
 const FALLBACK_FLAVORS: Flavor[] = [
@@ -106,7 +97,6 @@ export function BookingPage() {
   const [showMixBuilder, setShowMixBuilder] = useState(false);
 
   const [bowlIndex, setBowlIndex] = useState(0);
-  const [liquidIndex, setLiquidIndex] = useState(0);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
   const [flavorCategory, setFlavorCategory] = useState('Все');
   const [activeTab, setActiveTab] = useState<'mixes' | 'ai'>('mixes');
@@ -133,12 +123,10 @@ export function BookingPage() {
     return [...new Set(aiMood.flatMap(m => moodFlavorMap[m] || []))].slice(0, 6);
   }, [aiMood]);
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<BookingFormValues>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
-    defaultValues: { liquidBase: 'water', specialNotes: '' },
+    defaultValues: { specialNotes: '' },
   });
-
-  const currentLiquidBase = watch('liquidBase');
 
   const loadMixes = () => {
     loadMixesRef.current?.abort();
@@ -251,7 +239,7 @@ export function BookingPage() {
         finalNotes = `[ИИ-Микс: ${raw.hookahMix.map((n: string) => `${n} (${raw.mixPercentages[n]}%)`).join(', ')}] ${finalNotes}`;
       }
       const res = await api('/api/orders', { method: 'POST', body: {
-        mix_id: isCustom ? null : selectedMix.id, liquid_id: data.liquidBase, notes: finalNotes,
+        mix_id: isCustom ? null : selectedMix.id, notes: finalNotes,
       }});
       setActiveOrder(res);
       localStorage.setItem('current_order_id', res.id);
@@ -275,8 +263,8 @@ export function BookingPage() {
     if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/booking'); return; }
     setSelectedMix({
       id: 'custom-quick',
-      name: `Собранный: ${BOWL_OPTIONS[bowlIndex].name} + ${LIQUID_OPTIONS[liquidIndex].name}`,
-      description: `Чаша: ${BOWL_OPTIONS[bowlIndex].name}, жидкость: ${LIQUID_OPTIONS[liquidIndex].name}${selectedFlavors.length ? ', вкусы: ' + selectedFlavors.join(', ') : ''}`,
+      name: `Собранный: ${BOWL_OPTIONS[bowlIndex].name}`,
+      description: `Стиль: ${BOWL_OPTIONS[bowlIndex].name}${selectedFlavors.length ? ', вкусы: ' + selectedFlavors.join(', ') : ''}`,
       strength: strength === 'light' ? 3 : strength === 'medium' ? 6 : 9,
       isCustom: true,
     });
@@ -318,7 +306,7 @@ export function BookingPage() {
             </div>
 
             <div className="w-full h-full relative">
-              <HookahLayers bowlIndex={bowlIndex} liquidIndex={liquidIndex} size="compact" />
+              <HookahLayers bowlIndex={bowlIndex} size="compact" />
               {/* Gold progress bar */}
               <div className="absolute bottom-8 left-[15%] right-[15%] h-px bg-[rgba(176,141,87,0.12)]">
                 <motion.div
@@ -328,10 +316,9 @@ export function BookingPage() {
                   transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
                 />
               </div>
-              {/* Bowl/liquid labels */}
-              <div className="absolute bottom-12 left-[15%] right-[15%] flex justify-between text-[9px] uppercase tracking-[0.2em] text-white/20">
+              {/* Bowl label */}
+              <div className="absolute bottom-12 left-[15%] right-[15%] flex justify-center text-[9px] uppercase tracking-[0.2em] text-white/20">
                 <span className="text-[#B08D57]/60">{BOWL_OPTIONS[bowlIndex].name}</span>
-                <span className="text-[#B08D57]/40">{LIQUID_OPTIONS[liquidIndex].name}</span>
               </div>
             </div>
           </div>
@@ -387,52 +374,6 @@ export function BookingPage() {
                     {bowl.name}
                   </span>
                   {bowlIndex === bowl.index && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#B08D57] flex items-center justify-center">
-                      <Check className="w-2.5 h-2.5 text-[#0b0807]" strokeWidth={3} />
-                    </div>
-                  )}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-
-          {/* Liquid Selection */}
-          <div className="liquid-glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Droplets className="w-3.5 h-3.5 text-[#B08D57]" />
-              <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Жидкость</h3>
-            </div>
-            <div className="grid grid-cols-5 gap-2">
-              {LIQUID_OPTIONS.map((liquid) => (
-                <motion.button
-                  key={liquid.index}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setLiquidIndex(liquid.index)}
-                  className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all duration-300 ${
-                    liquidIndex === liquid.index
-                      ? 'bg-[rgba(176,141,87,0.06)] border border-[rgba(176,141,87,0.25)]'
-                      : 'bg-[rgba(255,255,255,0.02)] border border-transparent hover:border-[rgba(176,141,87,0.12)]'
-                  }`}
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{
-                      background: liquidIndex === liquid.index
-                        ? `linear-gradient(135deg, ${liquid.color}44, ${liquid.color}11)`
-                        : 'rgba(255,255,255,0.03)',
-                      border: `0.5px solid ${liquidIndex === liquid.index ? liquid.color + '66' : 'rgba(255,255,255,0.05)'}`,
-                    }}
-                  >
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: liquid.color, opacity: 0.6 }}
-                    />
-                  </div>
-                  <span className={`text-[8px] font-medium text-center leading-tight ${liquidIndex === liquid.index ? 'text-[#B08D57]' : 'text-white/40'}`}>
-                    {liquid.name}
-                  </span>
-                  {liquidIndex === liquid.index && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#B08D57] flex items-center justify-center">
                       <Check className="w-2.5 h-2.5 text-[#0b0807]" strokeWidth={3} />
                     </div>
@@ -654,20 +595,6 @@ export function BookingPage() {
                 Микс: <span className="text-[#B08D57] font-bold">{selectedMix.name}</span>
               </p>
               <form onSubmit={handleSubmit(onOrderSubmit)} className="space-y-5">
-                <div className="space-y-2">
-                  <label className="text-[9px] uppercase tracking-wider font-semibold text-white/50">База для колбы</label>
-                  <input type="hidden" {...register('liquidBase')} />
-                  <div className="grid grid-cols-2 gap-2">
-                    {LIQUID_OPTIONS.map(l => (
-                      <button key={l.index} type="button" onClick={() => setValue('liquidBase', `liquid_${l.index}`, { shouldValidate: true })}
-                        className={`text-left p-3 rounded-xl border transition-all ${currentLiquidBase === `liquid_${l.index}` ? 'border-[#B08D57] bg-[rgba(176,141,87,0.05)]' : 'border-white/5 hover:border-white/20 bg-white/[0.01]'}`}
-                      >
-                        <div className="text-[10px] font-semibold text-white">{l.name}</div>
-                        <div className="text-[8px] text-[#B08D57] mt-0.5">Включено</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
                 <div className="space-y-2">
                   <label className="text-[9px] uppercase tracking-wider font-semibold text-white/50">Пожелания</label>
                   <textarea {...register('specialNotes')} placeholder="Покислее, полегче..."
