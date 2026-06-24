@@ -1,10 +1,11 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+  # Enable when Cloudflare token has Pages permission:
+  # push:
+  #   branches:
+  #     - main
 
 permissions:
   contents: read
