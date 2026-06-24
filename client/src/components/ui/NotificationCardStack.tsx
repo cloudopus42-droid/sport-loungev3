@@ -10,7 +10,7 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           key={i}
-          className={`w-2.5 h-2.5 ${i < rating ? 'text-[#FFBF00] fill-[#FFBF00]' : 'text-white/10'}`}
+          className={`w-2.5 h-2.5 ${i < rating ? 'text-[#B08D57] fill-[#B08D57]' : 'text-white/10'}`}
         />
       ))}
     </div>
@@ -55,7 +55,7 @@ function NotificationCard({
         rounded-2xl p-4 pr-5 overflow-hidden
         bg-[rgba(15,12,10,0.5)]
         backdrop-blur-[20px]
-        border ${isActive ? 'border-[rgba(255,191,0,0.15)]' : 'border-[rgba(255,191,0,0.06)]'}
+        border ${isActive ? 'border-[rgba(176,141,87,0.15)]' : 'border-[rgba(176,141,87,0.06)]'}
         shadow-[0_8px_32px_rgba(0,0,0,0.5)]
         ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}
       `}
@@ -67,21 +67,21 @@ function NotificationCard({
           animate={{ opacity: [0, 1, 0], x: ['-100%', '0%', '100%'] }}
           transition={{ duration: 1.2, ease: 'easeInOut', times: [0, 0.5, 1] }}
           style={{
-            background: 'linear-gradient(90deg, transparent, rgba(255,191,0,0.08), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(176,141,87,0.08), transparent)',
           }}
         />
       )}
       <div className="flex items-start gap-3 relative z-10">
-        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isReview ? 'bg-[rgba(255,191,0,0.08)]' : 'bg-[rgba(255,191,0,0.05)]'}`}>
+        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isReview ? 'bg-[rgba(176,141,87,0.08)]' : 'bg-[rgba(176,141,87,0.05)]'}`}>
           {isReview ? (
-            <Sparkles className={`w-4 h-4 ${isActive ? 'text-[#FFBF00]' : 'text-[#B08D57]'}`} />
+            <Sparkles className={`w-4 h-4 ${isActive ? 'text-[#B08D57]' : 'text-[#B08D57]'}`} />
           ) : (
-            <UserPlus className={`w-4 h-4 ${isActive ? 'text-[#FFBF00]' : 'text-[#B08D57]'}`} />
+            <UserPlus className={`w-4 h-4 ${isActive ? 'text-[#B08D57]' : 'text-[#B08D57]'}`} />
           )}
         </div>
         <div className="flex-1 min-w-0">
           <div className={`flex items-center gap-2 ${!isActive ? 'opacity-60' : ''}`}>
-            <span className={`text-xs font-semibold truncate ${isActive ? 'text-[#FFBF00]' : 'text-[#B08D57]'}`}>
+            <span className={`text-xs font-semibold truncate ${isActive ? 'text-[#B08D57]' : 'text-[#B08D57]'}`}>
               {isReview ? 'Новый отзыв' : 'Новый гость'}
             </span>
             {isReview && <StarRating rating={rating} />}

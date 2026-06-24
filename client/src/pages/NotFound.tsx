@@ -5,7 +5,7 @@ import { Home } from 'lucide-react';
 function SmokeDot({ delay, left, size }: { delay: number; left: number; size: number }) {
   return (
     <motion.div
-      className="absolute rounded-full bg-gradient-to-t from-[rgba(255,191,0,0.04)] to-transparent"
+      className="absolute rounded-full bg-gradient-to-t from-[rgba(176,141,87,0.04)] to-transparent"
       style={{ width: size, height: size, left: `${left}%`, bottom: '-5%' }}
       animate={{
         y: [0, -400, -700],
@@ -27,7 +27,7 @@ export function NotFound() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-dark-bg">
-      <div className="fixed top-0 right-0 w-[400px] h-[400px] bg-[#FFBF00] opacity-[0.02] blur-[120px] rounded-full pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[400px] h-[400px] bg-[#B08D57] opacity-[0.02] blur-[120px] rounded-full pointer-events-none" />
       {dots.map((d, i) => <SmokeDot key={i} {...d} />)}
 
       <motion.div
@@ -42,7 +42,7 @@ export function NotFound() {
           animate={{ y: 0 }}
         >
           <motion.h1
-            className="text-7xl sm:text-8xl font-heading font-bold text-[#FFBF00] mb-2"
+            className="text-7xl sm:text-8xl font-heading font-bold text-[#B08D57] mb-2"
             animate={{ opacity: [1, 0.6, 1] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
@@ -53,7 +53,7 @@ export function NotFound() {
             Страница, которую вы ищете, не найдена. Возможно, она растворилась в дыму.
           </p>
           <Link to="/">
-            <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#B08D57] text-[#0b0807] text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(255,191,0,0.08)] hover:shadow-[0_0_28px_rgba(255,191,0,0.15)] transition-all duration-300 flex items-center gap-2 mx-auto">
+            <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#B08D57] to-[#B08D57] text-[#0b0807] text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(176,141,87,0.08)] hover:shadow-[0_0_28px_rgba(176,141,87,0.15)] transition-all duration-300 flex items-center gap-2 mx-auto">
               <Home className="w-3.5 h-3.5" />
               Вернуться на главную
             </button>
