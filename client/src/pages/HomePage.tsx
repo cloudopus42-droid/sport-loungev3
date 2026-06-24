@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { MixCarousel3D } from '@/components/MixCarousel3D';
-import { HookahScene } from '@/components/three/HookahScene';
+import { HookahLayers } from '@/components/three/HookahLayers';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
@@ -62,6 +62,18 @@ export function HomePage() {
 
   const [promos, setPromos] = useState<Promo[]>([]);
   const [showcaseItems, setShowcaseItems] = useState<ShowcaseItem[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [stats, setStats] = useState<{ value: string; label: string }[]>([
+    { value: '24/7', label: 'Работаем' },
+    { value: '120+', label: 'Вкусов' },
+    { value: '5000+', label: 'Гостей' },
+  ]);
+  const [advantages, setAdvantages] = useState<{ value: string; label: string; desc: string }[]>([
+    { value: '120+', label: 'вкусов', desc: 'Авторские миксы и премиальные табаки' },
+    { value: '24/7', label: 'работаем', desc: 'Без выходных и перерывов' },
+    { value: 'VIP', label: 'комнаты', desc: 'Приватные залы для особых гостей' },
+    { value: '4 мин', label: 'до подачи', desc: 'Быстрая подача к вашему столу' },
+  ]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -70,6 +82,15 @@ export function HomePage() {
       .catch(() => {});
     api<ShowcaseItem[]>('/api/showcases', { signal: ac.signal })
       .then((data) => setShowcaseItems(data?.filter(s => s.is_active) || []))
+      .catch(() => {});
+    api<{ value: string; label: string }[]>('/api/stats', { signal: ac.signal })
+      .then((data) => { if (data?.length) setStats(data); })
+      .catch(() => {});
+    api<{ value: string; label: string; desc: string }[]>('/api/advantages', { signal: ac.signal })
+      .then((data) => { if (data?.length) setAdvantages(data); })
+      .catch(() => {});
+    api<any[]>('/api/menu', { signal: ac.signal })
+      .then((data) => { if (data?.length) setMenuItems(data); })
       .catch(() => {});
     return () => ac.abort();
   }, []);
@@ -80,21 +101,19 @@ export function HomePage() {
 
   return (
     <div className="overflow-x-hidden bg-[#000000]">
-      {/* ─── HERO — Active Theory: void canvas + 3D centerpiece ─── */}
+      {/* ─── HERO — Active Theory: void canvas + GSAP layers centerpiece ─── */}
       <section
         ref={heroRef}
         className="relative h-screen flex items-center justify-center overflow-hidden"
       >
-        {/* Pure black void — no image, no gradient */}
         <div className="absolute inset-0 z-0 bg-[#000000]" />
 
-        {/* 3D Hookah — the ONLY visual subject */}
         <motion.div
           className="relative z-10 w-full max-w-3xl mx-auto px-6"
           style={prefersReducedMotion ? {} : { opacity: heroOpacity }}
         >
           <div className="aspect-square max-w-lg mx-auto relative">
-            <HookahScene bowlIndex={bowlIndex} liquidIndex={liquidIndex} />
+            <HookahLayers bowlIndex={bowlIndex} liquidIndex={liquidIndex} size="hero" />
           </div>
         </motion.div>
 
@@ -121,7 +140,6 @@ export function HomePage() {
           </NavLink>
         </div>
 
-        {/* Scroll indicator — hairline */}
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
           initial={{ opacity: 0 }}
@@ -137,24 +155,21 @@ export function HomePage() {
         <div className="relative h-[500vh]">
           <div className="sticky top-0 h-screen flex items-center overflow-hidden">
             <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-              {/* Left — hookah scene */}
               <motion.div
                 className="h-[50vh] lg:h-[70vh] relative"
                 style={{ scale: hookahScale, opacity: hookahOpacity }}
               >
-                <HookahScene bowlIndex={bowlIndex} liquidIndex={liquidIndex} />
-                {/* Progress dots */}
+                <HookahLayers bowlIndex={bowlIndex} liquidIndex={liquidIndex} size="hero" />
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
                   {BOWL_INFO.map((_, i) => (
                     <div
                       key={i}
-                      className={`w-2 h-2 rounded-full transition-colors duration-700 ${i <= bowlIndex ? 'bg-white/60' : 'bg-white/10'}`}
+                      className={`w-2 h-2 rounded-full transition-colors duration-700 ${i <= bowlIndex ? 'bg-[#FFBF00]/60' : 'bg-white/10'}`}
                     />
                   ))}
                 </div>
               </motion.div>
 
-              {/* Right — bowl description */}
               <motion.div
                 className="hidden lg:flex flex-col justify-center space-y-6"
                 key={bowlIndex}
@@ -173,7 +188,7 @@ export function HomePage() {
                   {BOWL_INFO[bowlIndex].desc}
                 </p>
                 <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40">
-                  <span className="text-white/60">Жидкость:</span>
+                  <span className="text-[#B08D57]">Жидкость:</span>
                   <span>{BOWL_INFO[bowlIndex].liquid}</span>
                 </div>
               </motion.div>
@@ -186,11 +201,7 @@ export function HomePage() {
       <section className="py-24 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-3 gap-12 lg:gap-24">
-            {[
-              { value: '24/7', label: 'Работаем' },
-              { value: '120+', label: 'Вкусов' },
-              { value: '5000+', label: 'Гостей' },
-            ].map((item) => (
+            {stats.map((item) => (
               <div key={item.label} className="text-center">
                 <p className="font-heading text-[clamp(36px,5vw,72px)] font-semibold text-white tracking-[-0.03em] leading-none">
                   {item.value}
@@ -208,12 +219,7 @@ export function HomePage() {
       <section className="py-24 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/5">
-            {[
-              { value: '120+', label: 'вкусов', desc: 'Авторские миксы и премиальные табаки' },
-              { value: '24/7', label: 'работаем', desc: 'Без выходных и перерывов' },
-              { value: 'VIP', label: 'комнаты', desc: 'Приватные залы для особых гостей' },
-              { value: '4 мин', label: 'до подачи', desc: 'Быстрая подача к вашему столу' },
-            ].map((item) => (
+            {advantages.map((item) => (
               <div
                 key={item.label}
                 className="bg-[#000000] p-8 lg:p-12 flex flex-col justify-between min-h-[240px]"
@@ -268,7 +274,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ─── MENU — sparse instrument-panel layout ─── */}
+      {/* ─── MENU — dynamic from DB ─── */}
       <section className="py-24 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center space-y-4 mb-16">
@@ -282,14 +288,14 @@ export function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {[
+            {(menuItems.length > 0 ? menuItems : [
               { name: 'Классический', desc: 'Традиционная табачная смесь', price: '1500 ₽', strength: 'Medium', img: 'https://images.unsplash.com/photo-1588681664899-142c07d0c18a?q=80&w=400&auto=format&fit=crop' },
               { name: 'Премиум', desc: 'Элитные табаки high-end', price: '2500 ₽', strength: 'Strong', img: 'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=400&auto=format&fit=crop' },
               { name: 'Фруктовый микс', desc: 'Микс на основе свежих фруктов', price: '1800 ₽', strength: 'Light', img: 'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=400&auto=format&fit=crop' },
               { name: 'Авторский', desc: 'От шеф-миксолога заведения', price: '3000 ₽', strength: 'Medium', img: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=400&auto=format&fit=crop' },
-            ].map((item, i) => (
+            ]).map((item, i) => (
               <motion.div
-                key={item.name}
+                key={item.name || i}
                 className="group cursor-pointer"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -298,7 +304,7 @@ export function HomePage() {
               >
                 <div className="aspect-[4/5] relative overflow-hidden bg-[#000000] border border-white/5">
                   <img
-                    src={item.img}
+                    src={item.img || item.image_url}
                     alt=""
                     loading="lazy"
                     className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-80"
@@ -306,9 +312,9 @@ export function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#000000] via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-5">
                     <p className="font-heading text-sm lg:text-base font-semibold text-white">{item.name}</p>
-                    <p className="font-mono text-[10px] text-white/40 mt-1">{item.desc}</p>
+                    <p className="font-mono text-[10px] text-white/40 mt-1">{item.desc || item.description}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-mono text-[10px] text-white/60">{item.price}</span>
+                      <span className="font-mono text-[10px] text-[#B08D57]">{item.price || `${item.price_value} ₽`}</span>
                       <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">{item.strength}</span>
                     </div>
                   </div>
@@ -323,7 +329,6 @@ export function HomePage() {
       <section className="py-24 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid lg:grid-cols-5 gap-16">
-            {/* Map */}
             <div className="lg:col-span-3 overflow-hidden border border-white/5">
               <iframe
                 src="https://yandex.ru/map-widget/v1/?ll=47.2725%2C56.1366&z=17&pt=47.2725%2C56.1366%2Cpm2rdm&lang=ru_RU"
@@ -336,7 +341,6 @@ export function HomePage() {
               />
             </div>
 
-            {/* Contact info */}
             <div className="lg:col-span-2 space-y-8 flex flex-col justify-center">
               <div className="space-y-2">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
@@ -404,7 +408,7 @@ export function HomePage() {
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <h4 className="font-mono text-[11px] text-white/80 truncate">{promo.title}</h4>
                       {promo.discountPercent && (
-                        <span className="font-mono text-[10px] px-2 py-0.5 border border-white/10 text-white/40">
+                        <span className="font-mono text-[10px] px-2 py-0.5 border border-[#B08D57]/20 text-[#B08D57]">
                           -{promo.discountPercent}%
                         </span>
                       )}

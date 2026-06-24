@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
@@ -20,7 +20,7 @@ import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
 import { staggerContainer } from '@/lib/motion';
 
-const ThreeSmoke = lazy(() => import('@/components/ThreeSmoke').then(m => ({ default: m.ThreeSmoke })));
+
 
 interface DesktopNavItem {
   label: string;
@@ -199,10 +199,6 @@ export function MainLayout() {
   return (
     <div className="min-h-screen pb-20 lg:pb-0 relative bg-[#000000] text-white">
       <SEO />
-
-      <Suspense fallback={null}>
-        <ThreeSmoke />
-      </Suspense>
 
       <ConciergeChat />
       <NotificationCardStack />
