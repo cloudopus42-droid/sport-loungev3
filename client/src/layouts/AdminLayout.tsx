@@ -86,9 +86,9 @@ export function AdminLayout() {
   }, []);
 
   const ft = prefersReducedMotion ? { duration: 0.01 } : undefined;
-  const springFast = prefersReducedMotion
+  const transitionFast = prefersReducedMotion
     ? { duration: 0.01 }
-    : { type: 'spring' as const, stiffness: 380, damping: 30 };
+    : { duration: 0.3, ease: [0.23, 1, 0.32, 1] as const };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
@@ -189,7 +189,7 @@ export function AdminLayout() {
           <motion.div
             className="w-9 h-9 rounded-xl bg-[#0D0F13] flex items-center justify-center shadow-elevated border border-glass-border flex-shrink-0"
             whileHover={{ scale: 1.05 }}
-            transition={springFast}
+            transition={transitionFast}
           >
             <Crown className="w-5 h-5 text-black" />
           </motion.div>
@@ -354,7 +354,7 @@ export function AdminLayout() {
               onClick={handleLogout}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              transition={springFast}
+              transition={transitionFast}
               title="Выйти"
               aria-label="Выйти"
             >
@@ -399,7 +399,7 @@ export function AdminLayout() {
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0, transition: prefersReducedMotion ? { duration: 0.01 } : { type: 'spring' as const, stiffness: 120, damping: 24, mass: 1 } }}
+              animate={{ opacity: 1, y: 0, transition: prefersReducedMotion ? { duration: 0.01 } : { duration: 0.5, ease: [0.23, 1, 0.32, 1] as const } }}
               exit={{ opacity: 0, y: -8, transition: { duration: prefersReducedMotion ? 0.01 : 0.2, ease: [0.23, 1, 0.32, 1] } }}
             >
               <Outlet />
@@ -432,7 +432,7 @@ export function AdminLayout() {
                       isActive ? 'text-accent-gold' : 'text-white/40 hover:text-white/60'
                     )}
                     whileTap={{ scale: 0.88 }}
-                    transition={springFast}
+                    transition={transitionFast}
                   >
                     <div className="relative">
                       <Icon className="w-5 h-5" />
@@ -454,7 +454,7 @@ export function AdminLayout() {
                       <motion.div
                         className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold"
                         layoutId="adminMobileNavDot"
-                        transition={springFast}
+                        transition={transitionFast}
                       />
                     )}
                   </motion.div>

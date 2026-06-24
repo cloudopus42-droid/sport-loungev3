@@ -1,11 +1,12 @@
-const springGentle = { type: 'spring' as const, stiffness: 80, damping: 24, mass: 1 };
-const transition = { duration: 0.6, ease: [0.23, 1, 0.32, 1] };
-const transitionFast = { duration: 0.3, ease: [0.23, 1, 0.32, 1] };
+const easeOut = [0.23, 1, 0.32, 1];
+const transition = { duration: 0.7, ease: easeOut };
+const transitionFast = { duration: 0.35, ease: easeOut };
+const transitionSlow = { duration: 1, ease: easeOut };
 
 export const fadeUp = {
-  initial: { opacity: 0, y: 40 },
+  initial: { opacity: 0, y: 32 },
   animate: { opacity: 1, y: 0, transition },
-  exit: { opacity: 0, y: -20, transition: transitionFast },
+  exit: { opacity: 0, y: -16, transition: transitionFast },
 };
 
 export const fadeIn = {
@@ -27,9 +28,9 @@ export const fadeInRight = {
 };
 
 export const scaleIn = {
-  initial: { opacity: 0, scale: 0.96 },
+  initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1, transition },
-  exit: { opacity: 0, scale: 0.98, transition: transitionFast },
+  exit: { opacity: 0, scale: 0.97, transition: transitionFast },
 };
 
 export const staggerContainer = {
@@ -37,7 +38,7 @@ export const staggerContainer = {
   animate: {
     transition: {
       staggerChildren: 0.06,
-      delayChildren: 0.08,
+      delayChildren: 0.1,
     },
   },
   exit: {},
@@ -60,21 +61,21 @@ export const fadeUpStagger = {
 };
 
 export const hoverLift = {
-  whileHover: { y: -2, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] } },
+  whileHover: { y: -2, transition: { duration: 0.35, ease: easeOut } },
   whileTap: { scale: 0.98 },
 };
 
 export const cardHover = {
   whileHover: {
     y: -4,
-    boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
-    transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] },
+    boxShadow: '0 16px 48px rgba(0,0,0,0.45)',
+    transition: { duration: 0.35, ease: easeOut },
   },
   whileTap: { scale: 0.99 },
 };
 
 export const pageTransition = {
-  initial: { opacity: 0, y: 16 },
+  initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: { ...transition, delay: 0.05 } },
   exit: { opacity: 0, y: -8, transition: transitionFast },
 };
@@ -90,6 +91,11 @@ export const pageTransitionStagger = {
 
 export const slideUp = {
   initial: { y: '100%' },
-  animate: { y: 0, transition: springGentle },
+  animate: { y: 0, transition },
   exit: { y: '100%', transition: transitionFast },
+};
+
+export const reveal = {
+  initial: { opacity: 0, y: 24, scale: 0.97 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: transitionSlow },
 };

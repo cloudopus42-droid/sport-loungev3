@@ -11,7 +11,7 @@ interface GlowIconProps {
 }
 
 const colorMap: Record<string, { stroke: string; glow: string }> = {
-  gold: { stroke: '#FFBF00', glow: 'rgba(255, 191, 0, 0.45)' },
+  gold: { stroke: '#C4A46B', glow: 'rgba(196, 164, 107, 0.45)' },
   burgundy: { stroke: '#8B1A1A', glow: 'rgba(139, 26, 26, 0.45)' },
   white: { stroke: '#ffffff', glow: 'rgba(255, 255, 255, 0.3)' },
 };
@@ -63,7 +63,7 @@ export function GlowIcon({
         filter: glow ? `drop-shadow(0 0 6px ${selectedColor.glow})` : undefined,
       }}
       whileHover={animateOnHover ? { scale: 1.2, filter: glow ? `drop-shadow(0 0 12px ${selectedColor.glow})` : undefined } : undefined}
-      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+      transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
     >
       {paths.map((d, i) => (
         <motion.path

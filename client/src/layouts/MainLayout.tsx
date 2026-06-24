@@ -63,13 +63,14 @@ export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
+  const easeOut = [0.23, 1, 0.32, 1];
   const ft = prefersReducedMotion ? { duration: 0.01 } : undefined;
-  const springFast = prefersReducedMotion
+  const smoothFast = prefersReducedMotion
     ? { duration: 0.01 }
-    : { type: 'spring' as const, stiffness: 380, damping: 30 };
-  const springGentle = prefersReducedMotion
+    : { duration: 0.35, ease: easeOut };
+  const smoothGentle = prefersReducedMotion
     ? { duration: 0.01 }
-    : { type: 'spring' as const, stiffness: 300, damping: 25 };
+    : { duration: 0.6, ease: easeOut };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
@@ -159,11 +160,11 @@ export function MainLayout() {
           {({ isActive }) => (
             <>
               <span className="relative z-10">{item.label}</span>
-              {isActive && (
+                  {isActive && (
                 <motion.div
                   layoutId="nav-underline"
                   className="absolute bottom-0 left-2 right-2 h-[2px] bg-accent-gold rounded-full"
-                  transition={springFast}
+                  transition={smoothFast}
                 />
               )}
             </>
@@ -190,13 +191,13 @@ export function MainLayout() {
   const pageTransition = prefersReducedMotion
     ? { initial: {}, animate: {}, exit: {}, transition: { duration: 0.01 } }
     : {
-        initial: { opacity: 0, y: 16 },
-        animate: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 120, damping: 24, mass: 1 } },
-        exit: { opacity: 0, y: -12, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } },
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
+        exit: { opacity: 0, y: -12, transition: { duration: 0.2, ease: easeOut } },
       };
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-0 relative bg-dark-bg text-[#F5F5F5]">
+    <div className="min-h-screen pb-20 lg:pb-0 relative bg-dark-bg text-text-primary">
       <SEO />
 
       <Suspense fallback={null}>
@@ -208,9 +209,13 @@ export function MainLayout() {
       <CookieBanner />
       {invitation && <InvitationBanner invitation={invitation} onClose={() => setInvitation(null)} />}
 
+      {/* Gold accent line at top */}
+      <div className="fixed top-0 left-0 right-0 z-[60] h-px bg-gradient-to-r from-transparent via-gold-DEFAULT/20 to-transparent pointer-events-none" />
+
       {/* Desktop & Mobile Header */}
       <header className="sticky top-0 z-50">
         <div className="absolute inset-0 bg-dark-bg/70 backdrop-blur-xl border-b border-glass-border" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gold-fade pointer-events-none" />
         <div className="relative max-w-6xl mx-auto flex items-center justify-between px-4 lg:px-8 py-3 gap-4">
 
           {/* Logo with pulse */}
@@ -275,7 +280,7 @@ export function MainLayout() {
                   aria-label="Выйти"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  transition={springFast}
+                  transition={smoothFast}
                 >
                   <LogOut className="w-4 h-4" />
                 </motion.button>
@@ -294,7 +299,7 @@ export function MainLayout() {
                 className="btn-primary px-5 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                transition={springFast}
+                transition={smoothFast}
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Заказ
@@ -337,7 +342,7 @@ export function MainLayout() {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={springGentle}
+              transition={smoothGentle}
               role="dialog"
               aria-modal="true"
               aria-label="Навигация"
@@ -464,7 +469,7 @@ export function MainLayout() {
           className="relative rounded-full bg-[rgba(15,12,10,0.5)] backdrop-blur-[20px] border border-[rgba(176,141,87,0.12)] shadow-[0_8px_32px_rgba(0,0,0,0.45)] overflow-hidden"
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={springGentle}
+          transition={smoothGentle}
         >
           {/* Animated shimmer highlight */}
           <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
@@ -491,7 +496,7 @@ export function MainLayout() {
                         isActive ? 'text-accent-gold' : 'text-white/40 hover:text-white/60'
                       )}
                       whileTap={{ scale: 0.88 }}
-                      transition={springFast}
+                      transition={smoothFast}
                     >
                       <div className="relative">
                         <Icon className="w-4 h-4" />
@@ -506,7 +511,7 @@ export function MainLayout() {
                         <motion.div
                           className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-gold"
                           layoutId="mobileNavDot"
-                          transition={springFast}
+                          transition={smoothFast}
                         />
                       )}
                     </motion.div>

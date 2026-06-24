@@ -3,8 +3,8 @@ import { IconProps } from './types';
 
 export default function PromoIcon({ size = 24, animated = false, className = '', ...props }: IconProps) {
   const springProps = animated ? {
-    whileHover: { scale: 1.15, transition: { type: 'spring', stiffness: 400, damping: 10 } },
-    whileTap: { scale: 0.9 },
+    whileHover: { scale: 1.05, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] } },
+    whileTap: { scale: 0.95 },
   } : {};
 
   return (
@@ -19,3 +19,4 @@ export default function PromoIcon({ size = 24, animated = false, className = '',
     </motion.svg>
   );
 }
+

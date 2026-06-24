@@ -111,7 +111,7 @@ function TabBar({ tabs, active, onSelect }: { tabs: { key: Tab; label: string; i
             <motion.div
               layoutId="tab-indicator"
               className="absolute inset-0 bg-accent-gold/20 rounded-xl"
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
             />
           )}
           <span className="relative z-10 flex items-center gap-2">

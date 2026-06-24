@@ -18,7 +18,7 @@ interface MixCarousel3DProps {
   autoPlayInterval?: number;
 }
 
-const SPRING = { type: "spring", stiffness: 300, damping: 30, mass: 0.8 };
+const EASE = { duration: 0.5, ease: [0.23, 1, 0.32, 1] };
 const DEPTH = 400;
 const ROTATION_RANGE = 15;
 
@@ -105,7 +105,7 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
                 filter: `blur(${t.blur}px)`,
                 z: t.z,
               }}
-              transition={SPRING}
+              transition={EASE}
               onClick={() => onItemClick?.(item)}
               className={`absolute cursor-pointer select-none rounded-2xl overflow-hidden border transition-shadow duration-300 ${
                 isActive

@@ -565,7 +565,7 @@ export function ProfilePage() {
                 backfaceVisibility: 'hidden'
               }}
               onClick={() => setIsFlipped(true)}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
               className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${cardTheme.gradient} border ${cardTheme.border} ${cardTheme.glow} p-6 flex flex-col justify-between overflow-hidden cursor-pointer select-none`}
             >
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none z-0" />

@@ -31,7 +31,7 @@ function ToggleSwitch({
           r={10}
           fill="white"
           animate={{ cx: enabled ? 44 : 20 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
         />
       </svg>
       {loading && (

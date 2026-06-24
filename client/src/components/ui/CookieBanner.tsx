@@ -21,7 +21,7 @@ export function CookieBanner() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 120, damping: 24 }}
+            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="fixed bottom-0 left-0 right-0 z-[100] p-4"
           >
             <div className="max-w-2xl mx-auto">

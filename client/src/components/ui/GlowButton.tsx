@@ -11,9 +11,9 @@ interface GlowButtonProps extends HTMLMotionProps<'button'> {
 }
 
 const variantStyles = {
-  primary: 'bg-[#B08D57] text-black font-bold shadow-elevated hover:bg-[#C4A46B]',
+  primary: 'bg-gold-DEFAULT text-black font-bold shadow-elevated hover:bg-gold-light',
   secondary: 'bg-white/5 hover:bg-white/10 text-white border border-white/10',
-  gold: 'bg-[#B08D57] text-black font-bold shadow-elevated hover:bg-[#C4A46B]',
+  gold: 'bg-gold-DEFAULT text-black font-bold shadow-elevated hover:bg-gold-light',
   danger: 'bg-gradient-to-r from-red-600 to-red-500 shadow-[0_4px_20px_rgba(239,68,68,0.4)] border border-white/20 text-white',
 };
 
@@ -42,8 +42,8 @@ export function GlowButton({
         isDisabled && 'opacity-50 cursor-not-allowed',
         className
       )}
-      whileHover={isDisabled ? {} : { scale: 1.02, transition: { type: 'spring', duration: 0.4, bounce: 0.2 } }}
-      whileTap={isDisabled ? {} : { scale: 0.97, transition: { type: 'spring', duration: 0.12, bounce: 0 } }}
+      whileHover={isDisabled ? {} : { scale: 1.02, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] } }}
+      whileTap={isDisabled ? {} : { scale: 0.98, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
       disabled={isDisabled}
       {...props}
     >

@@ -7,7 +7,7 @@ export function CookiePolicyPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 120, damping: 24 }}
+        transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       >
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-accent-gold/10 flex items-center justify-center">
