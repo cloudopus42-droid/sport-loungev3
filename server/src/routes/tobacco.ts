@@ -29,7 +29,19 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
       .select('id, name, brand, flavor, description, image_url, price, stock_quantity, unit, is_active, status, min_stock_threshold, auto_reorder_enabled')
       .order('name');
 
-    if (error) { res.status(500).json({ error: error.message }); return; }
+    if (error) {
+      if (error.message?.includes('stock_quantity') || error.message?.includes('does not exist')) {
+        const { data: fallback, error: fbErr } = await supabase
+          .from('mixes')
+          .select('id, name, manufacturer, description, flavors, strength, status, created_at')
+          .order('name');
+        if (fbErr) { res.status(500).json({ error: fbErr.message }); return; }
+        res.json(fallback || []);
+        return;
+      }
+      res.status(500).json({ error: error.message });
+      return;
+    }
     res.json(data || []);
   } catch (e) { next(e); }
 });

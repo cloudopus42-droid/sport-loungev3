@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { supabase } from './supabase';
 import { config } from './env';
 import { Client } from 'pg';
@@ -65,12 +67,25 @@ async function runMigrations() {
     }
   } catch {}
 
-  // Check tobacco inventory columns
+  // Try to auto-apply tobacco inventory columns
   try {
     const { error: stockErr } = await supabase.from('mixes').select('stock_quantity').limit(1);
     if (stockErr && stockErr.message?.includes('stock_quantity')) {
-      console.log('⚠️ Таблица mixes не имеет колонок для учёта табака.');
-      console.log('   → Выполни SQL из server/src/migrations/004_tobacco_inventory.sql в Supabase SQL Editor');
+      console.log('⚠️ Таблица mixes не имеет колонок для учёта табака. Пытаюсь применить миграцию...');
+      try {
+        const sqlPath = path.resolve(__dirname, '../migrations/004_tobacco_inventory.sql');
+        const sql = fs.readFileSync(sqlPath, 'utf-8');
+        const { error: execErr } = await supabase.rpc('exec_sql', { query: sql });
+        if (execErr) {
+          console.log('   → Не удалось применить автоматически:', execErr.message);
+          console.log('   → Выполни SQL из server/src/migrations/004_tobacco_inventory.sql в Supabase SQL Editor');
+        } else {
+          console.log('✅ tobacco columns applied');
+        }
+      } catch (applyErr: any) {
+        console.log('   → Ошибка:', applyErr?.message || applyErr);
+        console.log('   → Выполни SQL из server/src/migrations/004_tobacco_inventory.sql в Supabase SQL Editor');
+      }
     } else if (!stockErr) {
       console.log('✅ tobacco columns ok');
     }

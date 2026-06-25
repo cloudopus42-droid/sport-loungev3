@@ -45,7 +45,7 @@ function updateStatus(state) {
 
 function runBuild() {
   try {
-    execSync('npx.cmd vite build', { cwd: path.join(ROOT, 'client'), stdio: 'pipe', timeout: 120000 });
+    execSync('npx vite build', { cwd: path.join(ROOT, 'client'), stdio: 'pipe', timeout: 120000 });
     return true;
   } catch { return false; }
 }
