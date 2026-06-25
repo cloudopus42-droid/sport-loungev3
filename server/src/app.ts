@@ -44,11 +44,7 @@ import menuRoutes from './routes/menu';
 import { supabase } from './config/supabase';
 import pagesRoutes from './routes/pages';
 import telegramRoutes from './routes/telegram';
-import monitoringRoutes from './routes/monitoring';
 import adminLogRoutes from './routes/adminLog';
-import bughunterRoutes from './routes/bughunter';
-import webscoutRoutes from './routes/webscout';
-import healthAgentsRoutes from './routes/healthAgents';
 
 const app = express();
 
@@ -144,11 +140,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/pages', pagesRoutes);
 app.use('/api/telegram', telegramRoutes);
-app.use('/api/monitoring', monitoringRoutes);
 app.use('/api/admin/logs', adminLogRoutes);
-app.use('/api/bughunter', bughunterRoutes);
-app.use('/api/webscout', webscoutRoutes);
-app.use('/api/agents', healthAgentsRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

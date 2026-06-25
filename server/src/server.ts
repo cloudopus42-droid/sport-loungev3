@@ -55,38 +55,6 @@ async function bootstrap(): Promise<void> {
       console.error('❌ Failed to start order scheduler:', err.message);
     }
 
-    // Start BugHunter agent daemon (starts watching for file changes)
-    try {
-      const { startBugHunterDaemon } = require('./services/bughunterDaemon');
-      startBugHunterDaemon();
-    } catch (err: any) {
-      console.error('❌ Failed to start BugHunter daemon:', err.message);
-    }
-
-    // Start BugHunter daily digest (10:00 AM)
-    try {
-      const { startBugHunterDailyDigest } = require('./services/bughunterTelegram');
-      startBugHunterDailyDigest();
-    } catch (err: any) {
-      console.error('❌ Failed to start BugHunter daily digest:', err.message);
-    }
-
-    // Start WebScout agent daemon
-    try {
-      const { startWebScoutDaemon } = require('./services/webscoutDaemon');
-      startWebScoutDaemon();
-    } catch (err: any) {
-      console.error('🕷️ Failed to start WebScout daemon:', err.message);
-    }
-
-    // Start CachePurger, HealthChecker, OmniFixer agents
-    try {
-      const { startAllHealthAgents } = require('./services/agentsDaemon');
-      startAllHealthAgents();
-    } catch (err: any) {
-      console.error('❌ Failed to start health agents:', err.message);
-    }
-
     // Auto-pinger to prevent Render.com from sleeping
     if (config.isProduction) {
       console.log('🤖 [Auto-Pinger] Started. Will ping self health check every 10 minutes.');

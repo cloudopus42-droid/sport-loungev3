@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  Image, Blend, Mail, Armchair, LogOut, Crown, Flame, Package, FileText, House, Bug, Globe, HeartPulse, Users
+  Image, Blend, Mail, Armchair, LogOut, Crown, Flame, Package, FileText, House, Users
 } from 'lucide-react';
 import { DashboardIcon, ShowcaseIcon, PromoIcon, SettingsIcon, MenuIcon, CloseIcon, ChevronLeftIcon } from '@/components/icons';
 import clsx from 'clsx';
@@ -33,9 +33,6 @@ const sidebarItems: SidebarItem[] = [
   { path: '/admin/tobacco', icon: Package, label: 'Табак', end: false },
   { path: '/admin/smart-features', icon: SettingsIcon, label: 'Smart Features', end: false },
   { path: '/admin/logs', icon: FileText, label: 'Логи', end: false },
-  { path: '/admin/bughunter', icon: Bug, label: 'BugHunter', end: false },
-  { path: '/admin/webscout', icon: Globe, label: 'WebScout', end: false },
-  { path: '/admin/agent-health', icon: HeartPulse, label: 'Агенты', end: false },
 ];
 
 const mobileTabItems: SidebarItem[] = [

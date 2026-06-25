@@ -15,12 +15,12 @@ const KnowledgeGraphPage = lazy(() => import('@/pages/KnowledgeGraphPage').then(
 const FeedPage = lazy(() => import('@/pages/FeedPage').then(m => ({ default: m.FeedPage })));
 const InvitationsPage = lazy(() => import('@/pages/InvitationsPage').then(m => ({ default: m.InvitationsPage })));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const CreatePage = lazy(() => import('@/pages/CreatePage').then(m => ({ default: m.CreatePage })));
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const LoginCallbackPage = lazy(() => import('@/pages/LoginCallbackPage').then(m => ({ default: m.LoginCallbackPage })));
 const OrderTrackerPage = lazy(() => import('@/pages/OrderTrackerPage').then(m => ({ default: m.OrderTrackerPage })));
-const LoyaltyPage = lazy(() => import('@/pages/LoyaltyPage').then(m => ({ default: m.LoyaltyPage })));
-const GalleryPage = lazy(() => import('@/pages/GalleryPage').then(m => ({ default: m.GalleryPage })));
+
 const NotFound = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFound })));
 const CookiePolicyPage = lazy(() => import('@/pages/CookiePolicyPage').then(m => ({ default: m.CookiePolicyPage })));
 
@@ -31,14 +31,12 @@ const PromosPage = lazy(() => import('@/pages/admin/PromosPage').then(m => ({ de
 const AdminInvitationsPage = lazy(() => import('@/pages/admin/InvitationsPage').then(m => ({ default: m.AdminInvitationsPage })));
 const AdminBookingsPage = lazy(() => import('@/pages/admin/BookingsPage').then(m => ({ default: m.AdminBookingsPage })));
 const AdminShowcasePage = lazy(() => import('@/pages/admin/ShowcasePage').then(m => ({ default: m.AdminShowcasePage })));
-const AnalyticsPage = lazy(() => import('@/pages/admin/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
+
 const OrdersAdmin = lazy(() => import('@/pages/admin/OrdersAdmin').then(m => ({ default: m.OrdersAdmin })));
 const TobaccoAdmin = lazy(() => import('@/pages/admin/TobaccoAdmin').then(m => ({ default: m.TobaccoAdmin })));
 const SmartFeaturesPage = lazy(() => import('@/pages/admin/SmartFeaturesPage').then(m => ({ default: m.SmartFeaturesPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then(m => ({ default: m.AdminLogsPage })));
-const BugHunterPage = lazy(() => import('@/pages/admin/BugHunterPage').then(m => ({ default: m.BugHunterPage })));
-const WebScoutPage = lazy(() => import('@/pages/admin/WebScoutPage').then(m => ({ default: m.WebScoutPage })));
-const AgentHealthPage = lazy(() => import('@/pages/admin/AgentHealthPage').then(m => ({ default: m.AgentHealthPage })));
+
 const UsersAdmin = lazy(() => import('@/pages/admin/UsersAdmin').then(m => ({ default: m.UsersAdmin })));
 
 export default function App() {
@@ -58,11 +56,11 @@ export default function App() {
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="booking" element={<BookingPage />} />
+                <Route path="create" element={<CreatePage />} />
                 <Route path="mixologist" element={<Navigate to="/booking" replace />} />
                 <Route path="order" element={<OrderTrackerPage />} />
                 <Route path="order-tracker" element={<OrderTrackerPage />} />
-                <Route path="loyalty" element={<LoyaltyPage />} />
-                <Route path="gallery" element={<GalleryPage />} />
+
                 <Route path="tobacco" element={<TobaccoPage />} />
                 <Route path="knowledge" element={<KnowledgeGraphPage />} />
                 <Route path="feed" element={<FeedPage />} />
@@ -78,7 +76,6 @@ export default function App() {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="bookings" element={<AdminBookingsPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="showcases" element={<AdminShowcasePage />} />
                 <Route path="posts" element={<PostsPage />} />
                 <Route path="mixes" element={<MixesPage />} />
@@ -88,9 +85,7 @@ export default function App() {
                 <Route path="tobacco" element={<TobaccoAdmin />} />
                 <Route path="smart-features" element={<SmartFeaturesPage />} />
           <Route path="logs" element={<AdminLogsPage />} />
-          <Route path="bughunter" element={<BugHunterPage />} />
-          <Route path="webscout" element={<WebScoutPage />} />
-          <Route path="agent-health" element={<AgentHealthPage />} />
+
           <Route path="users" element={<UsersAdmin />} />
         </Route>
 

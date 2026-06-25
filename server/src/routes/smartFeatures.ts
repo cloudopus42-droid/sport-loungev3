@@ -113,12 +113,7 @@ const FEATURES = [
   { feature_key: 'auto_discount_night', name: 'Ночная скидка', description: 'Автоматическое применение скидки 15% на заказы после 23:00', enabled: false, is_public: false },
   { feature_key: 'qr_menu', name: 'QR-меню', description: 'Гости сканируют QR-код на столе для просмотра меню и заказа', enabled: true, is_public: true },
   { feature_key: 'visual_notifications', name: 'Визуальные уведомления', description: 'Real-time стек уведомлений о новых пользователях и отзывах', enabled: false, is_public: true },
-  { feature_key: 'bughunter_agent', name: 'BugHunter Agent', description: 'Автономный агент поиска и исправления багов', enabled: false, is_public: false },
-  { feature_key: 'webscout_agent', name: 'WebScout Agent', description: 'Веб-парсер с кешированием и rate limiting', enabled: false, is_public: false },
   { feature_key: 'cookie_consent', name: 'Cookie Consent', description: 'Баннер согласия на куки и настройки', enabled: true, is_public: true },
-  { feature_key: 'cache_purger_agent', name: 'CachePurger Agent', description: 'Автономный агент инвалидации кеша', enabled: true, is_public: false },
-  { feature_key: 'health_checker_agent', name: 'HealthChecker Agent', description: 'Мониторинг эндпоинтов и версий', enabled: true, is_public: false },
-  { feature_key: 'omni_fixer_agent', name: 'OmniFixer Agent', description: 'Универсальный фиксер кода', enabled: false, is_public: false },
 ];
 
 export async function seedSmartFeatures(): Promise<void> {

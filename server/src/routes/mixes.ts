@@ -20,6 +20,60 @@ function mapMixToFrontend(m: any) {
   };
 }
 
+// GET /api/mixes/user-mixes — Auth (current user's saved mixes)
+router.get('/user-mixes', auth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_mixes')
+      .select('*')
+      .eq('user_id', req.user!.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        res.json([]);
+        return;
+      }
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    res.json(data || []);
+  } catch (e) { next(e); }
+});
+
+// POST /api/mixes/user-mixes — Auth (save a mix for current user)
+router.post('/user-mixes', auth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { name, flavors, percentages, strength, notes } = req.body;
+    if (!name || !flavors) {
+      res.status(400).json({ error: 'name and flavors are required' });
+      return;
+    }
+    const { data, error } = await supabase
+      .from('user_mixes')
+      .insert({
+        user_id: req.user!.id,
+        name,
+        flavors: Array.isArray(flavors) ? flavors : [flavors],
+        percentages: percentages || {},
+        strength: strength || 'medium',
+        notes: notes || '',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        res.status(400).json({ error: 'Таблица user_mixes не создана в базе данных' });
+        return;
+      }
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    res.status(201).json(data);
+  } catch (e) { next(e); }
+});
+
 // GET /api/mixes — Public
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {

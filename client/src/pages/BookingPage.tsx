@@ -91,6 +91,8 @@ export function BookingPage() {
   const [masterCalled, setMasterCalled] = useState(false);
   const [timeText, setTimeText] = useState('15:00');
   const [showOrderTracker, setShowOrderTracker] = useState(false);
+  const [savingMix, setSavingMix] = useState(false);
+  const [mixSaved, setMixSaved] = useState(false);
   const timerIntervalRef = useRef<any>(null);
   const loadMixesRef = useRef<AbortController | null>(null);
   const fetchOrderStatusRef = useRef<AbortController | null>(null);
@@ -244,6 +246,25 @@ export function BookingPage() {
     finally { setLoading(false); }
   };
 
+  const handleSaveMix = async () => {
+    if (!isAuthenticated) { showToast('Авторизуйтесь для сохранения', 'error'); navigate('/login?redirect=/booking'); return; }
+    if (selectedFlavors.length === 0 && aiRecommendations.length === 0) { showToast('Выберите хотя бы один вкус', 'error'); return; }
+    setSavingMix(true);
+    try {
+      const flavors = selectedFlavors.length > 0 ? selectedFlavors : aiRecommendations.slice(0, 3);
+      await api('/api/mixes/user-mixes', { method: 'POST', body: {
+        name: `Микс: ${flavors.join(', ')}`,
+        flavors,
+        percentages: {},
+        strength,
+        notes: '',
+      }});
+      setMixSaved(true);
+      showToast('Рецепт сохранён в профиль!', 'success');
+    } catch { showToast('Ошибка сохранения', 'error'); }
+    finally { setSavingMix(false); }
+  };
+
   const handleQuickOrder = () => {
     if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/booking'); return; }
     setSelectedMix({
@@ -385,6 +406,19 @@ export function BookingPage() {
               <p className="text-[8px] text-white/20 text-center py-2">Выберите настроение для рекомендации</p>
             )}
           </div>
+
+          {/* Save to Profile */}
+          {isAuthenticated && (selectedFlavors.length > 0 || aiRecommendations.length > 0) && (
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSaveMix}
+              disabled={savingMix || mixSaved}
+              className="w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:opacity-40 text-[9px] font-bold text-[#FFBF00] uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              {mixSaved ? '✓ Сохранено' : savingMix ? 'Сохранение...' : 'Сохранить рецепт в профиль'}
+            </motion.button>
+          )}
 
           {/* Order Button */}
           <motion.button

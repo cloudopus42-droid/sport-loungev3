@@ -135,6 +135,9 @@ export function ProfilePage() {
   const [preferences, setPreferences] = useState<{ topFlavors: string[]; topMixes: string[] } | null>(null);
   const [loadingPrefs, setLoadingPrefs] = useState(true);
 
+  const [userMixes, setUserMixes] = useState<any[]>([]);
+  const [loadingUserMixes, setLoadingUserMixes] = useState(true);
+
   const handleRepeatMix = (booking: any) => {
     const parts = (booking.hookahMix || '').split(' | ');
     let liquidBase = 'water';
@@ -354,10 +357,19 @@ export function ProfilePage() {
     setLoadingPrefs(false);
   };
 
+  const fetchUserMixes = async () => {
+    try {
+      const data = await api<any[]>('/api/mixes/user-mixes');
+      setUserMixes(data || []);
+    } catch { setUserMixes([]); }
+    setLoadingUserMixes(false);
+  };
+
   useEffect(() => {
     fetchBookings();
     fetchVIPClubData();
     fetchPreferences();
+    fetchUserMixes();
     return () => {
       fetchBookingsRef.current?.abort();
       fetchVIPClubDataRef.current?.abort();
@@ -1092,65 +1104,102 @@ export function ProfilePage() {
               )
             ) : (
               // MIXES TAB
-              bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-')).length === 0 ? (
-                <GlassCard className="p-6 sm:p-8 text-center">
-                  <p className="text-xs sm:text-sm text-white/40">У вас пока нет сохраненных миксов</p>
-                  <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = `${import.meta.env.BASE_URL}booking`}>Создать новый микс</GlowButton>
-                </GlassCard>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-')).map((booking, i) => {
-                    return (
-                      <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                        <GlassCard className="p-4 border border-accent-gold/20 flex flex-col justify-between h-full hover:border-accent-gold/40 transition-colors">
-                          <div>
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="text-[10px] font-mono text-accent-gold-bright font-bold tracking-widest">{booking.seatId}</span>
-                              <span className="text-[9px] text-white/30">{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
+              <div className="space-y-6">
+                {loadingUserMixes ? (
+                  <div className="flex justify-center py-6"><div className="w-5 h-5 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" /></div>
+                ) : userMixes.length > 0 && (
+                  <div>
+                    <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold text-accent-gold mb-3 flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5" /> Сохранённые рецепты ИИ-Миксолога
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {userMixes.map((mix: any) => (
+                        <motion.div key={mix.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                          <GlassCard className="p-3.5 border border-accent-gold/15 hover:border-accent-gold/30 transition-colors">
+                            <div className="flex items-start justify-between mb-2">
+                              <h5 className="text-xs font-bold text-white">{mix.name}</h5>
+                              <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold ${
+                                mix.strength === 'light' ? 'text-green-400 bg-green-400/10' :
+                                mix.strength === 'strong' ? 'text-red-400 bg-red-400/10' :
+                                'text-yellow-400 bg-yellow-400/10'
+                              }`}>{mix.strength}</span>
                             </div>
-                            
-                            {(booking as any).hookahMix && (
-                              <div className="space-y-2 mt-2">
-                                <div className="text-xs text-white font-semibold flex items-center gap-1.5">
-                                <Flame className="w-3.5 h-3.5 text-accent-gold-bright" />
-                                <span>Детали рецепта</span>
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {mix.flavors?.map((f: string) => (
+                                <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] text-white/60">{f}</span>
+                              ))}
+                            </div>
+                            {mix.notes && <p className="text-[9px] text-white/30">{mix.notes}</p>}
+                          </GlassCard>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(() => {
+                  const bookingMixes = bookings.filter(b => b.seatLabel === 'Микс-билет' || b.seatId?.startsWith('MIX-'));
+                  return bookingMixes.length === 0 && userMixes.length === 0 ? (
+                    <GlassCard className="p-6 sm:p-8 text-center">
+                      <p className="text-xs sm:text-sm text-white/40">У вас пока нет сохраненных миксов</p>
+                      <GlowButton className="mt-3" size="sm" onClick={() => window.location.href = `${import.meta.env.BASE_URL}create`}>Создать новый микс</GlowButton>
+                    </GlassCard>
+                  ) : bookingMixes.length > 0 ? (
+                    <div>
+                      {userMixes.length > 0 && <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white/50 mb-3 flex items-center gap-2">
+                        <Flame className="w-3 h-3" /> История заказов
+                      </h4>}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {bookingMixes.map((booking, i) => (
+                          <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                            <GlassCard className="p-4 border border-accent-gold/20 flex flex-col justify-between h-full hover:border-accent-gold/40 transition-colors">
+                              <div>
+                                <div className="flex justify-between items-start mb-2">
+                                  <span className="text-[10px] font-mono text-accent-gold-bright font-bold tracking-widest">{booking.seatId}</span>
+                                  <span className="text-[9px] text-white/30">{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
                                 </div>
-                                <div className="text-[11px] text-white/70 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-glass-border/10 space-y-1">
-                                  {(booking as any).hookahMix.split(' | ').map((line: string, idx: number) => {
-                                    if (line.startsWith('Mix: ')) {
-                                      return (
-                                        <div key={idx} className="mt-1 pt-1 border-t border-white/5 text-accent-gold-bright">
-                                          <strong>Вкусы:</strong> {line.replace('Mix: ', '')}
-                                        </div>
-                                      );
-                                    }
-                                    return <div key={idx}>{line}</div>;
-                                  })}
-                                  {booking.comment && (
-                                    <div className="text-[10px] text-white/50 italic mt-1 font-light">
-                                      "{booking.comment}"
+                                {(booking as any).hookahMix && (
+                                  <div className="space-y-2 mt-2">
+                                    <div className="text-xs text-white font-semibold flex items-center gap-1.5">
+                                    <Flame className="w-3.5 h-3.5 text-accent-gold-bright" />
+                                    <span>Детали рецепта</span>
                                     </div>
-                                  )}
-                                </div>
+                                    <div className="text-[11px] text-white/70 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-glass-border/10 space-y-1">
+                                      {(booking as any).hookahMix.split(' | ').map((line: string, idx: number) => {
+                                        if (line.startsWith('Mix: ')) {
+                                          return (
+                                            <div key={idx} className="mt-1 pt-1 border-t border-white/5 text-accent-gold-bright">
+                                              <strong>Вкусы:</strong> {line.replace('Mix: ', '')}
+                                            </div>
+                                          );
+                                        }
+                                        return <div key={idx}>{line}</div>;
+                                      })}
+                                      {booking.comment && (
+                                        <div className="text-[10px] text-white/50 italic mt-1 font-light">
+                                          "{booking.comment}"
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-
-                          <div className="mt-4 pt-3 border-t border-white/5 flex gap-2">
-                            <button
-                              onClick={() => handleRepeatMix(booking)}
-                              className="w-full py-2 bg-gradient-to-r from-accent-gold-bright/10 to-amber-500/10 border border-accent-gold-bright/30 hover:border-accent-gold-bright/60 text-accent-gold-bright text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                            >
-                              <Flame className="w-3.5 h-3.5 text-accent-gold-bright animate-pulse" />
-                              <span>Повторить микс</span>
-                            </button>
-                          </div>
-                        </GlassCard>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )
+                              <div className="mt-4 pt-3 border-t border-white/5 flex gap-2">
+                                <button
+                                  onClick={() => handleRepeatMix(booking)}
+                                  className="w-full py-2 bg-gradient-to-r from-accent-gold-bright/10 to-amber-500/10 border border-accent-gold-bright/30 hover:border-accent-gold-bright/60 text-accent-gold-bright text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                >
+                                  <Flame className="w-3.5 h-3.5 text-accent-gold-bright animate-pulse" />
+                                  <span>Повторить микс</span>
+                                </button>
+                              </div>
+                            </GlassCard>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                )()}
+              </div>
             )}
           </div>
         )}
