@@ -1,11 +1,10 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare Pages + R2
 
 on:
   workflow_dispatch:
-  # Enable when Cloudflare token has Pages permission:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -44,6 +43,23 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy client/dist --project-name=sport-lounge --branch=main
+
+      - name: Sync to R2 bucket
+        run: |
+          cd client/dist
+          for f in $(find . -type f); do
+            npx wrangler r2 object put sport-lounge-static/"$f" --file "$f"
+          done
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
 
       - name: Purge Cloudflare cache
         if: success()
