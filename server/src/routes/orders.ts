@@ -148,6 +148,8 @@ router.get('/', auth, async (req: Request, res: Response, next: NextFunction) =>
 
     if (status) {
       query = query.eq('status', status);
+    } else {
+      query = query.not('status', 'eq', 'cancelled');
     }
 
     const { data: orders, error } = await query
@@ -545,12 +547,12 @@ router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, nex
   }
 });
 
-// DELETE /api/orders/:id — Soft-delete order (admin only)
+// DELETE /api/orders/:id — Hard-delete order (admin only)
 router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { data: order, error: fetchErr } = await supabase
       .from('orders')
-      .select('id, status')
+      .select('id')
       .eq('id', req.params.id)
       .maybeSingle();
 
@@ -559,22 +561,32 @@ router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: N
       return;
     }
 
-    const { error: updateErr } = await supabase
+    const { error: deleteHistoryErr } = await supabase
+      .from('order_status_history')
+      .delete()
+      .eq('order_id', req.params.id);
+
+    if (deleteHistoryErr) {
+      res.status(500).json({ error: 'Не удалось удалить историю заказа: ' + deleteHistoryErr.message });
+      return;
+    }
+
+    const { error: deleteErr } = await supabase
       .from('orders')
-      .update({ status: 'cancelled' })
+      .delete()
       .eq('id', req.params.id);
 
-    if (updateErr) {
-      res.status(500).json({ error: 'Не удалось удалить заказ: ' + updateErr.message });
+    if (deleteErr) {
+      res.status(500).json({ error: 'Не удалось удалить заказ: ' + deleteErr.message });
       return;
     }
 
     try {
       const io = getIO();
-      io.emit('order:updated', { id: req.params.id, status: 'cancelled' });
+      io.emit('order:deleted', { id: req.params.id });
     } catch {}
 
-    res.json({ success: true, message: 'Заказ отменён' });
+    res.json({ success: true, message: 'Заказ удалён' });
   } catch (err) {
     next(err);
   }

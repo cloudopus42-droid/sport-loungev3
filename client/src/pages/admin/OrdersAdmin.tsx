@@ -39,10 +39,15 @@ export function OrdersAdmin() {
       setOrders(newQueue);
     });
 
+    socket.on('order:deleted', ({ id }: { id: string }) => {
+      setOrders(prev => prev.filter(o => o.id !== id));
+    });
+
     return () => {
       socket.off('order:created');
       socket.off('order:updated');
       socket.off('orders:reordered');
+      socket.off('order:deleted');
     };
   }, [socket]);
 
