@@ -47,7 +47,7 @@ jobs:
           sed -i "s|</head>|<meta name=\"x-deploy\" content=\"$TIMESTAMP\"></head>|" client/dist/404.html
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: client/dist
 
