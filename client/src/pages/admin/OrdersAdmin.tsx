@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Play, Check, Flame, ChevronUp, ChevronDown, RefreshCw, Send } from 'lucide-react';
+import { Clock, Play, Check, Flame, ChevronUp, ChevronDown, RefreshCw, Send, Trash2 } from 'lucide-react';
 import { showToast } from '@/components/NotificationToast';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
@@ -10,6 +10,7 @@ export function OrdersAdmin() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [manualReorder, setManualReorder] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const fetchQueueRef = useRef<AbortController | null>(null);
 
   // Load orders queue on mount
@@ -112,6 +113,48 @@ export function OrdersAdmin() {
     }
   };
 
+  const handleDeleteOrder = async (id: string) => {
+    if (!confirm('Удалить заказ? Заказ будет отменён.')) return;
+    try {
+      await api.delete(`/api/orders/${id}`);
+      setOrders(prev => prev.filter(o => o.id !== id));
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+      showToast('Заказ удалён', 'success');
+    } catch { showToast('Ошибка при удалении', 'error'); }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Удалить ${selectedIds.size} заказ(ов)?`)) return;
+    let success = 0;
+    for (const id of selectedIds) {
+      try {
+        await api.delete(`/api/orders/${id}`);
+        success++;
+      } catch {}
+    }
+    setOrders(prev => prev.filter(o => !selectedIds.has(o.id)));
+    setSelectedIds(new Set());
+    showToast(`Удалено ${success} заказ(ов)`, 'success');
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const active = orders.filter(o => o.status !== 'done');
+    if (selectedIds.size === active.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(active.map(o => o.id)));
+    }
+  };
+
   // Countdown timer calculation per card
   const getRemainingTimeText = (promisedTimeStr: string, status: string) => {
     if (status === 'done') return { text: 'Готово', delayed: false };
@@ -144,7 +187,17 @@ export function OrdersAdmin() {
           <p className="text-xs text-white/50">Панель управления кальянного мастера (Sport Lounge)</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {selectedIds.size > 0 && (
+            <button
+              onClick={handleBatchDelete}
+              className="px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-red-600/10 text-red-500 border-red-500/30 hover:bg-red-600/20"
+            >
+              <Trash2 className="w-3.5 h-3.5 inline mr-1" />
+              Удалить {selectedIds.size}
+            </button>
+          )}
+
           <button
             onClick={() => setManualReorder(!manualReorder)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
@@ -175,6 +228,17 @@ export function OrdersAdmin() {
         </div>
       ) : (
         <div className="space-y-4">
+          {orders.filter(o => o.status !== 'done').length > 0 && (
+            <div className="flex items-center gap-2 px-1">
+              <input
+                type="checkbox"
+                checked={selectedIds.size > 0 && selectedIds.size === orders.filter(o => o.status !== 'done').length}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
+              />
+              <span className="text-xs text-white/40">Выбрать все</span>
+            </div>
+          )}
           {orders
             .filter(o => o.status !== 'done')
             .map((order, idx) => {
@@ -199,6 +263,16 @@ export function OrdersAdmin() {
                   <div className="flex flex-col md:flex-row justify-between gap-4">
                     {/* Position & Seat info */}
                     <div className="flex gap-4 items-start">
+                      {/* Checkbox */}
+                      <div className="pt-1.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(order.id)}
+                          onChange={() => toggleSelect(order.id)}
+                          className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
+                        />
+                      </div>
+
                       {manualReorder && (
                         <div className="flex flex-col gap-1 pr-2 pt-1 border-r border-white/5">
                           <button
@@ -307,6 +381,15 @@ export function OrdersAdmin() {
                             title="Продлить на +5 минут"
                           >
                             +5м
+                          </button>
+
+                          {/* Delete button */}
+                          <button
+                            onClick={() => handleDeleteOrder(order.id)}
+                            className="px-3 py-2 rounded-lg bg-red-600/10 border border-red-500/20 hover:bg-red-600/20 text-red-500 font-bold text-xs"
+                            title="Удалить заказ"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
 

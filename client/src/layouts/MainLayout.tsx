@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  Crown, LogOut, CalendarCheck, FlaskConical,
-  BookOpen, Sparkles, Image
+  Crown, LogOut, CalendarCheck, Sparkles, Image
 } from 'lucide-react';
 import { HomeIcon, MenuIcon, UserIcon, CloseIcon, ChevronRightIcon } from '@/components/icons';
 import clsx from 'clsx';
@@ -33,10 +32,6 @@ const desktopNavItems: DesktopNavItem[] = [
   { label: 'Главная', to: '/' },
   { label: 'Заказ', to: '/booking' },
   { label: 'Галерея', to: '/gallery' },
-  { label: 'Лояльность', to: '/loyalty' },
-  { label: 'ИИ-Миксолог', to: '/booking' },
-  { label: 'Зоны', hash: '#zones' },
-  { label: 'Контакты', hash: '#contacts' },
 ];
 
 interface MobileTab {
@@ -49,7 +44,6 @@ const mobileTabs: MobileTab[] = [
   { label: 'Главная', to: '/', icon: HomeIcon },
   { label: 'Заказ', to: '/booking', icon: CalendarCheck },
   { label: 'Галерея', to: '/gallery', icon: Image },
-  { label: 'Лояльность', to: '/loyalty', icon: Crown },
   { label: 'Профиль', to: '/profile', icon: UserIcon },
 ];
 

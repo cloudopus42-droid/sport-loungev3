@@ -22,6 +22,37 @@ const createTobaccoSchema = z.object({
 
 const router = Router();
 
+router.get('/flavors', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data, error } = await supabase
+      .from('mixes')
+      .select('id, name, flavor, is_active, price')
+      .eq('is_active', true)
+      .order('name');
+
+    if (error) {
+      const { data: fallback, error: fbErr } = await supabase
+        .from('mixes')
+        .select('id, name, flavors, is_active, price')
+        .eq('is_active', true)
+        .order('name');
+      if (fbErr) { res.json([]); return; }
+      const flattened = (fallback || []).flatMap((m: any) => {
+        const arr = Array.isArray(m.flavors) ? m.flavors : [m.flavors].filter(Boolean);
+        return arr.map((f: string) => ({ id: `${m.id}-${f}`, name: f, category: 'Основные', is_active: true, price_value: m.price }));
+      });
+      res.json(flattened);
+      return;
+    }
+
+    const flavors = (data || []).map((m: any) => ({
+      id: m.id, name: m.flavor || m.name, category: 'Основные',
+      is_active: m.is_active !== false, price_value: m.price,
+    }));
+    res.json(flavors);
+  } catch (e) { next(e); }
+});
+
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data, error } = await supabase
@@ -291,7 +322,15 @@ router.get('/stock', auth, isAdmin, async (_req: Request, res: Response, next: N
       .select('id, name, brand, flavor, stock_quantity, min_stock_threshold, auto_reorder_enabled')
       .order('name');
 
-    if (error) { res.status(500).json({ error: error.message }); return; }
+    if (error) {
+      const { data: fallback, error: fbErr } = await supabase
+        .from('mixes')
+        .select('id, name, brand, flavor, stock_quantity')
+        .order('name');
+      if (fbErr) { res.status(500).json({ error: fbErr.message }); return; }
+      res.json((fallback || []).map((f: any) => ({ ...f, min_stock_threshold: null, auto_reorder_enabled: false })));
+      return;
+    }
     res.json(data || []);
   } catch (e) { next(e); }
 });

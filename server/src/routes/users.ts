@@ -47,8 +47,10 @@ router.get('/', auth, isAdmin, async (req: Request, res: Response, next: NextFun
       .select('id, email, name, role, avatar, avatar_url, phone, personal_price, is_blocked, admin_note, created_at')
       .range(pag.offset, pag.offset + pag.limit - 1);
 
-    if (role && (role === 'user' || role === 'admin')) {
-      query = query.eq('role', role);
+    const roleMap: Record<string, string> = { client: 'user', user: 'user', admin: 'admin' };
+    const dbRole = role && typeof role === 'string' ? roleMap[role.toLowerCase()] : null;
+    if (dbRole) {
+      query = query.eq('role', dbRole);
     }
 
     if (search && typeof search === 'string') {

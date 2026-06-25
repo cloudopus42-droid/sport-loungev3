@@ -141,16 +141,23 @@ export async function seedSmartFeatures(): Promise<void> {
 
     console.log(`➕ Seeding ${missing.length} new smart features...`);
 
-    for (const feature of missing) {
-      const { error } = await supabase
-        .from('smart_features')
-        .upsert(
-          { ...feature, updated_at: new Date().toISOString() },
-          { onConflict: 'feature_key' }
-        );
+    const results = await Promise.allSettled(
+      missing.map(feature =>
+        supabase
+          .from('smart_features')
+          .upsert(
+            { ...feature, updated_at: new Date().toISOString() },
+            { onConflict: 'feature_key' }
+          )
+      )
+    );
 
-      if (error && !error.message.includes('row-level security')) {
-        console.warn(`⚠️ Failed to seed feature "${feature.feature_key}":`, error.message);
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      if (r.status === 'rejected') {
+        console.warn(`⚠️ Failed to seed feature "${missing[i].feature_key}": ${r.reason}`);
+      } else if (r.value.error && !r.value.error.message.includes('row-level security')) {
+        console.warn(`⚠️ Failed to seed feature "${missing[i].feature_key}": ${r.value.error.message}`);
       }
     }
   } catch (err: any) {

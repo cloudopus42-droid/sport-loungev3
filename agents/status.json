@@ -157,13 +157,34 @@
     }
   },
   "bughunter": {
+    "status": "working",
+    "cycle": 1,
+    "found": 0,
+    "fixed": 0,
+    "escalated": 0,
+    "lastScan": "2026-06-25 09:59",
+    "thought": "Сканирую код...",
+    "color": "#F44336"
+  },
+  "webscout": {
     "status": "idle",
     "cycle": 1,
-    "found": 140,
-    "fixed": 1,
-    "escalated": 135,
-    "lastScan": "2026-06-23 21:40",
-    "thought": "Ожидание",
-    "color": "#F44336"
+    "totalScrapes": 0,
+    "cacheHits": 0,
+    "cacheMisses": 0,
+    "errors": 0,
+    "lastScan": "2026-06-25 09:59",
+    "color": "#00BFA5"
+  }
+}},
+  "cache-purger": {
+    "status": "idle",
+    "cycle": 1,
+    "totalPurges": 0,
+    "swPurges": 0,
+    "cdnPurges": 0,
+    "errors": 0,
+    "lastScan": "2026-06-25 09:59",
+    "color": "#FF9800"
   }
 }

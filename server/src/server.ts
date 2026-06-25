@@ -18,8 +18,8 @@ async function bootstrap(): Promise<void> {
   // 1. Connect to Database
   await connectDB();
 
-  // 2. Seed smart features
-  await seedSmartFeatures();
+  // 2. Seed smart features (background — don't block server start)
+  seedSmartFeatures().catch(err => console.warn('⚠️ Smart features seed error:', err));
 
   // 3. Create HTTP server and init Socket.IO
   const server = http.createServer(app);

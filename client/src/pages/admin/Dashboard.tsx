@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Award, XCircle } from 'lucide-react';
+import { DollarSign, Award, XCircle, BarChart3 } from 'lucide-react';
 import { AnalyticsIcon, BellIcon, UserIcon, PlusIcon } from '@/components/icons';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { StatCardSkeleton } from '@/components/ui/Skeleton';
@@ -78,6 +78,7 @@ export function Dashboard() {
 
   // Taste analytics state
   const [tasteStats, setTasteStats] = useState<TasteStats | null>(null);
+  const [allBookings, setAllBookings] = useState<any[]>([]);
 
   const fetchDataRef = useRef<AbortController | null>(null);
   const advanceHookahStatusRef = useRef<AbortController | null>(null);
@@ -115,6 +116,7 @@ export function Dashboard() {
       const totalRevenue = bookings.filter((b: any) => b.status === 'confirmed').length * 1200;
 
       setStats({ totalPosts, totalMixes, activePromos, publishedInvitations, totalRevenue, totalOrders });
+      setAllBookings(bookings);
 
       if (tasteStatsRes.status === 'fulfilled') {
         setTasteStats(tasteStatsRes.value);
@@ -493,6 +495,48 @@ export function Dashboard() {
 
         </div>
       </div>
+
+      {/* BI Analytics Section */}
+      <GlassCard variant="premium" className="p-6">
+        <div className="flex items-center gap-2 mb-4 border-b border-glass-border/10 pb-3">
+          <BarChart3 className="w-5 h-5 text-accent-gold" />
+          <h3 className="text-md font-display font-semibold text-white">BI Аналитика</h3>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {(() => {
+            const active = allBookings.filter((b: any) => b.status !== 'cancelled');
+            const now = new Date();
+            const monthStart = new Date(now); monthStart.setDate(now.getDate() - 30);
+            const periodBookings = active.filter((b: any) => new Date(b.date) >= monthStart);
+            const totalHookahs = periodBookings.reduce((s: number, b: any) => s + (b.hookahCount || 1), 0);
+            const grossRevenue = totalHookahs * 1200;
+            const totalOrders = periodBookings.length;
+            const occupancyRate = totalOrders > 0 ? Math.round((totalOrders / (15 * 12 * 30)) * 1000) / 10 : 0;
+            const userMap: Record<string, { count: number; spend: number }> = {};
+            active.forEach((b: any) => {
+              const uid = (b.user && typeof b.user === 'object' ? b.user._id || b.user.id : b.user) || 'guest';
+              if (!userMap[uid]) userMap[uid] = { count: 0, spend: 0 };
+              userMap[uid].count++;
+              userMap[uid].spend += (b.hookahCount || 1) * 1200;
+            });
+            const uniqueUsers = Object.keys(userMap);
+            const retentionRate = uniqueUsers.length > 0 ? Math.round((Object.values(userMap).filter(u => u.count > 1).length / uniqueUsers.length) * 100) : 0;
+            const avgLTV = uniqueUsers.length > 0 ? Math.round(Object.values(userMap).reduce((s: number, u: any) => s + u.spend, 0) / uniqueUsers.length) : 0;
+            return [
+              { label: 'Загруженность залов', value: `${occupancyRate}%`, color: 'text-accent-gold', sub: `${totalOrders} броней` },
+              { label: 'Retention Rate', value: `${retentionRate}%`, color: 'text-amber-400', sub: 'вернувшиеся гости' },
+              { label: 'Средний LTV', value: `${avgLTV.toLocaleString('ru-RU')} ₽`, color: 'text-green-400', sub: `${uniqueUsers.length} гостей` },
+              { label: 'Выручка (месяц)', value: `${grossRevenue.toLocaleString('ru-RU')} ₽`, color: 'text-white', sub: `${totalHookahs} кальянов` },
+            ].map((card) => (
+              <div key={card.label} className="p-3 rounded-xl bg-white/5 border border-glass-border/20">
+                <p className="text-[10px] text-white/40">{card.label}</p>
+                <p className={`text-lg font-bold mt-0.5 ${card.color}`}>{card.value}</p>
+                <p className="text-[9px] text-white/30 mt-0.5">{card.sub}</p>
+              </div>
+            ));
+          })()}
+        </div>
+      </GlassCard>
 
       {/* NEW section: Hookah Taste Choices Analytics (Breakdown panel) */}
       <GlassCard variant="premium" className="p-6">

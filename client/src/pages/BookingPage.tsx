@@ -2,15 +2,14 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Check, Flame, Clock, Sparkles, AlertCircle,
+  Check, Clock, Sparkles,
   Bot, ThumbsUp, ShoppingCart, ChevronRight,
-  Leaf, Star, Zap
+  Leaf, Zap
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/hooks/useAuth';
-import { useFeature } from '@/contexts/FeatureContext';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
@@ -32,14 +31,6 @@ const bookingFormSchema = z.object({
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
-
-const BOWL_OPTIONS = [
-  { index: 0, name: 'Классика', icon: '✦', desc: 'Традиционный стиль', color: '#C4956A' },
-  { index: 1, name: 'Фрукты', icon: '◈', desc: 'Свежие ноты', color: '#FF6B52' },
-  { index: 2, name: 'Ягоды', icon: '◆', desc: 'Лесные вкусы', color: '#4CAF50' },
-  { index: 3, name: 'Десерт', icon: '◇', desc: 'Сладкие акценты', color: '#D4A017' },
-  { index: 4, name: 'Авторский', icon: '⬥', desc: 'Уникальный микс', color: '#FF8C00' },
-];
 
 const FALLBACK_FLAVORS: Flavor[] = [
   { id: '1', name: 'Двойное яблоко', category: 'Фрукты', emoji: '🍏', color: '#4CAF50', is_active: true },
@@ -71,8 +62,6 @@ const AI_MOODS = [
   { id: 'classic', label: 'Классика', emoji: '🏆', desc: 'Проверенные временем вкусы' },
 ];
 
-const PRICES = [500, 750, 1000];
-
 const stages = [
   { id: 'accepted', label: 'Принят', desc: 'Заказ зарегистрирован' },
   { id: 'preparing', label: 'Подготовка', desc: 'Сборка микса и забивка чаши' },
@@ -84,7 +73,6 @@ const stages = [
 export function BookingPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { isFeatureEnabled } = useFeature();
   const { socket } = useSocket();
 
   const [mixes, setMixes] = useState<Mix[]>([]);
@@ -95,12 +83,10 @@ export function BookingPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showMixBuilder, setShowMixBuilder] = useState(false);
 
-  const [bowlIndex, setBowlIndex] = useState(0);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
   const [flavorCategory, setFlavorCategory] = useState('Все');
   const [activeTab, setActiveTab] = useState<'mixes' | 'ai'>('mixes');
   const [aiMood, setAiMood] = useState<string[]>([]);
-  const [price, setPrice] = useState(750);
   const [strength, setStrength] = useState<'light' | 'medium' | 'strong'>('medium');
   const [masterCalled, setMasterCalled] = useState(false);
   const [timeText, setTimeText] = useState('15:00');
@@ -262,8 +248,8 @@ export function BookingPage() {
     if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/booking'); return; }
     setSelectedMix({
       id: 'custom-quick',
-      name: `Собранный: ${BOWL_OPTIONS[bowlIndex].name}`,
-      description: `Стиль: ${BOWL_OPTIONS[bowlIndex].name}${selectedFlavors.length ? ', вкусы: ' + selectedFlavors.join(', ') : ''}`,
+      name: selectedFlavors.length > 0 ? `Микс: ${selectedFlavors.join(', ')}` : 'Авторский микс',
+      description: selectedFlavors.length > 0 ? `Вкусы: ${selectedFlavors.join(', ')}` : 'Соберите свой идеальный вкус',
       strength: strength === 'light' ? 3 : strength === 'medium' ? 6 : 9,
       isCustom: true,
     });
@@ -290,49 +276,6 @@ export function BookingPage() {
             <p className="text-white/40 text-xs max-w-md">
               Выберите чашу, жидкость и вкусы — 3D-кальян изменится в реальном времени
             </p>
-          </div>
-
-          {/* Bowl Selection */}
-          <div className="liquid-glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Flame className="w-3.5 h-3.5 text-[#FFBF00]" />
-              <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Чаша</h3>
-            </div>
-            <div className="grid grid-cols-5 gap-2">
-              {BOWL_OPTIONS.map((bowl) => (
-                <motion.button
-                  key={bowl.index}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setBowlIndex(bowl.index)}
-                  className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all duration-300 ${
-                    bowlIndex === bowl.index
-                      ? 'bg-[rgba(255,191,0,0.08)] border border-[rgba(255,191,0,0.3)] shadow-[0_0_16px_rgba(255,191,0,0.05)]'
-                      : 'bg-[rgba(255,255,255,0.02)] border border-transparent hover:border-[rgba(255,191,0,0.15)]'
-                  }`}
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-                    style={{
-                      background: bowlIndex === bowl.index
-                        ? `linear-gradient(135deg, ${bowl.color}33, ${bowl.color}11)`
-                        : 'rgba(255,255,255,0.03)',
-                      border: `0.5px solid ${bowlIndex === bowl.index ? bowl.color + '66' : 'rgba(255,255,255,0.05)'}`,
-                    }}
-                  >
-                    {bowl.icon}
-                  </div>
-                  <span className={`text-[8px] font-medium text-center leading-tight ${bowlIndex === bowl.index ? 'text-[#FFBF00]' : 'text-white/40'}`}>
-                    {bowl.name}
-                  </span>
-                  {bowlIndex === bowl.index && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FFBF00] flex items-center justify-center">
-                      <Check className="w-2.5 h-2.5 text-[#0b0807]" strokeWidth={3} />
-                    </div>
-                  )}
-                </motion.button>
-              ))}
-            </div>
           </div>
 
           {/* Flavor Selection */}
@@ -398,7 +341,6 @@ export function BookingPage() {
           </div>
 
           {/* AI Mixologist */}
-          {isFeatureEnabled('ai_sommelier') && (
           <div className={`liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
             <div className="flex items-center gap-2 mb-3">
               <Bot className="w-3.5 h-3.5 text-[#FFBF00]" />
@@ -443,40 +385,17 @@ export function BookingPage() {
               <p className="text-[8px] text-white/20 text-center py-2">Выберите настроение для рекомендации</p>
             )}
           </div>
-          )}
 
-          {/* Price & Order */}
-          <div className="liquid-glass rounded-2xl p-5 border border-[rgba(255,191,0,0.12)] bg-gradient-to-br from-[rgba(255,191,0,0.03)] to-transparent">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-white/40 mb-1">Цена</p>
-                <div className="flex gap-2">
-                  {PRICES.map(p => (
-                    <button key={p} onClick={() => setPrice(p)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all border ${
-                        price === p
-                          ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-[#FFBF00]'
-                          : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
-                      }`}
-                    >{p} ₽</button>
-                  ))}
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Итого</p>
-                <p className="text-2xl font-bold font-heading text-[#FFBF00]">{price} ₽</p>
-              </div>
-            </div>
-              <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleQuickOrder}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)] transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              Заказать
-            </motion.button>
-          </div>
+          {/* Order Button */}
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleQuickOrder}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)] transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Заказать
+          </motion.button>
 
           {/* Active Order Tracker (collapsible) */}
           {activeOrder && (

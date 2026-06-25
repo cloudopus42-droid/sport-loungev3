@@ -15,6 +15,7 @@ import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument } from './config/swagger';
 
+import { Router } from 'express';
 import { errorHandler } from './middleware/errorHandler';
 import { errorMonitor } from './middleware/errorMonitor';
 import { requestLogger } from './middleware/requestLogger';
@@ -40,6 +41,7 @@ import restockRoutes from './routes/restock';
 import smartFeaturesRoutes from './routes/smartFeatures';
 import inventoryRoutes from './routes/inventory';
 import menuRoutes from './routes/menu';
+import { supabase } from './config/supabase';
 import pagesRoutes from './routes/pages';
 import telegramRoutes from './routes/telegram';
 import monitoringRoutes from './routes/monitoring';
@@ -119,6 +121,17 @@ app.use('/api/invitations', invitationRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/showcases', showcaseRoutes);
 app.use('/api/ai', aiRoutes);
+
+const flavorsRouter = Router();
+flavorsRouter.get('/', async (_req, res, next) => {
+  try {
+    const { data, error } = await supabase.from('mixes').select('id, name, flavor, is_active, price').eq('is_active', true).order('name');
+    if (error) { res.json([]); return; }
+    res.json((data || []).map((m: any) => ({ id: m.id, name: m.flavor || m.name, category: 'Основные', is_active: m.is_active !== false, price_value: m.price })));
+  } catch (e) { next(e); }
+});
+app.use('/api/flavors', flavorsRouter);
+
 app.use('/api/tobacco', tobaccoRoutes);
 app.use('/api/knowledge-graph', knowledgeGraphRoutes);
 app.use('/api/memberships', membershipRoutes);

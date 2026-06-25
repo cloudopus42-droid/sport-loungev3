@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Image, Blend, Mail, Armchair, LogOut, Crown, Flame, Package, FileText, House, Bug, Globe, HeartPulse, Users
 } from 'lucide-react';
-import { DashboardIcon, ShowcaseIcon, PromoIcon, AnalyticsIcon, SettingsIcon, MenuIcon, CloseIcon, ChevronLeftIcon } from '@/components/icons';
+import { DashboardIcon, ShowcaseIcon, PromoIcon, SettingsIcon, MenuIcon, CloseIcon, ChevronLeftIcon } from '@/components/icons';
 import clsx from 'clsx';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
@@ -24,7 +24,7 @@ const sidebarItems: SidebarItem[] = [
   { path: '/admin/bookings', icon: Armchair, label: 'Заказы', end: false },
   { path: '/admin/orders', icon: Flame, label: 'Очередь', end: false },
   { path: '/admin/users', icon: Users, label: 'Клиенты', end: false },
-  { path: '/admin/analytics', icon: AnalyticsIcon, label: 'Аналитика', end: false },
+
   { path: '/admin/showcases', icon: ShowcaseIcon, label: 'Витрина', end: false },
   { path: '/admin/posts', icon: Image, label: 'Посты', end: false },
   { path: '/admin/mixes', icon: Blend, label: 'Миксы', end: false },

@@ -205,12 +205,26 @@ export function UsersAdmin() {
                     <p className="text-xs text-white/40 truncate">{user.email}</p>
                   </div>
 
-                  {/* Price */}
+                  {/* Price (inline editable) */}
                   <div className="hidden sm:flex items-center gap-2">
                     <span className="text-xs text-white/30">Цена:</span>
-                    <span className={`text-sm font-mono font-medium ${user.personalPrice ? 'text-[#FFBF00]' : 'text-white/20'}`}>
-                      {formatPrice(user.personalPrice)}
-                    </span>
+                    <select
+                      value={user.personalPrice ?? ''}
+                      onChange={async (e) => {
+                        const val = e.target.value === '' ? null : Number(e.target.value);
+                        try {
+                          await api(`/api/users/${user.id}`, { method: 'PATCH', body: { personal_price: val } });
+                          setUsers(prev => prev.map(u => u.id === user.id ? { ...u, personalPrice: val } : u));
+                          showToast(val !== null ? `Цена: ${val} ₽` : 'Цена сброшена', 'success');
+                        } catch { showToast('Ошибка', 'error'); }
+                      }}
+                      className="bg-[#0D0F13] border border-glass-border rounded-lg text-sm font-mono text-[#FFBF00] px-2 py-1 cursor-pointer focus:outline-none focus:border-[#FFBF00]/50"
+                    >
+                      <option value="">—</option>
+                      <option value="500">500 ₽</option>
+                      <option value="750">750 ₽</option>
+                      <option value="1000">1000 ₽</option>
+                    </select>
                   </div>
 
                   {/* Actions */}

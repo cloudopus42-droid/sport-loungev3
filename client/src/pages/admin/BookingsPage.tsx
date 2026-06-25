@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Filter, Flame } from 'lucide-react';
+import { Calendar, Filter, Flame, Trash2 } from 'lucide-react';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
@@ -181,16 +181,32 @@ export function AdminBookingsPage() {
                           )}
                         </div>
 
-                        {booking.status === 'pending' && (
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <GlowButton size="sm" onClick={() => updateStatus(booking._id, 'confirmed')} className="text-black font-bold">
-                              Принять
-                            </GlowButton>
-                            <GlowButton size="sm" variant="danger" onClick={() => updateStatus(booking._id, 'cancelled')}>
-                              Отклонить
-                            </GlowButton>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {booking.status === 'pending' && (
+                            <>
+                              <GlowButton size="sm" onClick={() => updateStatus(booking._id, 'confirmed')} className="text-black font-bold">
+                                Принять
+                              </GlowButton>
+                              <GlowButton size="sm" variant="danger" onClick={() => updateStatus(booking._id, 'cancelled')}>
+                                Отклонить
+                              </GlowButton>
+                            </>
+                          )}
+                          <button
+                            onClick={async () => {
+                              if (!confirm('Удалить заказ?')) return;
+                              try {
+                                await api.delete(`/api/bookings/${booking._id}`);
+                                setBookings(prev => prev.filter(b => b._id !== booking._id));
+                                showToast('Заказ удалён', 'success');
+                              } catch { showToast('Ошибка при удалении', 'error'); }
+                            }}
+                            className="p-2 rounded-lg bg-red-600/10 border border-red-500/20 hover:bg-red-600/20 text-red-500 transition-all"
+                            title="Удалить заказ"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </GlassCard>
                   </motion.div>
