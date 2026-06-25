@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { supabase } from '../config/supabase';
+import { config } from '../config/env';
 import { getIO } from '../socket';
 import { z } from 'zod';
 import { getPagination, paginatedResponse } from '../utils/pagination';
@@ -10,6 +11,7 @@ import {
   sendMasterCallNotification, 
   sendDelayNotification 
 } from '../services/ordersTelegram';
+import { sendStatusNotification } from '../services/telegram';
 
 const router = Router();
 
@@ -483,7 +485,7 @@ router.get('/me/preferences', auth, async (req: Request, res: Response, next: Ne
 router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status } = req.body;
-    const allowed = ['accepted', 'preparing', 'roasting', 'delivering', 'done'];
+    const allowed = ['accepted', 'preparing', 'roasting', 'delivering', 'done', 'cancelled'];
     
     if (!allowed.includes(status)) {
       res.status(400).json({ error: 'Некорректный статус заказа', status: 400 });
@@ -509,6 +511,22 @@ router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, nex
         order_id: updated.id,
         status,
       });
+
+    // Send cancellation notification if applicable
+    if (status === 'cancelled') {
+      const { data: userObj } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', updated.user_id)
+        .maybeSingle();
+      sendStatusNotification(
+        config.telegramChatId || '',
+        updated.seat_label || '',
+        new Date(updated.created_at).toLocaleDateString('ru-RU'),
+        new Date(updated.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        'cancelled'
+      ).catch(() => {});
+    }
 
     // Broadcast status change
     try {

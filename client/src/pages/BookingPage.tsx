@@ -12,8 +12,6 @@ import * as z from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeature } from '@/contexts/FeatureContext';
 import { useSocket } from '@/hooks/useSocket';
-import { CssSmoke } from '@/components/CssSmoke';
-import premiumHookah from '../premium_hookah.png';
 import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
 
@@ -272,66 +270,14 @@ export function BookingPage() {
     setShowConfirmModal(true);
   };
 
-  const flavorIcons = useMemo(() => {
-    const map: Record<string, { emoji: string; color: string }> = {};
-    flavors.forEach(f => map[f.name] = { emoji: f.emoji || '🔥', color: f.color || '#FF5722' });
-    return selectedFlavors.map(f => map[f] || { emoji: '🔥', color: '#FF5722' });
-  }, [selectedFlavors, flavors]);
-
   return (
     <div className="relative min-h-screen bg-dark-bg text-white overflow-hidden">
       {/* Ambient glows */}
       <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-[#FFBF00] opacity-[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#8D6B3D] opacity-[0.02] blur-[130px] rounded-full pointer-events-none z-0" />
 
-      {/* TZ-mandated layout: two-column on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 relative z-10">
-        
-        {/* Left: 3D Hookah Visualization (60%) */}
-        <div className="lg:col-span-7 relative min-h-[50vh] lg:min-h-screen bg-dark-bg">
-          <div className="sticky top-0 h-[50vh] lg:h-screen flex flex-col items-center justify-center">
-            {/* Flavor icons overlay */}
-            <div className="absolute top-1/4 right-4 lg:right-12 z-20 flex flex-col gap-2">
-              {flavorIcons.map((fi, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm shadow-[0_0_16px_rgba(255,191,0,0.1)]"
-                  style={{ background: `rgba(255,191,0,0.08)`, border: '0.5px solid rgba(255,191,0,0.2)' }}
-                >
-                  {fi.emoji}
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="w-full h-full relative flex items-center justify-center">
-              <CssSmoke count={12} />
-              <img
-                src={premiumHookah}
-                alt="Sport Lounge Premium Hookah"
-                className="max-h-[280px] w-auto object-contain z-10 animate-breathe-image"
-              />
-              {/* Gold progress bar */}
-              <div className="absolute bottom-8 left-[15%] right-[15%] h-px bg-[rgba(255,191,0,0.12)]">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-[#FFBF00] via-[#FFD54F] to-[#FFBF00]"
-                  style={{ width: `${((bowlIndex + 1) / BOWL_OPTIONS.length) * 100}%` }}
-                  animate={{ width: `${((bowlIndex + 1) / BOWL_OPTIONS.length) * 100}%` }}
-                  transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                />
-              </div>
-              {/* Bowl label */}
-              <div className="absolute bottom-12 left-[15%] right-[15%] flex justify-center text-[9px] uppercase tracking-[0.2em] text-white/20">
-                <span className="text-[#FFBF00]/60">{BOWL_OPTIONS[bowlIndex].name}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Selection Panel (40%) — scrollable */}
-        <div className="lg:col-span-5 overflow-y-auto lg:h-screen p-4 lg:p-8 space-y-5 pb-24 lg:pb-8">
+      {/* Single-column full-width form layout */}
+      <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 space-y-5 pb-24">
           
           {/* Header */}
           <div className="text-center lg:text-left">
@@ -583,7 +529,6 @@ export function BookingPage() {
             </motion.div>
           )}
         </div>
-      </div>
 
       {/* Order Confirmation Modal */}
       <AnimatePresence>

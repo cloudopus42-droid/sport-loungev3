@@ -4,12 +4,10 @@ import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MixCarousel3D } from '@/components/MixCarousel3D';
-import { CssSmoke } from '@/components/CssSmoke';
 import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
-import premiumHookah from '../premium_hookah.png';
 import { GlowIcon } from '@/components/ui/GlowIcon';
 
 type ShowcaseItem = {
@@ -147,7 +145,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ─── DASHBOARD — Hookah Visualizer + System Widgets ─── */}
+      {/* ─── DASHBOARD — System Status Widgets ─── */}
       <section className="relative pt-4 max-w-6xl mx-auto px-4 z-10">
         <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-6 select-none">
           <div className="flex items-center gap-2">
@@ -157,27 +155,7 @@ export function HomePage() {
           <span className="text-[10px] font-mono text-[#FFBF00] font-bold">SPORT LOUNGE CONSOLE V3.0</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-          {/* Main Visual: Premium Hookah PNG + CSS Smoke */}
-          <div className="md:col-span-6 lg:col-span-5">
-            <GlassCard className="p-6 h-full flex flex-col justify-between border border-[rgba(255,191,0,0.12)] bg-[rgba(15,12,10,0.5)] relative overflow-hidden select-none">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest block mb-2">VOLUMETRIC VISUALIZER</span>
-              <div className="relative h-48 flex items-center justify-center">
-                <CssSmoke count={18} />
-                <img
-                  src={premiumHookah}
-                  alt="Sport Lounge Premium Hookah"
-                  className="max-h-[190px] w-auto object-contain z-10 animate-breathe-image"
-                />
-              </div>
-              <div className="text-center pt-2">
-                <span className="text-[10px] text-white/50">Премиальные чаши и элитные смеси</span>
-              </div>
-            </GlassCard>
-          </div>
-
-          {/* System status widgets */}
-          <div className="md:col-span-6 lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <GlassCard className="p-5 flex flex-col justify-between border border-[rgba(255,191,0,0.08)] bg-[rgba(15,12,10,0.5)] select-none">
               <div>
                 <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-2">Нагрузка хоста</span>
@@ -234,7 +212,6 @@ export function HomePage() {
                 <span className="w-0.5 h-5 bg-[#FFBF00] rounded-full soundwave-bar" />
               </div>
             </GlassCard>
-          </div>
         </div>
       </section>
 

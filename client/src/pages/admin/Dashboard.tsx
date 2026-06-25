@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Award } from 'lucide-react';
+import { DollarSign, Award, XCircle } from 'lucide-react';
 import { AnalyticsIcon, BellIcon, UserIcon, PlusIcon } from '@/components/icons';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { StatCardSkeleton } from '@/components/ui/Skeleton';
@@ -157,20 +157,20 @@ export function Dashboard() {
       audio.play().catch((e) => console.log('Chime failed to play:', e.message));
     };
 
-    socket.on('booking:created', () => {
+    socket.on('order:created', () => {
       fetchData();
       playChime();
     });
 
-    socket.on('booking:updated', () => {
+    socket.on('order:updated', () => {
       fetchData();
     });
 
     return () => {
       fetchDataRef.current?.abort();
       socket.off('online:count');
-      socket.off('booking:created');
-      socket.off('booking:updated');
+      socket.off('order:created');
+      socket.off('order:updated');
     };
   }, [socket]);
 
@@ -193,6 +193,18 @@ export function Dashboard() {
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
       console.error('Failed to update hookah status:', err);
+    }
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    if (!window.confirm('Отменить этот заказ?')) return;
+    try {
+      await api(`/api/orders/${orderId}/status`, { method: 'PUT', body: { status: 'cancelled' } });
+      fetchData();
+      showToast('Заказ отменён', 'success');
+    } catch (err: any) {
+      console.error('Failed to cancel order:', err);
+      showToast('Не удалось отменить заказ', 'error');
     }
   };
 
@@ -353,14 +365,23 @@ export function Dashboard() {
                         </td>
                         <td className="py-3.5 px-3 text-right text-white font-semibold">{order.price} ₽</td>
                         <td className="py-3.5 pl-3 text-center">
-                          <button
-                            onClick={() => advanceHookahStatus(order.id, order.status)}
-                            className="px-3.5 py-1 rounded-full border border-accent-gold/45 hover:bg-accent-gold hover:text-black font-semibold text-[10px] text-accent-gold transition-all"
-                          >
-                            {order.status === 'accepted' && 'Начать прогрев (угли)'}
-                            {order.status === 'heating' && 'Почти готово'}
-                            {order.status === 'almost' && 'Готов к выдаче! 🔥'}
-                          </button>
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => advanceHookahStatus(order.id, order.status)}
+                              className="px-3.5 py-1 rounded-full border border-accent-gold/45 hover:bg-accent-gold hover:text-black font-semibold text-[10px] text-accent-gold transition-all"
+                            >
+                              {order.status === 'accepted' && 'Начать прогрев (угли)'}
+                              {order.status === 'heating' && 'Почти готово'}
+                              {order.status === 'almost' && 'Готов к выдаче! 🔥'}
+                            </button>
+                            <button
+                              onClick={() => cancelOrder(order.id)}
+                              className="p-1.5 rounded-full border border-red-500/30 hover:bg-red-500/20 text-red-400 transition-all"
+                              title="Отменить заказ"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
