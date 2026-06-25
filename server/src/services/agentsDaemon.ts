@@ -25,7 +25,7 @@ export function startAgentDaemon(agent: AgentConfig): void {
   if (processes.has(agent.id)) return;
   if (process.env[agent.envVar] === 'true') return;
 
-  const agentPath = path.resolve(__dirname, '../../', agent.scriptPath);
+  const agentPath = path.resolve(__dirname, '../../../', agent.scriptPath);
   if (!fs.existsSync(agentPath)) {
     console.log(`${agent.color} [${agent.label}] Script not found at ${agentPath}`);
     return;

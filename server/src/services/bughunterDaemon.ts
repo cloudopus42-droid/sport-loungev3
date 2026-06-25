@@ -15,7 +15,7 @@ export function startBugHunterDaemon(): void {
     return;
   }
 
-  const agentPath = path.resolve(__dirname, '../../agents/agents/bughunter/agent.js');
+  const agentPath = path.resolve(__dirname, '../../../agents/agents/bughunter/agent.js');
 
   try {
     daemonProcess = fork(agentPath, [], {

@@ -7,7 +7,7 @@ export function startWebScoutDaemon(): void {
   if (daemonProcess) { return; }
   if (process.env.WEBSCOUT_DISABLED === 'true') { return; }
 
-  const agentPath = path.resolve(__dirname, '../../agents/agents/webscout/agent.js');
+  const agentPath = path.resolve(__dirname, '../../../agents/agents/webscout/agent.js');
   if (!require('fs').existsSync(agentPath)) {
     console.log('🕷️ [WebScout] Agent script not found at', agentPath);
     return;
