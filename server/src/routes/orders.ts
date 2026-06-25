@@ -545,4 +545,39 @@ router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, nex
   }
 });
 
+// DELETE /api/orders/:id — Soft-delete order (admin only)
+router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data: order, error: fetchErr } = await supabase
+      .from('orders')
+      .select('id, status')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (fetchErr || !order) {
+      res.status(404).json({ error: 'Заказ не найден', status: 404 });
+      return;
+    }
+
+    const { error: updateErr } = await supabase
+      .from('orders')
+      .update({ status: 'cancelled' })
+      .eq('id', req.params.id);
+
+    if (updateErr) {
+      res.status(500).json({ error: 'Не удалось удалить заказ: ' + updateErr.message });
+      return;
+    }
+
+    try {
+      const io = getIO();
+      io.emit('order:updated', { id: req.params.id, status: 'cancelled' });
+    } catch {}
+
+    res.json({ success: true, message: 'Заказ отменён' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

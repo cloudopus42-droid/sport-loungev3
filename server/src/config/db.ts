@@ -64,6 +64,17 @@ async function runMigrations() {
       console.log('✅ admin_telegram_chats ok');
     }
   } catch {}
+
+  // Check tobacco inventory columns
+  try {
+    const { error: stockErr } = await supabase.from('mixes').select('stock_quantity').limit(1);
+    if (stockErr && stockErr.message?.includes('stock_quantity')) {
+      console.log('⚠️ Таблица mixes не имеет колонок для учёта табака.');
+      console.log('   → Выполни SQL из server/src/migrations/004_tobacco_inventory.sql в Supabase SQL Editor');
+    } else if (!stockErr) {
+      console.log('✅ tobacco columns ok');
+    }
+  } catch {}
 }
 
 export async function connectDB(): Promise<void> {

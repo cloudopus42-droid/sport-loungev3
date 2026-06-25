@@ -288,7 +288,8 @@ router.get('/taste-stats', auth, isAdmin, async (req: Request, res: Response, ne
 
     const { count: totalUsers, error: usersErr } = await supabase
       .from('users')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'user');
 
     if (usersErr) {
       res.status(500).json({ error: usersErr.message });

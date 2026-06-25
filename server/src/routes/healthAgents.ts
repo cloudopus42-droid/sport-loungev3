@@ -10,7 +10,7 @@ const STATUS_PATH = path.resolve(__dirname, '../../agents/status.json');
 
 const AGENT_IDS = ['cache-purger', 'health-checker', 'omni-fixer', 'webscout', 'bughunter'];
 
-function readAllAgentStatuses() {
+function readAllAgentStatuses(): Record<string, any> {
   try {
     const s = JSON.parse(fs.readFileSync(STATUS_PATH, 'utf-8'));
     const result: Record<string, any> = {};
@@ -34,8 +34,8 @@ router.get('/status', auth, isAdmin, async (_req: Request, res: Response, next: 
 // GET /api/agents/status/:agentId — Admin: get specific agent
 router.get('/status/:agentId', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const agents = readAllAgentStatuses();
-    const agent = agents[req.params.agentId];
+    const agents = readAllAgentStatuses() as Record<string, any>;
+    const agent = agents[String(req.params.agentId)];
     if (!agent) {
       res.status(404).json({ error: 'Агент не найден' });
       return;
