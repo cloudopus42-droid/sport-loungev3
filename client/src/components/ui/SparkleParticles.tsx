@@ -16,10 +16,10 @@ export function SparkleParticles({ count = 8 }: { count?: number }) {
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: 1.5 + Math.random() * 1.5,
+      size: 1 + Math.random() * 1,
       type: i % 3 === 0 ? 'silver' : 'gold',
-      delay: Math.random() * 6,
-      duration: 3.5 + Math.random() * 3,
+      delay: Math.random() * 8,
+      duration: 5 + Math.random() * 4,
     })),
     [count]
   );

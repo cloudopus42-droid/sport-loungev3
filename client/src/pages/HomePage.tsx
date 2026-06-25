@@ -77,7 +77,7 @@ export function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FFBF00] animate-ping" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFBF00]" />
             <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#FFBF00] font-bold">
               SPORT LOUNGE • КРУГЛОСУТОЧНО 24/7
             </span>
@@ -149,7 +149,7 @@ export function HomePage() {
       <section className="relative pt-4 max-w-6xl mx-auto px-4 z-10">
         <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-6 select-none">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-green-500" />
             <span className="text-[10px] font-mono text-white/50 tracking-wider">LIVE TELEMETRY FEED: SYSTEM ONLINE</span>
           </div>
           <span className="text-[10px] font-mono text-[#FFBF00] font-bold">SPORT LOUNGE CONSOLE V3.0</span>
@@ -196,7 +196,7 @@ export function HomePage() {
 
             <GlassCard className="p-5 sm:col-span-2 flex items-center justify-between gap-4 border border-[rgba(255,191,0,0.08)] bg-[rgba(15,12,10,0.5)] select-none">
               <div className="flex items-center gap-3 truncate">
-                <div className="w-9 h-9 rounded-xl bg-[#FFBF00]/10 border border-[#FFBF00]/20 flex items-center justify-center text-lg flex-shrink-0 animate-pulse">
+                <div className="w-9 h-9 rounded-xl bg-[#FFBF00]/10 border border-[#FFBF00]/20 flex items-center justify-center text-lg flex-shrink-0">
                   📻
                 </div>
                 <div className="truncate">
@@ -219,7 +219,7 @@ export function HomePage() {
       <section id="carousel" className="relative pt-8">
         <div className="text-center space-y-2 mb-6 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#FFBF00] font-semibold">
-            <Flame className="w-3.5 h-3.5 inline mr-1 text-[#FFBF00] animate-pulse" /> НАША КОЛЛЕКЦИЯ
+            <Flame className="w-3.5 h-3.5 inline mr-1 text-[#FFBF00]" /> НАША КОЛЛЕКЦИЯ
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
             Выберите <span className="gradient-text font-semibold italic">свой вкус</span>
@@ -318,7 +318,7 @@ export function HomePage() {
 
               <div className="space-y-4 max-w-xl z-10">
                 <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-[#FFBF00] font-semibold flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-[#FFBF00] animate-pulse" /> КОНСТРУКТОР ВКУСОВ
+                   <Flame className="w-3.5 h-3.5 text-[#FFBF00]" /> КОНСТРУКТОР ВКУСОВ
                 </span>
                 <h3 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider leading-none">
                   Создайте идеальный <span className="gradient-text font-semibold italic">микс</span>
@@ -335,7 +335,7 @@ export function HomePage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Flame className="w-4 h-4 animate-pulse" /> Открыть конструктор
+                     <Flame className="w-4 h-4" /> Открыть конструктор
                   </motion.button>
                 </NavLink>
               </div>
@@ -351,7 +351,7 @@ export function HomePage() {
 
               <div className="space-y-4 z-10 mt-4">
                 <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-[#FFBF00]/90 font-bold block">Закрытый Клуб</span>
-                <h4 className="text-5xl font-display font-bold text-[#FFBF00] tracking-widest animate-pulse">VIP</h4>
+                 <h4 className="text-5xl font-display font-bold text-[#FFBF00] tracking-widest">VIP</h4>
                 <p className="text-xs text-white font-medium uppercase tracking-wider mt-4">VIP-комната</p>
                 <p className="text-[11px] text-white/45 font-light leading-normal">для особых гостей</p>
               </div>

@@ -91,7 +91,7 @@ export function ConciergeChat() {
           aria-label={isOpen ? 'Закрыть чат' : 'Открыть чат'}
         >
           <MessageSquare className="w-4 h-4 text-accent-gold" />
-          <div className="w-1 h-1 rounded-full bg-accent-gold/40 animate-pulse" />
+          <div className="w-1 h-1 rounded-full bg-accent-gold/40" />
           <div className="w-1 h-1 rounded-full bg-accent-gold/20" />
           <ChevronLeft className={`w-3 h-3 text-white/30 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
