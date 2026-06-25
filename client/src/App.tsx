@@ -39,6 +39,7 @@ const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then(m =>
 const BugHunterPage = lazy(() => import('@/pages/admin/BugHunterPage').then(m => ({ default: m.BugHunterPage })));
 const WebScoutPage = lazy(() => import('@/pages/admin/WebScoutPage').then(m => ({ default: m.WebScoutPage })));
 const AgentHealthPage = lazy(() => import('@/pages/admin/AgentHealthPage').then(m => ({ default: m.AgentHealthPage })));
+const UsersAdmin = lazy(() => import('@/pages/admin/UsersAdmin').then(m => ({ default: m.UsersAdmin })));
 
 export default function App() {
   return (
@@ -90,6 +91,7 @@ export default function App() {
           <Route path="bughunter" element={<BugHunterPage />} />
           <Route path="webscout" element={<WebScoutPage />} />
           <Route path="agent-health" element={<AgentHealthPage />} />
+          <Route path="users" element={<UsersAdmin />} />
         </Route>
 
               <Route path="/404" element={<NotFound />} />

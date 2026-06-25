@@ -17,7 +17,7 @@ const router = Router();
 
 const createOrderSchema = z.object({
   mix_id: z.string().uuid().nullable().optional(),
-  liquid_id: z.string().min(1),
+  liquid_id: z.string().min(1).optional().default('water'),
   notes: z.string().max(500).optional().default(''),
   seat_id: z.string().optional().default(''),
   seat_label: z.string().optional().default(''),
@@ -47,6 +47,7 @@ function mapOrderToFrontend(o: any) {
     seatId: o.seat_id,
     seatLabel: o.seat_label,
     seatZone: o.seat_zone,
+    price: o.price,
     createdAt: o.created_at,
   };
 }
@@ -58,6 +59,14 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     const userId = req.user!.id;
     const promisedTime = new Date(Date.now() + 15 * 60 * 1000).toISOString();
     const priority = Date.now();
+
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('personal_price, name, phone')
+      .eq('id', userId)
+      .maybeSingle();
+
+    const orderPrice = userProfile?.personal_price || null;
 
     const { data: order, error: insertErr } = await supabase
       .from('orders')
@@ -72,6 +81,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
         seat_id: data.seat_id,
         seat_label: data.seat_label,
         seat_zone: data.seat_zone,
+        price: orderPrice,
       })
       .select()
       .single();
@@ -83,13 +93,6 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 
     // Fire-and-forget: status history
     supabase.from('order_status_history').insert({ order_id: order.id, status: 'accepted' }).then();
-
-    // Fetch user details for notification
-    const { data: userObj } = await supabase
-      .from('users')
-      .select('name, phone')
-      .eq('id', userId)
-      .maybeSingle();
 
     // Auto-decrement tobacco stock and check for restock
     if (data.mix_id) {
@@ -116,8 +119,8 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 
     const mixDetails = { name: 'Индивидуальный микс' };
 
-    if (userObj) {
-      sendOrderNotification(order, userObj.name, userObj.phone || 'Не указан', mixDetails).catch(() => {});
+    if (userProfile) {
+      sendOrderNotification(order, userProfile.name, userProfile.phone || 'Не указан', mixDetails).catch(() => {});
     }
 
     try { getIO().emit('order:created', mapOrderToFrontend(order)); } catch {}

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  Image, Blend, Mail, Armchair, LogOut, Crown, Flame, Package, FileText, House, Bug, Globe, HeartPulse
+  Image, Blend, Mail, Armchair, LogOut, Crown, Flame, Package, FileText, House, Bug, Globe, HeartPulse, Users
 } from 'lucide-react';
 import { DashboardIcon, ShowcaseIcon, PromoIcon, AnalyticsIcon, SettingsIcon, MenuIcon, CloseIcon, ChevronLeftIcon } from '@/components/icons';
 import clsx from 'clsx';
@@ -22,13 +22,14 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { path: '/admin', icon: DashboardIcon, label: 'Дашборд', end: true },
   { path: '/admin/bookings', icon: Armchair, label: 'Заказы', end: false },
+  { path: '/admin/orders', icon: Flame, label: 'Очередь', end: false },
+  { path: '/admin/users', icon: Users, label: 'Клиенты', end: false },
   { path: '/admin/analytics', icon: AnalyticsIcon, label: 'Аналитика', end: false },
   { path: '/admin/showcases', icon: ShowcaseIcon, label: 'Витрина', end: false },
   { path: '/admin/posts', icon: Image, label: 'Посты', end: false },
   { path: '/admin/mixes', icon: Blend, label: 'Миксы', end: false },
   { path: '/admin/promos', icon: PromoIcon, label: 'Акции', end: false },
   { path: '/admin/invitations', icon: Mail, label: 'Приглашения', end: false },
-  { path: '/admin/orders', icon: Flame, label: 'Очередь', end: false },
   { path: '/admin/tobacco', icon: Package, label: 'Табак', end: false },
   { path: '/admin/smart-features', icon: SettingsIcon, label: 'Smart Features', end: false },
   { path: '/admin/logs', icon: FileText, label: 'Логи', end: false },
@@ -41,7 +42,7 @@ const mobileTabItems: SidebarItem[] = [
   { path: '/admin', icon: DashboardIcon, label: 'Дашборд', end: true },
   { path: '/admin/bookings', icon: Armchair, label: 'Заказы', end: false },
   { path: '/admin/orders', icon: Flame, label: 'Очередь', end: false },
-  { path: '/admin/analytics', icon: AnalyticsIcon, label: 'Аналитика', end: false },
+  { path: '/admin/users', icon: Users, label: 'Клиенты', end: false },
   { path: '/admin/smart-features', icon: SettingsIcon, label: 'Smart', end: false },
 ];
 
