@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';

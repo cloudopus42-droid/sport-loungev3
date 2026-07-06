@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Cookie, Shield, Database, Eye } from 'lucide-react';
+import { Info, Cookie, Shield, Database, Eye } from 'lucide-react';
 
 export function CookiePolicyPage() {
   return (

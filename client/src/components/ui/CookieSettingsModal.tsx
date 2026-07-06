@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { CookieConsent, CookieCategory } from '@/hooks/useCookieConsent';
 
 interface Props {

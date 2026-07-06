@@ -402,9 +402,11 @@ export function OrdersAdmin() {
                         {order.masterCalled && (
                           <button
                             onClick={async () => {
-                              await api(`/api/orders/${order.id}/request-master`, { method: 'POST' });
-                              setOrders(prev => prev.map(o => o.id === order.id ? { ...o, masterCalled: false } : o));
-                              showToast('Статус вызова мастера сброшен.', 'success');
+                              try {
+                                await api(`/api/orders/${order.id}/reset-master`, { method: 'POST' });
+                                setOrders(prev => prev.map(o => o.id === order.id ? { ...o, masterCalled: false } : o));
+                                showToast('Статус вызова мастера сброшен.', 'success');
+                              } catch { showToast('Ошибка при сбросе', 'error'); }
                             }}
                             className="w-full py-1.5 rounded-lg border border-red-500/30 text-red-500 bg-red-500/5 hover:bg-red-500/10 text-[10px] font-bold uppercase tracking-wider"
                           >

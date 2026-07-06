@@ -464,7 +464,6 @@ export function ProfilePage() {
       const data = await api('/api/auth/avatar', {
         method: 'POST',
         body: formData,
-        headers: { 'Content-Type': 'multipart/form-data' }
       });
       
       const updatedUser: UserType = { ...user!, avatar: data.user.avatar };

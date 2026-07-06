@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Crown, LogOut, CalendarCheck, Sparkles
 } from 'lucide-react';
-import { HomeIcon, MenuIcon, UserIcon, CloseIcon, ChevronRightIcon } from '@/components/icons';
+import { HomeIcon, MenuIcon, UserIcon, CloseIcon } from '@/components/icons';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { SEO } from '@/components/SEO';
@@ -271,15 +271,15 @@ export function MainLayout() {
                 to="/login"
                 className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 hover:text-white transition-all duration-300 px-3 py-1.5"
               >
-                Sign In
+                Войти
               </NavLink>
             )}
 
-            <NavLink to="/booking" aria-label="Сделать заказ">
-              <button className="btn-primary px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3" />
-                Заказ
-              </button>
+            <NavLink to="/booking" aria-label="Сделать заказ"
+              className="btn-primary px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3 h-3" />
+              Заказ
             </NavLink>
 
             <button
@@ -410,7 +410,7 @@ export function MainLayout() {
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-white/10 text-white/40 font-mono text-[11px] uppercase tracking-wider hover:text-white hover:border-white/20 transition-all"
                   >
                     <UserIcon className="w-3.5 h-3.5" />
-                    Sign In
+                    Войти
                   </NavLink>
                 )}
               </div>

@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { useSearchParams, Link } from 'react-router-dom';
 import {
-  Flame, Clock, CheckCircle2, Circle, AlertTriangle,
+  Flame, Clock, CheckCircle2, AlertTriangle,
   Phone, ArrowLeft, RefreshCw
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -13,12 +12,13 @@ import api from '@/lib/api';
 
 const STEPS = [
   { key: 'accepted', label: 'Принят', icon: CheckCircle2 },
-  { key: 'heating', label: 'Угли греются', icon: Flame },
-  { key: 'almost', label: 'Почти готов', icon: Clock },
-  { key: 'ready', label: 'Готов!', icon: CheckCircle2 },
+  { key: 'preparing', label: 'Подготовка', icon: Flame },
+  { key: 'roasting', label: 'Прогрев', icon: Clock },
+  { key: 'delivering', label: 'Подача', icon: Phone },
+  { key: 'done', label: 'Подан', icon: CheckCircle2 },
 ];
 
-const STEP_ORDER = ['accepted', 'heating', 'almost', 'ready'];
+const STEP_ORDER = ['accepted', 'preparing', 'roasting', 'delivering', 'done'];
 
 export function OrderTrackerPage() {
   const [searchParams] = useSearchParams();
@@ -64,7 +64,7 @@ export function OrderTrackerPage() {
   }, [socket, orderId]);
 
   useEffect(() => {
-    if (!order || order.status === 'ready' || order.status === 'done') return;
+    if (!order || order.status === 'done') return;
     const interval = setInterval(() => {
       setRemainingSeconds(prev => Math.max(0, prev - 1));
     }, 1000);
@@ -128,7 +128,7 @@ export function OrderTrackerPage() {
     );
   }
 
-  const isDone = order.status === 'done' || order.status === 'ready';
+  const isDone = order.status === 'done';
 
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col">
@@ -192,12 +192,12 @@ export function OrderTrackerPage() {
         {isDone && (
           <GlassCard variant="premium" className="p-8 text-center">
             <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-            <h2 className="text-lg font-heading font-bold text-white mb-1">Кальян готов!</h2>
-            <p className="text-sm text-white/50">Мастер уже несёт его к вашему столу</p>
+            <h2 className="text-lg font-heading font-bold text-white mb-1">Кальян подан!</h2>
+            <p className="text-sm text-white/50">Приятного покура!</p>
           </GlassCard>
         )}
 
-        {order?.rating === null && order?.status === 'ready' && (
+        {order?.rating === null && isDone && (
           <GlassCard variant="premium" className="p-5">
             <h3 className="text-sm font-heading font-semibold text-white mb-3 text-center">Оцените кальян</h3>
             <div className="flex justify-center gap-2">

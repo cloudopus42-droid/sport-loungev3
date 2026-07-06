@@ -283,6 +283,45 @@ router.post('/:id/request-master', auth, async (req: Request, res: Response, nex
   }
 });
 
+// POST /api/orders/:id/reset-master - Reset master call flag (admin only)
+router.post('/:id/reset-master', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data: order, error: fetchErr } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (fetchErr || !order) {
+      res.status(404).json({ error: 'Заказ не найден', status: 404 });
+      return;
+    }
+
+    const { data: updated, error: updateErr } = await supabase
+      .from('orders')
+      .update({ master_called: false })
+      .eq('id', order.id)
+      .select()
+      .single();
+
+    if (updateErr) {
+      res.status(500).json({ error: 'Не удалось сбросить вызов мастера: ' + updateErr.message });
+      return;
+    }
+
+    try {
+      const io = getIO();
+      io.emit('order:updated', mapOrderToFrontend(updated));
+    } catch (socketErr) {
+      console.warn('⚠️ Socket IO update emit failed:', socketErr);
+    }
+
+    res.json({ success: true, message: 'Вызов мастера сброшен.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/orders/:id/rating - Submit order experience evaluation
 router.post('/:id/rating', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {

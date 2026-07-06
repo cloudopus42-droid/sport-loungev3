@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 
 export function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [flipping, setFlipping] = useState(false);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,12 +23,8 @@ export function LoginPage() {
   const redirectUrl = searchParams.get('redirect') || '/';
 
   const flip = () => {
-    setFlipping(true);
     setError('');
-    setTimeout(() => {
-      setIsLogin(!isLogin);
-      setFlipping(false);
-    }, 300);
+    setTimeout(() => setIsLogin(!isLogin), 300);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -66,7 +61,8 @@ export function LoginPage() {
     setError('');
     setGoogleLoading(true);
     try { await loginWithGoogle(); }
-    catch (err: any) { setError(err.message || 'Не удалось запустить вход через Google'); setGoogleLoading(false); }
+    catch (err: any) { setError(err.message || 'Не удалось запустить вход через Google'); }
+    finally { setGoogleLoading(false); }
   };
 
   return (
@@ -94,7 +90,7 @@ export function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[#FFBF00] to-[#FFBF00] flex items-center justify-center shadow-[0_0_24px_rgba(255,191,0,0.1)] mb-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#FFBF00] flex items-center justify-center shadow-[0_0_24px_rgba(255,191,0,0.1)] mb-4">
             <Crown className="w-8 h-8 text-[#0b0807]" />
           </div>
           <h1 className="text-2xl font-heading font-bold text-white tracking-wide">SPORT LOUNGE</h1>
@@ -295,7 +291,6 @@ export function LoginPage() {
           )}
         </AnimatePresence>
 
-        {/* Footer links */}
         {isLogin && (
           <motion.p
             initial={{ opacity: 0 }}
@@ -304,7 +299,7 @@ export function LoginPage() {
             className="text-center text-[10px] text-white/20 mt-6"
           >
             Нажимая «Войти», вы соглашаетесь с{' '}
-            <span className="text-white/30 hover:text-white/50 cursor-pointer">условиями использования</span>
+            <a href="/cookie-policy" className="text-white/30 hover:text-white/50 transition-colors">условиями использования</a>
           </motion.p>
         )}
       </div>

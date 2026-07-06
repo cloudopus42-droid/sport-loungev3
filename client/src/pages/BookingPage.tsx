@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   Check, Clock, Sparkles,
   Bot, ThumbsUp, ShoppingCart, ChevronRight,
   Leaf, Zap
@@ -13,8 +13,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
-
-type Mix = any;
 
 type Flavor = {
   id: string;
@@ -75,17 +73,14 @@ export function BookingPage() {
   const { isAuthenticated } = useAuth();
   const { socket } = useSocket();
 
-  const [mixes, setMixes] = useState<Mix[]>([]);
   const [flavors, setFlavors] = useState<Flavor[]>(FALLBACK_FLAVORS);
   const [loading, setLoading] = useState(false);
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
   const [selectedMix, setSelectedMix] = useState<any | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showMixBuilder, setShowMixBuilder] = useState(false);
 
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
   const [flavorCategory, setFlavorCategory] = useState('Все');
-  const [activeTab, setActiveTab] = useState<'mixes' | 'ai'>('mixes');
   const [aiMood, setAiMood] = useState<string[]>([]);
   const [strength, setStrength] = useState<'light' | 'medium' | 'strong'>('medium');
   const [masterCalled, setMasterCalled] = useState(false);
@@ -94,7 +89,6 @@ export function BookingPage() {
   const [savingMix, setSavingMix] = useState(false);
   const [mixSaved, setMixSaved] = useState(false);
   const timerIntervalRef = useRef<any>(null);
-  const loadMixesRef = useRef<AbortController | null>(null);
   const fetchOrderStatusRef = useRef<AbortController | null>(null);
 
   const aiRecommendations = useMemo(() => {
@@ -110,39 +104,10 @@ export function BookingPage() {
     return [...new Set(aiMood.flatMap(m => moodFlavorMap[m] || []))].slice(0, 6);
   }, [aiMood]);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<BookingFormValues>({
+  const { register, handleSubmit, reset } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: { specialNotes: '' },
   });
-
-  const loadMixes = () => {
-    loadMixesRef.current?.abort();
-    const ac = new AbortController();
-    loadMixesRef.current = ac;
-    setLoading(true);
-    let localCustomMix: any = null;
-    try {
-      const saved = localStorage.getItem('my_saved_mix') || localStorage.getItem('prefilled_mix');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.hookahMix?.length > 0) {
-          localCustomMix = {
-            id: 'custom-saved-mix',
-            name: 'Мой рецепт (ИИ-Миксолог)',
-            description: `Сборка: ${parsed.hookahMix.map((n: string) => `${n} (${parsed.mixPercentages[n]}%)`).join(', ')}`,
-            strength: parsed.hookahStrength === 'light' ? 3 : parsed.hookahStrength === 'medium' ? 6 : 9,
-            isCustom: true,
-            raw: parsed,
-          };
-        }
-      }
-    } catch (e) {}
-    setMixes(localCustomMix ? [localCustomMix] : []);
-    api<Mix[]>('/api/mixes', { signal: ac.signal })
-      .then(data => setMixes(prev => localCustomMix ? [localCustomMix, ...(data || [])] : data || []))
-      .catch((err: any) => { if (err?.name !== 'AbortError') showToast('Сеть недоступна', 'error'); })
-      .finally(() => setLoading(false));
-  };
 
   const fetchOrderStatus = (id: string) => {
     fetchOrderStatusRef.current?.abort();
@@ -158,7 +123,6 @@ export function BookingPage() {
   };
 
   useEffect(() => {
-    loadMixes();
     const ac = new AbortController();
     api<Flavor[]>('/api/flavors', { signal: ac.signal })
       .then((data) => {
@@ -168,7 +132,7 @@ export function BookingPage() {
         }
       })
       .catch(() => {});
-    return () => { loadMixesRef.current?.abort(); ac.abort(); };
+    return () => { ac.abort(); };
   }, []);
 
   useEffect(() => {
@@ -207,12 +171,6 @@ export function BookingPage() {
 
   const toggleFlavor = (name: string) => {
     setSelectedFlavors(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name].slice(0, 4));
-  };
-
-  const handleMixSelect = (mix: Mix) => {
-    if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/booking'); return; }
-    setSelectedMix(mix);
-    setShowConfirmModal(true);
   };
 
   const onOrderSubmit = async (data: BookingFormValues) => {
@@ -295,7 +253,7 @@ export function BookingPage() {
               Собери свой <span className="text-[#FFBF00]">кальян</span>
             </h1>
             <p className="text-white/40 text-xs max-w-md">
-              Выберите чашу, жидкость и вкусы — 3D-кальян изменится в реальном времени
+              Выберите вкусы и крепость, добавьте рецепт в профиль или закажите сразу
             </p>
           </div>
 
@@ -451,7 +409,7 @@ export function BookingPage() {
                 </div>
               </button>
               {showOrderTracker && (
-                <div className="space-y-3 pl-3">
+                <div className="space-y-3 pl-3 relative">
                   <div className="absolute left-[18px] top-8 bottom-4 w-px bg-gradient-to-b from-[#FFBF00] to-white/5" />
                   {stages.map((stage, idx) => {
                     const stagesList = stages.map(s => s.id);

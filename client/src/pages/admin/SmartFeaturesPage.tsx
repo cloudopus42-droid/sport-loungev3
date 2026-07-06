@@ -99,7 +99,7 @@ export function SmartFeaturesPage() {
       prev.map((f) => (f.id === feature.id ? { ...f, enabled: newEnabled } : f))
     );
     try {
-      await api(`/api/smart-features/${feature.id}`, { method: 'PUT', body: { enabled: newEnabled } });
+      await api(`/api/smart-features/${feature.id}`, { method: 'PUT', body: { enabled: newEnabled, config: feature.config } });
       showToast(
         `${feature.name} ${newEnabled ? 'включена' : 'отключена'}`,
         'success'
@@ -279,7 +279,7 @@ export function SmartFeaturesPage() {
                     type="button"
                     onClick={() => { setEditModalOpen(false); setEditingFeature(null); }}
                   >
-                    Cancel
+                    Отмена
                   </GlowButton>
                   <GlowButton
                     variant="primary"
@@ -287,7 +287,7 @@ export function SmartFeaturesPage() {
                     loading={savingConfig}
                     onClick={handleSaveConfig}
                   >
-                    Save
+                    Сохранить
                   </GlowButton>
                 </div>
               </div>

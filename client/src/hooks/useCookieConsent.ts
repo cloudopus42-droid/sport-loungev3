@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 export type CookieCategory = 'necessary' | 'analytics' | 'marketing' | 'functional';
 
 export interface CookieConsent {
-  necessary: true;
+  necessary: boolean;
   analytics: boolean;
   marketing: boolean;
   functional: boolean;

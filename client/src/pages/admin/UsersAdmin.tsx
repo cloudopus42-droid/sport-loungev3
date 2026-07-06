@@ -114,7 +114,6 @@ export function UsersAdmin() {
   };
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
-  const formatPrice = (p: number | null) => p !== null ? `${p} ₽` : '—';
 
   return (
     <div className="space-y-6">

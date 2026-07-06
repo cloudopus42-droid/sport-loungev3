@@ -6,11 +6,10 @@ import { useCookieConsent } from '@/hooks/useCookieConsent';
 
 export function CookieBanner() {
   const { isFeatureEnabled } = useFeature();
-  const { isBannerVisible, acceptAll, rejectAll, dismissBanner, consent, setConsent } = useCookieConsent();
+  const { isBannerVisible, acceptAll, rejectAll, consent, setConsent } = useCookieConsent();
   const [showSettings, setShowSettings] = useState(false);
 
   if (!isFeatureEnabled('cookie_consent')) return null;
-  if (!isBannerVisible) return null;
 
   return (
     <>
@@ -45,6 +44,13 @@ export function CookieBanner() {
                   style={{ fontFamily: '"Space Mono", monospace' }}
                 >
                   Отклонить
+                </button>
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="px-3 py-1.5 rounded text-[11px] uppercase tracking-wider bg-transparent border border-[#999999]/30 text-white/40 hover:text-white hover:border-[#999999] transition-colors"
+                  style={{ fontFamily: '"Space Mono", monospace' }}
+                >
+                  Настроить
                 </button>
               </div>
             </div>
