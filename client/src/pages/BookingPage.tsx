@@ -219,7 +219,7 @@ export function BookingPage() {
       }});
       setMixSaved(true);
       showToast('Рецепт сохранён в профиль!', 'success');
-    } catch { showToast('Ошибка сохранения', 'error'); }
+    } catch (err: any) { showToast(err?.error || 'Ошибка сохранения', 'error'); }
     finally { setSavingMix(false); }
   };
 

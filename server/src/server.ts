@@ -13,15 +13,19 @@ import { startSupportBot } from './services/supportBot';
 import { startAdminBot } from './services/adminBot';
 import { startOrderScheduler } from './services/orderScheduler';
 import { seedSmartFeatures } from './routes/smartFeatures';
+import { runMigrations } from './migrate';
 
 async function bootstrap(): Promise<void> {
-  // 1. Connect to Database
+  // 1. Auto-apply SQL migrations
+  await runMigrations();
+
+  // 2. Connect to Database (legacy check)
   await connectDB();
 
-  // 2. Seed smart features (background — don't block server start)
+  // 3. Seed smart features (background — don't block server start)
   seedSmartFeatures().catch(err => console.warn('⚠️ Smart features seed error:', err));
 
-  // 3. Create HTTP server and init Socket.IO
+  // 4. Create HTTP server and init Socket.IO
   const server = http.createServer(app);
   initSocket(server);
 
