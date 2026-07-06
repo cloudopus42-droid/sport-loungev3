@@ -186,9 +186,15 @@ export function BookingPage() {
     try {
       const isCustom = selectedMix.isCustom;
       let finalNotes = data.specialNotes || '';
-      if (isCustom && selectedMix.raw) {
+      if (isCustom && selectedMix.raw && selectedMix.raw.hookahMix?.length > 0) {
         const raw = selectedMix.raw;
-        finalNotes = `[ИИ-Микс: ${raw.hookahMix.map((n: string) => `${n} (${raw.mixPercentages[n]}%)`).join(', ')}] ${finalNotes}`;
+        const hasPercentages = Object.keys(raw.mixPercentages || {}).length > 0;
+        const prefix = raw.fromSavedMix ? 'Сохранённый рецепт' : 'ИИ-Микс';
+        if (hasPercentages) {
+          finalNotes = `[${prefix}: ${raw.hookahMix.map((n: string) => `${n} (${raw.mixPercentages[n]}%)`).join(', ')}] ${finalNotes}`;
+        } else {
+          finalNotes = `[${prefix}: ${raw.hookahMix.join(', ')}] ${finalNotes}`;
+        }
       }
       const res = await api('/api/orders', { method: 'POST', body: {
         mix_id: isCustom ? null : selectedMix.id, notes: finalNotes,
@@ -212,12 +218,14 @@ export function BookingPage() {
   };
 
   const handleOrderSavedMix = (mix: any) => {
+    const flavors = Array.isArray(mix.flavors) ? mix.flavors : [];
     setSelectedMix({
-      id: mix.id,
+      id: 'custom-saved',
       name: mix.name,
-      description: Array.isArray(mix.flavors) ? mix.flavors.join(', ') : '',
+      description: flavors.join(', '),
       strength: mix.strength === 'light' ? 3 : mix.strength === 'strong' ? 9 : 6,
-      isCustom: false,
+      isCustom: true,
+      raw: { hookahMix: flavors, mixPercentages: {}, fromSavedMix: true },
     });
     setShowConfirmModal(true);
   };
