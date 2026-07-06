@@ -74,6 +74,37 @@ router.post('/user-mixes', auth, async (req: Request, res: Response, next: NextF
   } catch (e) { next(e); }
 });
 
+// DELETE /api/mixes/user-mixes/:id — Auth (delete own saved mix)
+router.delete('/user-mixes/:id', auth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data: mix, error: fetchErr } = await supabase
+      .from('user_mixes')
+      .select('id, user_id')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (fetchErr || !mix) {
+      res.status(404).json({ error: 'Микс не найден' });
+      return;
+    }
+    if (mix.user_id !== req.user!.id) {
+      res.status(403).json({ error: 'Это не ваш микс' });
+      return;
+    }
+
+    const { error: delErr } = await supabase
+      .from('user_mixes')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (delErr) {
+      res.status(500).json({ error: delErr.message });
+      return;
+    }
+    res.json({ success: true });
+  } catch (e) { next(e); }
+});
+
 // GET /api/mixes — Public
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {

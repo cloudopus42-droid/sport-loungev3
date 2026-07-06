@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, Clock, Sparkles,
   Bot, ThumbsUp, ShoppingCart, ChevronRight,
-  Leaf, Zap
+  Leaf, Zap, Bookmark, Trash2, Flame
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -88,6 +88,8 @@ export function BookingPage() {
   const [showOrderTracker, setShowOrderTracker] = useState(false);
   const [savingMix, setSavingMix] = useState(false);
   const [mixSaved, setMixSaved] = useState(false);
+  const [userMixes, setUserMixes] = useState<any[]>([]);
+  const [showSavedMixes, setShowSavedMixes] = useState(false);
   const timerIntervalRef = useRef<any>(null);
   const fetchOrderStatusRef = useRef<AbortController | null>(null);
 
@@ -132,8 +134,13 @@ export function BookingPage() {
         }
       })
       .catch(() => {});
+    if (isAuthenticated) {
+      api<any[]>('/api/mixes/user-mixes', { signal: ac.signal })
+        .then(data => { if (data?.length) setUserMixes(data); })
+        .catch(() => {});
+    }
     return () => { ac.abort(); };
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const savedOrderId = localStorage.getItem('current_order_id');
@@ -194,6 +201,25 @@ export function BookingPage() {
       showToast('Заказ успешно принят!', 'success');
     } catch (err) { showToast('Не удалось оформить заказ', 'error'); }
     finally { setLoading(false); }
+  };
+
+  const handleDeleteUserMix = async (id: string) => {
+    try {
+      await api(`/api/mixes/user-mixes/${id}`, { method: 'DELETE' });
+      setUserMixes(prev => prev.filter(m => m.id !== id));
+      showToast('Рецепт удалён', 'success');
+    } catch { showToast('Ошибка удаления', 'error'); }
+  };
+
+  const handleOrderSavedMix = (mix: any) => {
+    setSelectedMix({
+      id: mix.id,
+      name: mix.name,
+      description: Array.isArray(mix.flavors) ? mix.flavors.join(', ') : '',
+      strength: mix.strength === 'light' ? 3 : mix.strength === 'strong' ? 9 : 6,
+      isCustom: false,
+    });
+    setShowConfirmModal(true);
   };
 
   const handleCallMaster = async () => {
@@ -376,6 +402,77 @@ export function BookingPage() {
               <Bot className="w-3.5 h-3.5" />
               {mixSaved ? '✓ Сохранено' : savingMix ? 'Сохранение...' : 'Сохранить рецепт в профиль'}
             </motion.button>
+          )}
+
+          {/* Saved Mixes Panel */}
+          {isAuthenticated && userMixes.length > 0 && (
+            <div className="liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]">
+              <button onClick={() => setShowSavedMixes(!showSavedMixes)}
+                className="flex items-center justify-between w-full"
+              >
+                <div className="flex items-center gap-2">
+                  <Bookmark className="w-3.5 h-3.5 text-[#FFBF00]" />
+                  <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Мои рецепты</h3>
+                  <span className="text-[9px] text-white/30 ml-1">({userMixes.length})</span>
+                </div>
+                <ChevronRight className={`w-3 h-3 text-white/30 transition-transform ${showSavedMixes ? 'rotate-90' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {showSavedMixes && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
+                      {userMixes.map(mix => (
+                        <div key={mix.id}
+                          className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[rgba(255,191,0,0.15)] transition-all group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-[rgba(255,191,0,0.08)] flex items-center justify-center flex-shrink-0">
+                            <Flame className="w-3.5 h-3.5 text-[#FFBF00]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-semibold text-white truncate">{mix.name}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {Array.isArray(mix.flavors) && mix.flavors.slice(0, 3).map((f: string) => (
+                                <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] text-white/50">{f}</span>
+                              ))}
+                              {Array.isArray(mix.flavors) && mix.flavors.length > 3 && (
+                                <span className="text-[8px] text-white/30">+{mix.flavors.length - 3}</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded ${
+                                mix.strength === 'light' ? 'bg-green-500/10 text-green-400' :
+                                mix.strength === 'strong' ? 'bg-red-500/10 text-red-400' :
+                                'bg-[rgba(255,191,0,0.1)] text-[#FFBF00]'
+                              }`}>
+                                {mix.strength === 'light' ? 'Лёгкая' : mix.strength === 'strong' ? 'Крепкая' : 'Средняя'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1.5 flex-shrink-0">
+                            <button onClick={() => handleOrderSavedMix(mix)}
+                              className="px-3 py-1 rounded-lg bg-[rgba(255,191,0,0.12)] border border-[rgba(255,191,0,0.2)] text-[#FFBF00] text-[8px] font-bold uppercase tracking-wider hover:bg-[rgba(255,191,0,0.2)] transition-all whitespace-nowrap"
+                            >
+                              Заказать
+                            </button>
+                            <button onClick={() => handleDeleteUserMix(mix.id)}
+                              className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all self-end"
+                              aria-label="Удалить рецепт"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
 
           {/* Order Button */}
