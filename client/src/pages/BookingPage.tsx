@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, Clock, Sparkles,
@@ -105,6 +105,24 @@ export function BookingPage() {
     };
     return [...new Set(aiMood.flatMap(m => moodFlavorMap[m] || []))].slice(0, 6);
   }, [aiMood]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.savedMix) {
+      const mix = location.state.savedMix;
+      setSelectedMix({
+        id: 'custom-saved',
+        name: mix.name,
+        description: Array.isArray(mix.flavors) ? mix.flavors.join(', ') : '',
+        strength: mix.strength === 'light' ? 3 : mix.strength === 'strong' ? 9 : 6,
+        isCustom: true,
+        raw: { hookahMix: Array.isArray(mix.flavors) ? mix.flavors : [], mixPercentages: {}, fromSavedMix: true },
+      });
+      setShowConfirmModal(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const { register, handleSubmit, reset } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, Mail, Calendar, Edit3, Check, X, Clock, Flame, Phone, 
-  Camera, Palette, Crown, Sparkles, Trophy, Award, 
+  Camera, Palette, Crown, Sparkles, Trophy, Award, ShoppingCart,
   MessageSquare, Star, Heart, ShieldCheck, FileText
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -116,6 +117,7 @@ const STATUS_OPTIONS = [
 ];
 
 export function ProfilePage() {
+  const navigate = useNavigate();
   const { user, setUser } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
@@ -1128,7 +1130,12 @@ export function ProfilePage() {
                                 <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] text-white/60">{f}</span>
                               ))}
                             </div>
-                            {mix.notes && <p className="text-[9px] text-white/30">{mix.notes}</p>}
+                            {mix.notes && <p className="text-[9px] text-white/30 mb-2">{mix.notes}</p>}
+                            <button onClick={(e) => { e.stopPropagation(); navigate('/create', { state: { savedMix: mix } }); }}
+                              className="w-full mt-1 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[9px] font-bold uppercase tracking-wider hover:bg-accent-gold/20 transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <ShoppingCart className="w-3 h-3" /> Заказать
+                            </button>
                           </GlassCard>
                         </motion.div>
                       ))}
