@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
+import { PushNotificationPrompt } from '@/components/ui/PushNotificationPrompt';
 import { showToast } from '@/components/NotificationToast';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
@@ -144,6 +145,8 @@ export function OrderTrackerPage() {
             <p className="text-sm text-white/60">Стол: <span className="text-white font-semibold">{order.seatLabel}</span></p>
           )}
         </div>
+
+        {!isDone && <PushNotificationPrompt />}
 
         {!isDone && (
           <GlassCard variant="premium" className="p-6 text-center">

@@ -67,7 +67,7 @@ export function HomePage() {
           loop
           playsInline
           preload="metadata"
-          poster={`${import.meta.env.BASE_URL}images/hero-poster.png`}
+          poster={`${import.meta.env.BASE_URL}images/hero-poster.webp`}
           className="absolute inset-0 w-full h-full object-cover z-0"
           src={`${import.meta.env.BASE_URL}кальянhhs.mp4`}
         />
@@ -315,7 +315,7 @@ export function HomePage() {
             <GlassCard className="p-8 sm:p-10 h-full flex flex-col justify-between border-[rgba(255,191,0,0.12)] relative overflow-hidden group min-h-[320px]">
               <div
                 className="absolute inset-0 bg-cover bg-center opacity-30 z-0 transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url('${import.meta.env.BASE_URL}images/mix-constructor-bg.png')` }}
+                style={{ backgroundImage: `url('${import.meta.env.BASE_URL}images/mix-constructor-bg.webp')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-[#1a1815] via-[#1a1815]/45 to-[#1a1815]/10 z-0" />
               <div className="absolute right-0 bottom-0 w-80 h-80 bg-[#FFBF00]/5 rounded-full blur-[90px] pointer-events-none" />
