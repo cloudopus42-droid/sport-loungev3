@@ -44,7 +44,7 @@ router.get('/', auth, isAdmin, async (req: Request, res: Response, next: NextFun
 
     let query = supabase
       .from('users')
-      .select('id, email, name, role, avatar, avatar_url, phone, personal_price, is_blocked, admin_note, created_at')
+      .select('id, email, name, role, avatar, phone, personal_price, is_blocked, admin_note, created_at')
       .range(pag.offset, pag.offset + pag.limit - 1);
 
     const roleMap: Record<string, string> = { client: 'user', user: 'user', admin: 'admin' };
@@ -76,7 +76,7 @@ router.get('/:id', auth, isAdmin, async (req: Request, res: Response, next: Next
   try {
     const { data: user, error: userErr } = await supabase
       .from('users')
-      .select('id, email, name, role, avatar, avatar_url, phone, bio, personal_price, is_blocked, admin_note, created_at')
+      .select('id, email, name, role, avatar, phone, bio, personal_price, is_blocked, admin_note, created_at')
       .eq('id', req.params.id)
       .maybeSingle();
 
@@ -130,7 +130,7 @@ router.patch('/:id', auth, isAdmin, async (req: Request, res: Response, next: Ne
       .from('users')
       .update(updates)
       .eq('id', req.params.id)
-      .select('id, email, name, role, avatar, avatar_url, phone, personal_price, is_blocked, admin_note, created_at')
+      .select('id, email, name, role, avatar, phone, personal_price, is_blocked, admin_note, created_at')
       .maybeSingle();
 
     if (updateErr || !updated) {
