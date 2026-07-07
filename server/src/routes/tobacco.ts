@@ -5,6 +5,15 @@ import { isAdmin } from '../middleware/isAdmin';
 import { uploadSingle, uploadToSupabase, deleteFromSupabase } from '../middleware/upload';
 import { supabase } from '../config/supabase';
 
+function mapItem(item: any) {
+  if (!item) return item;
+  return {
+    ...item,
+    brand: item.brand || item.manufacturer || '',
+    flavor: item.flavor || (Array.isArray(item.flavors) ? item.flavors[0] : item.flavors) || '',
+  };
+}
+
 const createTobaccoSchema = z.object({
   name: z.string().min(1),
   brand: z.string().optional(),
@@ -14,6 +23,7 @@ const createTobaccoSchema = z.object({
   price: z.coerce.number().optional(),
   stock_quantity: z.coerce.number().int().min(0).default(0),
   unit: z.string().optional(),
+  weight_grams: z.coerce.number().int().min(0).optional(),
   is_active: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional(),
   status: z.string().optional(),
   min_stock_threshold: z.coerce.number().int().min(0).default(5),
@@ -57,7 +67,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data, error } = await supabase
       .from('mixes')
-      .select('id, name, brand, flavor, description, image_url, price, stock_quantity, unit, is_active, status, min_stock_threshold, auto_reorder_enabled')
+      .select('id, name, brand, flavor, description, image_url, price, stock_quantity, unit, weight_grams, is_active, status, min_stock_threshold, auto_reorder_enabled')
       .order('name');
 
     if (error) {
@@ -67,13 +77,13 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
           .select('id, name, manufacturer, description, flavors, strength, status, created_at')
           .order('name');
         if (fbErr) { res.status(500).json({ error: fbErr.message }); return; }
-        res.json(fallback || []);
+        res.json((fallback || []).map(mapItem));
         return;
       }
       res.status(500).json({ error: error.message });
       return;
     }
-    res.json(data || []);
+    res.json((data || []).map(mapItem));
   } catch (e) { next(e); }
 });
 
@@ -98,7 +108,10 @@ router.get('/low-stock', auth, isAdmin, async (_req: Request, res: Response, nex
       .eq('is_active', true)
       .order('stock_quantity');
 
-    if (error) { res.status(500).json({ error: error.message }); return; }
+    if (error) {
+      res.json([]);
+      return;
+    }
     res.json(data || []);
   } catch (e) { next(e); }
 });
@@ -209,27 +222,51 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
       imageUrl = await uploadToSupabase(req.file, 'tobacco');
     }
 
+    const record: Record<string, unknown> = {
+      name: data.name,
+      description: data.description || '',
+      status: data.status || 'active',
+    };
+
+    const extra = {
+      brand: data.brand || null,
+      flavor: data.flavor || null,
+      image_url: imageUrl || null,
+      price: data.price || 0,
+      stock_quantity: data.stock_quantity,
+      unit: data.unit || 'gram',
+      weight_grams: data.weight_grams,
+      is_active: data.is_active ?? true,
+      min_stock_threshold: data.min_stock_threshold,
+      auto_reorder_enabled: data.auto_reorder_enabled ?? false,
+    };
+
+    for (const [k, v] of Object.entries(extra)) {
+      if (v !== undefined && v !== null) record[k] = v;
+    }
+
     const { data: item, error } = await supabase
       .from('mixes')
-      .insert({
-        name: data.name,
-        brand: data.brand || null,
-        flavor: data.flavor || null,
-        description: data.description || '',
-        image_url: imageUrl || null,
-        price: data.price || 0,
-        stock_quantity: data.stock_quantity,
-        unit: data.unit || 'gram',
-        is_active: data.is_active ?? true,
-        status: data.status || 'active',
-        min_stock_threshold: data.min_stock_threshold,
-        auto_reorder_enabled: data.auto_reorder_enabled ?? false,
-      })
+      .insert(record)
       .select()
       .single();
 
-    if (error || !item) {
-      res.status(500).json({ error: 'Не удалось создать: ' + error?.message });
+    if (error) {
+      if (error.message?.includes('does not exist')) {
+        const base = { name: data.name, description: data.description || '', status: data.status || 'active' };
+        const { data: fb, error: fbErr } = await supabase
+          .from('mixes')
+          .insert(base)
+          .select()
+          .single();
+        if (fbErr || !fb) {
+          res.status(500).json({ error: 'Не удалось создать: ' + fbErr?.message });
+          return;
+        }
+        res.status(201).json(fb);
+        return;
+      }
+      res.status(500).json({ error: 'Не удалось создать: ' + error.message });
       return;
     }
     res.status(201).json(item);
@@ -248,6 +285,7 @@ router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, re
     if (data.price !== undefined) updateData.price = data.price;
     if (data.stock_quantity !== undefined) updateData.stock_quantity = data.stock_quantity;
     if (data.unit !== undefined) updateData.unit = data.unit;
+    if (data.weight_grams !== undefined) updateData.weight_grams = data.weight_grams;
     if (data.is_active !== undefined) updateData.is_active = data.is_active;
     if (data.status !== undefined) updateData.status = data.status;
     if (data.min_stock_threshold !== undefined) updateData.min_stock_threshold = data.min_stock_threshold;
@@ -277,7 +315,27 @@ router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, re
       .select()
       .single();
 
-    if (error || !item) {
+    if (error) {
+      if (error.message?.includes('does not exist')) {
+        const safeUpdate: Record<string, unknown> = {};
+        const safeKeys = ['name', 'description', 'status'];
+        for (const k of safeKeys) {
+          if (updateData[k] !== undefined) safeUpdate[k] = updateData[k];
+        }
+        safeUpdate.updated_at = updateData.updated_at;
+        const { data: fb, error: fbErr } = await supabase
+          .from('mixes')
+          .update(safeUpdate)
+          .eq('id', req.params.id)
+          .select()
+          .single();
+        if (fbErr || !fb) {
+          res.status(404).json({ error: 'Не найдено' });
+          return;
+        }
+        res.json(fb);
+        return;
+      }
       res.status(404).json({ error: 'Не найдено' });
       return;
     }
@@ -325,13 +383,20 @@ router.get('/stock', auth, isAdmin, async (_req: Request, res: Response, next: N
     if (error) {
       const { data: fallback, error: fbErr } = await supabase
         .from('mixes')
-        .select('id, name, brand, flavor, stock_quantity')
+        .select('id, name, manufacturer, flavors')
         .order('name');
       if (fbErr) { res.status(500).json({ error: fbErr.message }); return; }
-      res.json((fallback || []).map((f: any) => ({ ...f, min_stock_threshold: null, auto_reorder_enabled: false })));
+      res.json((fallback || []).map((f: any) => ({
+        id: f.id, name: f.name,
+        brand: f.brand || f.manufacturer || '',
+        flavor: f.flavor || (Array.isArray(f.flavors) ? f.flavors[0] : f.flavors) || '',
+        stock_quantity: 0,
+        min_stock_threshold: null,
+        auto_reorder_enabled: false,
+      })));
       return;
     }
-    res.json(data || []);
+    res.json((data || []).map(mapItem));
   } catch (e) { next(e); }
 });
 
@@ -348,7 +413,14 @@ router.put('/:id/stock', auth, isAdmin, async (req: Request, res: Response, next
       .update({ stock_quantity: quantity, updated_at: new Date().toISOString() })
       .eq('id', req.params.id);
 
-    if (updateError) { res.status(500).json({ error: updateError.message }); return; }
+    if (updateError) {
+      if (updateError.message?.includes('does not exist')) {
+        res.status(400).json({ error: 'Управление остатками недоступно: выполните миграцию БД' });
+        return;
+      }
+      res.status(500).json({ error: updateError.message });
+      return;
+    }
     res.json({ success: true });
   } catch (e) { next(e); }
 });

@@ -26,6 +26,7 @@ interface TobaccoItem {
   price?: number;
   stock_quantity: number;
   unit?: string;
+  weight_grams?: number;
   is_active?: boolean;
   status?: string;
   min_stock_threshold?: number;
@@ -139,6 +140,7 @@ function TobaccoItemsPanel() {
   const [flavor, setFlavor] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [weightGrams, setWeightGrams] = useState(50);
   const [minStockThreshold, setMinStockThreshold] = useState(5);
   const [autoReorder, setAutoReorder] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -166,6 +168,7 @@ function TobaccoItemsPanel() {
     setFlavor('');
     setDescription('');
     setPrice('');
+    setWeightGrams(50);
     setMinStockThreshold(5);
     setAutoReorder(false);
     setFile(null);
@@ -181,6 +184,7 @@ function TobaccoItemsPanel() {
     setFlavor(item.flavor || '');
     setDescription(item.description || '');
     setPrice(item.price?.toString() || '');
+    setWeightGrams(item.weight_grams ?? 50);
     setMinStockThreshold(item.min_stock_threshold ?? 5);
     setAutoReorder(item.auto_reorder_enabled ?? false);
     setModalOpen(true);
@@ -192,6 +196,7 @@ function TobaccoItemsPanel() {
     const payload: Record<string, unknown> = {
       name, brand, flavor, description,
       price: price ? Number(price) : 0,
+      weight_grams: weightGrams,
       min_stock_threshold: minStockThreshold,
       auto_reorder_enabled: autoReorder,
     };
@@ -270,6 +275,9 @@ function TobaccoItemsPanel() {
                 </p>
               </div>
               <div className="text-right flex-shrink-0">
+                {item.weight_grams ? (
+                  <p className="text-[10px] text-white/30">{item.weight_grams} г</p>
+                ) : null}
                 <p className="text-sm text-white/60">
                   Остаток: <span className={item.stock_quantity < (item.min_stock_threshold ?? 5) ? 'text-red-400' : 'text-green-400'}>{item.stock_quantity}</span>
                 </p>
@@ -326,6 +334,10 @@ function TobaccoItemsPanel() {
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Цена</label>
               <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="glass-input" min="0" step="0.01" />
+            </div>
+            <div>
+              <label className="block text-xs text-white/50 mb-1.5 font-medium">Граммовка</label>
+              <input type="number" value={weightGrams} onChange={(e) => setWeightGrams(Number(e.target.value))} className="glass-input" min="0" step="1" />
             </div>
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Мин. порог остатка</label>
@@ -440,7 +452,7 @@ function StockPanel() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-glass-border bg-glass-bg">
-                {['Название', 'Бренд', 'Текущий остаток', 'Мин. порог', 'Автозаказ', 'Действия'].map((h) => (
+                {['Название', 'Бренд', 'Граммовка', 'Текущий остаток', 'Мин. порог', 'Автозаказ', 'Действия'].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white/60 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -460,6 +472,7 @@ function StockPanel() {
                   >
                     <td className="px-4 py-3 text-sm text-white/80 font-medium">{item.name}</td>
                     <td className="px-4 py-3 text-sm text-white/50">{item.brand || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-white/60">{item.weight_grams ? `${item.weight_grams} г` : '—'}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <motion.button
@@ -513,7 +526,7 @@ function StockPanel() {
                 );
               })}
               {items.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-white/40">Нет данных</td></tr>
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-white/40">Нет данных</td></tr>
               )}
             </tbody>
           </table>
