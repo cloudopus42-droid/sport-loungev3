@@ -16,6 +16,7 @@ import { NotificationCardStack } from '@/components/ui/NotificationCardStack';
 import { CookieBanner } from '@/components/ui/CookieBanner';
 import { SparkleParticles } from '@/components/ui/SparkleParticles';
 import { VersionBadge } from '@/components/VersionBadge';
+import { SiteFooter } from '@/components/SiteFooter';
 import { resolveImageUrl } from '@/lib/urls';
 import { showToast } from '@/components/NotificationToast';
 import { staggerContainer } from '@/lib/motion';
@@ -66,11 +67,18 @@ export function MainLayout() {
     ? { duration: 0.01 }
     : { duration: 0.6, ease: easeOut };
 
+  // Закрытие мобильного меню по Escape с возвратом фокуса на кнопку
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
+    if (!mobileMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     if (!socket || !user) return;
@@ -85,7 +93,7 @@ export function MainLayout() {
         } catch {}
         showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-          new Notification('SPORT LOUNGE', { body: 'Ваш кальян готов! Приятного покура! 💨', icon: '/icon-192.png' });
+          new Notification('SPORT LOUNGE', { body: 'Ваш кальян готов! Приятного покура! 💨', icon: `${import.meta.env.BASE_URL}icon-192.png` });
         }
       }
     };
@@ -432,9 +440,12 @@ export function MainLayout() {
         </AnimatePresence>
       </main>
 
+      <SiteFooter />
+
       {/* Mobile bottom navigation — minimal pill */}
       <nav
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 lg:hidden w-auto"
+        className="fixed left-1/2 -translate-x-1/2 z-40 lg:hidden w-auto"
+        style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
         aria-label="Мобильная навигация"
       >
         <motion.div

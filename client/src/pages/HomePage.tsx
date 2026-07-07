@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MixCarousel3D } from '@/components/MixCarousel3D';
@@ -21,6 +21,7 @@ type ShowcaseItem = {
 };
 
 export function HomePage() {
+  const navigate = useNavigate();
   const [promos, setPromos] = useState<Promo[]>([]);
   const [showcaseItems, setShowcaseItems] = useState<ShowcaseItem[]>([]);
 
@@ -65,10 +66,14 @@ export function HomePage() {
           muted
           loop
           playsInline
+          preload="metadata"
+          poster={`${import.meta.env.BASE_URL}images/hero-poster.png`}
           className="absolute inset-0 w-full h-full object-cover z-0"
-          src="/кальянhhs.mp4"
+          src={`${import.meta.env.BASE_URL}кальянhhs.mp4`}
         />
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#1a1815]/70 via-[#1a1815]/30 to-transparent backdrop-blur-[2px] z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1815]/70 via-[#1a1815]/40 to-transparent z-0" />
+        <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(ellipse 70% 60% at center, rgba(26,24,21,0.55) 0%, transparent 100%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#1a1815] via-[#1a1815]/40 to-transparent z-0" />
 
         <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8">
           <motion.div
@@ -108,24 +113,22 @@ export function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <NavLink to="/booking" className="w-full sm:w-auto">
-              <motion.button
+            <motion.div className="w-full sm:w-auto" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <NavLink
+                to="/booking"
                 className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
               >
                 <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
-              </motion.button>
-            </NavLink>
-            <NavLink to="/booking" className="w-full sm:w-auto">
-              <motion.button
+              </NavLink>
+            </motion.div>
+            <motion.div className="w-full sm:w-auto" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <NavLink
+                to="/booking"
                 className="btn-secondary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 w-full sm:w-auto"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
               >
                 <GlowIcon name="flame" color="gold" size={16} animateOnHover /> ИИ-Миксолог
-              </motion.button>
-            </NavLink>
+              </NavLink>
+            </motion.div>
           </motion.div>
 
           <motion.div
@@ -234,13 +237,13 @@ export function HomePage() {
             imageUrl: s.image_url ? resolveImageUrl(s.image_url) : undefined,
             linkUrl: s.link_url,
           })) : [
-            { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #1a1815 0%, #12100d 100%)' },
-            { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #2d1b69 0%, #1a1815 100%)' },
+            { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #2a2621 0%, #12100d 100%)' },
+            { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #3d2e00 0%, #1a1815 100%)' },
             { id: '3', title: 'VIP-залы', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #3d1f00 0%, #1a1815 100%)' },
           ]}
           onItemClick={(item) => {
-            if (item.linkUrl) window.open(item.linkUrl, '_blank');
-            else if (item.id.length < 5) window.location.href = '/booking';
+            if (item.linkUrl) window.open(item.linkUrl, '_blank', 'noopener,noreferrer');
+            else if (item.id.length < 5) navigate('/booking');
           }}
         />
       </section>
@@ -266,7 +269,8 @@ export function HomePage() {
             <motion.div
               key={item.title}
               initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
               onMouseMove={(e) => handleCardMouseMove(e)}
               onMouseEnter={() => setHoveredCardIndex(index)}
@@ -310,8 +314,8 @@ export function HomePage() {
           <div className="lg:col-span-8">
             <GlassCard className="p-8 sm:p-10 h-full flex flex-col justify-between border-[rgba(255,191,0,0.12)] relative overflow-hidden group min-h-[320px]">
               <div
-                className="absolute inset-0 bg-cover bg-center opacity-15 mix-blend-luminosity z-0 transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=800&auto=format&fit=crop')` }}
+                className="absolute inset-0 bg-cover bg-center opacity-30 z-0 transition-transform duration-700 group-hover:scale-105"
+                style={{ backgroundImage: `url('${import.meta.env.BASE_URL}images/mix-constructor-bg.png')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-[#1a1815] via-[#1a1815]/45 to-[#1a1815]/10 z-0" />
               <div className="absolute right-0 bottom-0 w-80 h-80 bg-[#FFBF00]/5 rounded-full blur-[90px] pointer-events-none" />
@@ -329,15 +333,14 @@ export function HomePage() {
               </div>
 
               <div className="pt-6 z-10">
-                <NavLink to="/booking">
-                  <motion.button
+                <motion.div className="inline-block w-full sm:w-auto" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <NavLink
+                    to="/booking"
                     className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 text-sm font-semibold w-full sm:w-auto"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                   >
-                     <Flame className="w-4 h-4" /> Открыть конструктор
-                  </motion.button>
-                </NavLink>
+                    <Flame className="w-4 h-4" /> Открыть конструктор
+                  </NavLink>
+                </motion.div>
               </div>
             </GlassCard>
           </div>
@@ -379,7 +382,8 @@ export function HomePage() {
                 key={promo._id}
                 className="flex-shrink-0 w-[260px] sm:w-[320px] lg:w-[360px]"
                 initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
                 transition={{ delay: 0.1 * i, duration: 0.5 }}
               >
                 <GlassCard className="p-3.5 h-full hover:border-[#FFBF00]/30 transition-all duration-300 flex flex-col justify-between">

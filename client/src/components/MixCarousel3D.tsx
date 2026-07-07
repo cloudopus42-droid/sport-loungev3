@@ -24,6 +24,7 @@ const ROTATION_RANGE = 15;
 
 export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInterval = 5000 }: MixCarousel3DProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
@@ -35,14 +36,15 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
   useEffect(() => {
-    if (!autoPlay || items.length <= 1) return;
+    if (!autoPlay || isPaused || items.length <= 1) return;
     autoPlayRef.current = setInterval(goNext, autoPlayInterval);
     return () => clearInterval(autoPlayRef.current);
-  }, [autoPlay, goNext, autoPlayInterval, items.length]);
+  }, [autoPlay, isPaused, goNext, autoPlayInterval, items.length]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    if (e.deltaY > 0) goNext();
+    // Реагируем только на горизонтальную прокрутку, чтобы не блокировать скролл страницы
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    if (e.deltaX > 0) goNext();
     else goPrev();
   }, [goNext, goPrev]);
 
@@ -83,10 +85,17 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
       tabIndex={0}
       onWheel={handleWheel}
       onKeyDown={handleKeyDown}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
       className="relative w-full overflow-hidden select-none outline-none"
-      style={{ perspective: '1200px', minHeight: '520px' }}
+      style={{ perspective: '1200px', height: '520px' }}
+      role="region"
+      aria-roledescription="Карусель"
+      aria-label="Наша коллекция"
     >
-      <div className="relative flex items-center justify-center w-full h-full" style={{ transformStyle: 'preserve-3d' }}>
+      <div className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
         {visibleItems.map((index) => {
           const item = items[index];
           const t = getItemTransform(index);
@@ -107,14 +116,23 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
               }}
               transition={EASE}
               onClick={() => onItemClick?.(item)}
-              className={`absolute cursor-pointer select-none rounded-2xl overflow-hidden border transition-shadow duration-300 ${
+              drag={items.length > 1 ? 'x' : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -60) goNext();
+                else if (info.offset.x > 60) goPrev();
+              }}
+              className={`absolute left-1/2 top-1/2 cursor-pointer select-none rounded-2xl overflow-hidden border transition-shadow duration-300 ${
                 isActive
                   ? 'border-accent-gold/40 shadow-glass-lg z-30'
                   : 'border-glass-border/20 shadow-lg z-20 hover:border-accent-gold/20'
               }`}
               style={{
-                width: '320px',
+                width: '300px',
                 height: '440px',
+                marginLeft: '-150px',
+                marginTop: '-220px',
                 transformStyle: 'preserve-3d',
                 background: item.gradient || '#12121a',
                 backfaceVisibility: 'hidden',
@@ -167,14 +185,14 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
       <button
         onClick={goPrev}
         className="absolute left-4 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full border border-white/10 bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-accent-gold hover:border-accent-gold/40 transition-all"
-        aria-label="Previous"
+        aria-label="Предыдущий слайд"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
       <button
         onClick={goNext}
         className="absolute right-4 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full border border-white/10 bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-accent-gold hover:border-accent-gold/40 transition-all"
-        aria-label="Next"
+        aria-label="Следующий слайд"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
@@ -189,7 +207,7 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
                 ? 'bg-accent-gold w-4'
                 : 'bg-white/20 hover:bg-white/40'
             }`}
-            aria-label={`Go to slide ${i + 1}`}
+            aria-label={`Перейти к слайду ${i + 1}`}
           />
         ))}
       </div>
