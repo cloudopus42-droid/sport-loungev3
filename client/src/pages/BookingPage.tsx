@@ -216,6 +216,8 @@ export function BookingPage() {
       }
       const res = await api('/api/orders', { method: 'POST', body: {
         mix_id: isCustom ? null : selectedMix.id, notes: finalNotes,
+        strength: selectedMix.strength === 3 ? 'light' : selectedMix.strength === 9 ? 'strong' : 'medium',
+        hookah_mix: selectedMix.description || '',
       }});
       setActiveOrder(res);
       localStorage.setItem('current_order_id', res.id);

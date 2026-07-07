@@ -22,6 +22,8 @@ const createOrderSchema = z.object({
   seat_id: z.string().optional().default(''),
   seat_label: z.string().optional().default(''),
   seat_zone: z.string().optional().default(''),
+  strength: z.string().optional().default('medium'),
+  hookah_mix: z.string().optional().default(''),
 });
 
 const ratingSchema = z.object({
@@ -49,6 +51,8 @@ function mapOrderToFrontend(o: any) {
     seatZone: o.seat_zone,
     price: o.price,
     createdAt: o.created_at,
+    strength: o.strength || 'medium',
+    hookahMix: o.hookah_mix || '',
   };
 }
 
@@ -82,6 +86,8 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
         seat_label: data.seat_label,
         seat_zone: data.seat_zone,
         price: orderPrice,
+        strength: data.strength,
+        hookah_mix: data.hookah_mix,
       })
       .select()
       .single();

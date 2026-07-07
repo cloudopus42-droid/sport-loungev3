@@ -308,7 +308,22 @@ export function OrdersAdmin() {
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${statusColors[order.status] || 'bg-white/5 text-white'}`}>
                             {order.status === 'accepted' ? 'Принят' : order.status === 'preparing' ? 'Подбор табака' : order.status === 'roasting' ? 'Раскуривание' : 'В доставке'}
                           </span>
-                          
+
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
+                            order.strength === 'light' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                            order.strength === 'strong' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                            'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          }`}>
+                            <Flame className="w-2.5 h-2.5" />
+                            {order.strength === 'light' ? 'Лёгкий' : order.strength === 'strong' ? 'Крепкий' : 'Средний'}
+                          </span>
+
+                          {order.hookahMix && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white/50 border border-white/10 truncate max-w-[160px]" title={order.hookahMix}>
+                              {order.hookahMix}
+                            </span>
+                          )}
+
                           {order.masterCalled && (
                             <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-red-600/20 text-red-500 border border-red-500/35 animate-pulse uppercase tracking-wider">
                               Вызов мастера! 🚨
