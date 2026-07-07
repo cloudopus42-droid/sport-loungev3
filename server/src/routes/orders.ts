@@ -51,7 +51,7 @@ function mapOrderToFrontend(o: any) {
     seatZone: o.seat_zone,
     price: o.price,
     createdAt: o.created_at,
-    strength: o.strength || 'medium',
+    strength: o.strength,
     hookahMix: o.hookah_mix || '',
   };
 }

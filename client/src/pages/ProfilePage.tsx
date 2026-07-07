@@ -1131,11 +1131,18 @@ export function ProfilePage() {
                               ))}
                             </div>
                             {mix.notes && <p className="text-[9px] text-white/30 mb-2">{mix.notes}</p>}
-                            <button onClick={(e) => { e.stopPropagation(); navigate('/create', { state: { savedMix: mix } }); }}
-                              className="w-full mt-1 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[9px] font-bold uppercase tracking-wider hover:bg-accent-gold/20 transition-all flex items-center justify-center gap-1.5"
-                            >
-                              <ShoppingCart className="w-3 h-3" /> Заказать
-                            </button>
+                            <div className="flex gap-2 mt-1">
+                              <button onClick={() => navigate('/create', { state: { savedMix: mix } })}
+                                className="flex-1 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[9px] font-bold uppercase tracking-wider hover:bg-accent-gold/20 transition-all flex items-center justify-center gap-1.5"
+                              >
+                                <ShoppingCart className="w-3 h-3" /> Заказать
+                              </button>
+                              <button onClick={async (e) => { e.stopPropagation(); try { await api(`/api/mixes/user-mixes/${mix.id}`, { method: 'DELETE' }); setUserMixes(prev => prev.filter(m => m.id !== mix.id)); showToast('Рецепт удалён', 'success'); } catch (err: any) { showToast(err?.response?.data?.error || 'Ошибка удаления', 'error'); } }}
+                                className="px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-wider hover:bg-red-500/20 transition-all"
+                              >
+                                Удалить
+                              </button>
+                            </div>
                           </GlassCard>
                         </motion.div>
                       ))}

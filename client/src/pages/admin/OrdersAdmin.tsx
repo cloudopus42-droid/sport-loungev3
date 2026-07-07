@@ -255,6 +255,8 @@ export function OrdersAdmin() {
                 delivering: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
               };
 
+              const orderStrength = order.strength ?? (order.notes?.match(/^\[S:(\w+)\]/)?.[1] ?? 'medium');
+
               return (
                 <motion.div
                   key={order.id}
@@ -310,12 +312,12 @@ export function OrdersAdmin() {
                           </span>
 
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
-                            order.strength === 'light' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                            order.strength === 'strong' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                            orderStrength === 'light' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                            orderStrength === 'strong' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
                             'bg-amber-500/10 text-amber-400 border-amber-500/20'
                           }`}>
                             <Flame className="w-2.5 h-2.5" />
-                            {order.strength === 'light' ? 'Лёгкий' : order.strength === 'strong' ? 'Крепкий' : 'Средний'}
+                            {orderStrength === 'light' ? 'Лёгкий' : orderStrength === 'strong' ? 'Крепкий' : 'Средний'}
                           </span>
 
                           {order.hookahMix && (

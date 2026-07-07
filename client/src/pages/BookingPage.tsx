@@ -214,9 +214,11 @@ export function BookingPage() {
           finalNotes = `[${prefix}: ${raw.hookahMix.join(', ')}] ${finalNotes}`;
         }
       }
+      const orderStrength = selectedMix.strength === 3 ? 'light' : selectedMix.strength === 9 ? 'strong' : 'medium';
+      finalNotes = `[S:${orderStrength}]${finalNotes ? ' ' + finalNotes : ''}`;
       const res = await api('/api/orders', { method: 'POST', body: {
         mix_id: isCustom ? null : selectedMix.id, notes: finalNotes,
-        strength: selectedMix.strength === 3 ? 'light' : selectedMix.strength === 9 ? 'strong' : 'medium',
+        strength: orderStrength,
         hookah_mix: selectedMix.description || '',
       }});
       setActiveOrder(res);
@@ -271,6 +273,8 @@ export function BookingPage() {
         strength,
         notes: '',
       }});
+      const data = await api<any[]>('/api/mixes/user-mixes');
+      if (data?.length) setUserMixes(data);
       setMixSaved(true);
       showToast('Рецепт сохранён в профиль!', 'success');
     } catch (err: any) { showToast(err?.error || 'Ошибка сохранения', 'error'); }
