@@ -67,7 +67,7 @@ export function HomePage() {
     return () => ac.abort();
   }, []);
 
-  const mapsUrl = 'https://yandex.ru/maps/-/CDT1Z-pC';
+  const mapsUrl = 'https://yandex.ru/maps/?pt=47.2734,56.1365&z=17&l=map';
 
   return (
     <motion.div
@@ -410,7 +410,7 @@ export function HomePage() {
                   <div>
                     <p className="text-xs sm:text-sm text-white font-medium">{CONTACT.address}</p>
                     <a
-                      href="https://yandex.ru/maps/?pt=47.2725,56.1366&z=17&l=map"
+                      href="https://yandex.ru/maps/?pt=47.2734,56.1365&z=17&l=map"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[11px] text-[#FFBF00] hover:underline mt-1 inline-block"
