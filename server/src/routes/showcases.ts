@@ -8,9 +8,36 @@ import fs from 'fs';
 
 const router = Router();
 
+const DEFAULT_SHOWCASE_SETTINGS = {
+  enabled: true,
+  topCount: 6,
+  background: 'dark',
+};
+
+async function getShowcaseSettings() {
+  const { data } = await supabase
+    .from('smart_features')
+    .select('enabled, config')
+    .eq('feature_key', 'homepage_showcase')
+    .maybeSingle();
+
+  if (!data) return DEFAULT_SHOWCASE_SETTINGS;
+
+  const config = (data.config || {}) as Record<string, unknown>;
+  return {
+    enabled: data.enabled !== false,
+    topCount: typeof config.topCount === 'number' ? config.topCount : DEFAULT_SHOWCASE_SETTINGS.topCount,
+    background: typeof config.background === 'string' ? config.background : DEFAULT_SHOWCASE_SETTINGS.background,
+  };
+}
+
 const showcaseUploadDir = path.resolve(__dirname, '../../uploads/showcases');
-if (!fs.existsSync(showcaseUploadDir)) {
-  fs.mkdirSync(showcaseUploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(showcaseUploadDir)) {
+    fs.mkdirSync(showcaseUploadDir, { recursive: true });
+  }
+} catch {
+  // parent dir may not exist yet; app.ts will handle creation
 }
 
 const storage = multer.diskStorage({
@@ -56,14 +83,91 @@ function mapShowcaseToDb(body: any) {
   return dbData;
 }
 
-// GET /api/showcases — public, active showcases sorted by order
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+// GET /api/showcases/settings — public showcase display settings
+router.get('/settings', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.json(await getShowcaseSettings());
+  } catch (e) {
+    next(e);
+  }
+});
+
+// PUT /api/showcases/settings — admin: update showcase display settings
+router.put('/settings', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { enabled, topCount, background } = req.body || {};
+    const config = {
+      topCount: Math.min(20, Math.max(1, Number(topCount) || DEFAULT_SHOWCASE_SETTINGS.topCount)),
+      background: typeof background === 'string' ? background : DEFAULT_SHOWCASE_SETTINGS.background,
+    };
+
+    const { data, error } = await supabase
+      .from('smart_features')
+      .upsert(
+        {
+          feature_key: 'homepage_showcase',
+          name: 'Витрина на главной',
+          description: 'Настройки блока витрины на главной странице',
+          enabled: enabled !== false,
+          is_public: true,
+          config,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'feature_key' }
+      )
+      .select('enabled, config')
+      .single();
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+
+    const savedConfig = (data?.config || {}) as Record<string, unknown>;
+    res.json({
+      enabled: data?.enabled !== false,
+      topCount: typeof savedConfig.topCount === 'number' ? savedConfig.topCount : config.topCount,
+      background: typeof savedConfig.background === 'string' ? savedConfig.background : config.background,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/showcases/manage — admin: all showcase items
+router.get('/manage', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data: items, error } = await supabase
       .from('showcases')
       .select('*')
-      .eq('is_active', true)
       .order('sort_order', { ascending: true });
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+
+    res.json((items || []).map(mapShowcaseToFrontend));
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/showcases — public, active showcases sorted by order
+router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const settings = await getShowcaseSettings();
+    if (!settings.enabled) {
+      res.json([]);
+      return;
+    }
+
+    const { data: items, error } = await supabase
+      .from('showcases')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .limit(settings.topCount);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -97,33 +201,6 @@ router.post('/', auth, isAdmin, upload.single('image'), async (req: Request, res
     }
 
     res.status(201).json(mapShowcaseToFrontend(item));
-  } catch (e) {
-    next(e);
-  }
-});
-
-// PUT /api/showcases/:id — admin
-router.put('/:id', auth, isAdmin, upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    if (req.file) {
-      req.body.imageUrl = `/uploads/showcases/${req.file.filename}`;
-    }
-
-    const dbData = mapShowcaseToDb(req.body);
-
-    const { data: item, error } = await supabase
-      .from('showcases')
-      .update(dbData)
-      .eq('id', req.params.id)
-      .select()
-      .single();
-
-    if (error || !item) {
-      res.status(404).json({ error: 'Не найдено или ошибка обновления' });
-      return;
-    }
-
-    res.json(mapShowcaseToFrontend(item));
   } catch (e) {
     next(e);
   }
@@ -172,6 +249,33 @@ router.put('/reorder', auth, isAdmin, async (req: Request, res: Response, next: 
       .order('sort_order', { ascending: true });
 
     res.json((updated || []).map(mapShowcaseToFrontend));
+  } catch (e) {
+    next(e);
+  }
+});
+
+// PUT /api/showcases/:id — admin
+router.put('/:id', auth, isAdmin, upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.file) {
+      req.body.imageUrl = `/uploads/showcases/${req.file.filename}`;
+    }
+
+    const dbData = mapShowcaseToDb(req.body);
+
+    const { data: item, error } = await supabase
+      .from('showcases')
+      .update(dbData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error || !item) {
+      res.status(404).json({ error: 'Не найдено или ошибка обновления' });
+      return;
+    }
+
+    res.json(mapShowcaseToFrontend(item));
   } catch (e) {
     next(e);
   }

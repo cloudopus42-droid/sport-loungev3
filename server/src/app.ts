@@ -84,11 +84,10 @@ app.use(express.json({ limit: '500kb' }));
 app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 app.use(requestLogger);
 
-// Ensure uploads directory exists and serve static files
+// Ensure uploads directories exist and serve static files
 const uploadsDir = path.resolve(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+fs.mkdirSync(uploadsDir, { recursive: true });
+fs.mkdirSync(path.join(uploadsDir, 'showcases'), { recursive: true });
 
 app.use('/uploads', express.static(uploadsDir, {
   maxAge: '7d',
