@@ -114,7 +114,7 @@ export function MainLayout() {
 
   useEffect(() => {
     if (socket && isAuthenticated && user) {
-      socket.emit('user:active', { id: user.id, name: user.name, role: user.role });
+      socket.emit('user:active', { name: user.name });
     }
   }, [socket, isAuthenticated, user]);
 

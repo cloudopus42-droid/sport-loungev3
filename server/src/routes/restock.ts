@@ -29,7 +29,7 @@ router.get('/requests', auth, isAdmin, async (_req: Request, res: Response, next
   } catch (e) { next(e); }
 });
 
-router.post('/requests', auth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/requests', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -127,7 +127,7 @@ router.put('/requests/:id', auth, isAdmin, async (req: Request, res: Response, n
 });
 
 // POST /api/restock/check — Auto-check stock and create restock requests
-router.post('/check', auth, async (_req: Request, res: Response, next: NextFunction) => {
+router.post('/check', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data, error } = await supabase
       .from('mixes')

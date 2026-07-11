@@ -54,9 +54,8 @@ Modern full-stack web application for a premium hookah lounge — Instagram-styl
 npm run test --prefix server
 ```
 
-### Default Admin Account
-- **Email:** admin@sportlounge.com
-- **Password:** admin123
+### Seeded Admin Account
+- Configure `ADMIN_SEED_EMAIL` and `ADMIN_SEED_PASSWORD` before running `npm run seed`.
 
 ## Features
 

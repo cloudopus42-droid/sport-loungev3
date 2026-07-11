@@ -26,6 +26,16 @@ async function retryDb<T>(fn: () => any, attempts: number = 4): Promise<T> {
 
 async function seed(): Promise<void> {
   try {
+    const adminEmail = process.env.ADMIN_SEED_EMAIL || 'admin@sportlounge.ru';
+    const adminSeedPassword = process.env.ADMIN_SEED_PASSWORD;
+    const demoUserPassword = process.env.DEMO_USER_PASSWORD;
+    if (!adminSeedPassword || adminSeedPassword.length < 12) {
+      throw new Error('ADMIN_SEED_PASSWORD must be at least 12 characters');
+    }
+    if (!demoUserPassword || demoUserPassword.length < 12) {
+      throw new Error('DEMO_USER_PASSWORD must be at least 12 characters');
+    }
+
     console.log('🌱 Starting Supabase Seeding...');
 
     // 1. Очищаем таблицы (в обратном порядке связей)
@@ -45,13 +55,13 @@ async function seed(): Promise<void> {
 
     // 2. Создаем пользователей
     console.log('👤 Hashing passwords and creating users...');
-    const adminPassword = await bcrypt.hash('admin123', 12);
-    const userPassword = await bcrypt.hash('password123', 12);
+    const adminPassword = await bcrypt.hash(adminSeedPassword, 12);
+    const userPassword = await bcrypt.hash(demoUserPassword, 12);
 
     const admin = await retryDb<{ id: string }>(() => supabase
       .from('users')
       .insert({
-        email: 'admin@sportlounge.ru',
+        email: adminEmail,
         password: adminPassword,
         name: 'Администратор',
         role: 'admin',
@@ -59,7 +69,7 @@ async function seed(): Promise<void> {
       .select('id')
       .single()
     );
-    console.log(`  ✅ Admin created (admin@sportlounge.ru / admin123)`);
+    console.log(`  ✅ Admin created (${adminEmail})`);
 
     const user1 = await retryDb<{ id: string }>(() => supabase
       .from('users')
@@ -254,7 +264,7 @@ async function seed(): Promise<void> {
 
     console.log('\n🎉 Supabase Database Seeded Successfully!');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log(`  Admin login: admin@sportlounge.ru / admin123`);
+    console.log(`  Admin login: ${adminEmail}`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     process.exit(0);

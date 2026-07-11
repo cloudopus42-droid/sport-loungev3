@@ -22,7 +22,7 @@ const ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.webp', '.heic', '.mp4', '
 
 const fileFilter = (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
   const ext = path.extname(file.originalname).toLowerCase();
-  if (ALLOWED_MIMETYPES.includes(file.mimetype) || ALLOWED_EXTENSIONS.includes(ext)) {
+  if (ALLOWED_MIMETYPES.includes(file.mimetype) && ALLOWED_EXTENSIONS.includes(ext)) {
     cb(null, true);
   } else {
     cb(new Error('Недопустимый формат файла. Разрешены: JPEG, PNG, WebP, HEIC, MP4, WebM, MOV'));
