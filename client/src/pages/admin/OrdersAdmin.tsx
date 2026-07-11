@@ -131,16 +131,28 @@ export function OrdersAdmin() {
   const handleBatchDelete = async () => {
     if (selectedIds.size === 0) return;
     if (!confirm(`Удалить ${selectedIds.size} заказ(ов)?`)) return;
-    let success = 0;
+    const deletedIds = new Set<string>();
+    let failed = 0;
     for (const id of selectedIds) {
       try {
         await api.delete(`/api/orders/${id}`);
-        success++;
-      } catch {}
+        deletedIds.add(id);
+      } catch (err) {
+        failed++;
+        console.error(`Failed to delete order ${id}:`, err);
+      }
     }
-    setOrders(prev => prev.filter(o => !selectedIds.has(o.id)));
-    setSelectedIds(new Set());
-    showToast(`Удалено ${success} заказ(ов)`, 'success');
+    setOrders(prev => prev.filter(o => !deletedIds.has(o.id)));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      deletedIds.forEach(id => next.delete(id));
+      return next;
+    });
+    if (failed > 0) {
+      showToast(`Удалено ${deletedIds.size}, не удалось удалить ${failed}`, 'error');
+    } else {
+      showToast(`Удалено ${deletedIds.size} заказ(ов)`, 'success');
+    }
   };
 
   const toggleSelect = (id: string) => {

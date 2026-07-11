@@ -3,6 +3,7 @@ import { auth } from '../middleware/auth';
 import { supabase } from '../config/supabase';
 import { getPagination, paginatedResponse } from '../utils/pagination';
 import { getIO } from '../socket';
+import { logSwallowedError, runInBackground } from '../utils/logError';
 
 const router = Router();
 
@@ -280,7 +281,9 @@ router.post('/reviews', auth, async (req: Request, res: Response, next: NextFunc
         text: text || '',
         timestamp: new Date().toISOString(),
       });
-    } catch (_) { /* socket not ready */ }
+    } catch (socketErr) {
+      logSwallowedError('memberships:socket-new-review', socketErr);
+    }
 
     const [memResult, achResult] = await Promise.all([
       supabase.from('users_membership').select('points').eq('user_id', userId).single(),
@@ -304,9 +307,12 @@ router.post('/reviews', auth, async (req: Request, res: Response, next: NextFunc
         transactions.push({
           user_id: userId, points_delta: achAward, description: 'Ачивка: Элитный Член Клуба', type: 'earn'
         });
-        supabase.from('achievement_unlocks').insert({
-          user_id: userId, achievement_id: achResult.data.id
-        }).then();
+        runInBackground(
+          'memberships:achievement-unlock',
+          supabase.from('achievement_unlocks').insert({
+            user_id: userId, achievement_id: achResult.data.id
+          })
+        );
       }
     }
 

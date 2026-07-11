@@ -12,6 +12,7 @@ import {
   sendDelayNotification 
 } from '../services/ordersTelegram';
 import { sendStatusNotification } from '../services/telegram';
+import { logSwallowedError, runInBackground } from '../utils/logError';
 
 const router = Router();
 
@@ -98,7 +99,10 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     }
 
     // Fire-and-forget: status history
-    supabase.from('order_status_history').insert({ order_id: order.id, status: 'accepted' }).then();
+    runInBackground(
+      'orders:status-history',
+      supabase.from('order_status_history').insert({ order_id: order.id, status: 'accepted' })
+    );
 
     // Auto-decrement tobacco stock and check for restock
     if (data.mix_id) {
@@ -110,15 +114,21 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 
       if (mix) {
         const newStock = Math.max(0, (mix.stock_quantity || 0) - 1);
-        supabase.from('mixes').update({ stock_quantity: newStock, updated_at: new Date().toISOString() }).eq('id', data.mix_id).then();
+        runInBackground(
+          'orders:decrement-stock',
+          supabase.from('mixes').update({ stock_quantity: newStock, updated_at: new Date().toISOString() }).eq('id', data.mix_id)
+        );
 
         if (newStock <= (mix.min_stock_threshold ?? 5) && mix.auto_reorder_enabled) {
-          supabase.from('restock_requests').insert({
-            tobacco_id: data.mix_id,
-            tobacco_name: mix.name,
-            quantity: Math.max(10, (mix.min_stock_threshold ?? 5) * 2),
-            status: 'pending',
-          }).then();
+          runInBackground(
+            'orders:auto-restock',
+            supabase.from('restock_requests').insert({
+              tobacco_id: data.mix_id,
+              tobacco_name: mix.name,
+              quantity: Math.max(10, (mix.min_stock_threshold ?? 5) * 2),
+              status: 'pending',
+            })
+          );
         }
       }
     }
@@ -126,10 +136,16 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     const mixDetails = { name: 'Индивидуальный микс' };
 
     if (userProfile) {
-      sendOrderNotification(order, userProfile.name, userProfile.phone || 'Не указан', mixDetails).catch(() => {});
+      sendOrderNotification(order, userProfile.name, userProfile.phone || 'Не указан', mixDetails).catch(
+        (err) => logSwallowedError('orders:telegram-notify', err)
+      );
     }
 
-    try { getIO().emit('order:created', mapOrderToFrontend(order)); } catch {}
+    try {
+      getIO().emit('order:created', mapOrderToFrontend(order));
+    } catch (socketErr) {
+      logSwallowedError('orders:socket-created', socketErr);
+    }
 
     res.status(201).json(mapOrderToFrontend(order));
   } catch (err) {
@@ -575,7 +591,7 @@ router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, nex
         new Date(updated.created_at).toLocaleDateString('ru-RU'),
         new Date(updated.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
         'cancelled'
-      ).catch(() => {});
+      ).catch((err) => logSwallowedError('orders:cancel-notify', err));
     }
 
     // Broadcast status change
@@ -629,7 +645,9 @@ router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: N
     try {
       const io = getIO();
       io.emit('order:deleted', { id: req.params.id });
-    } catch {}
+    } catch (socketErr) {
+      logSwallowedError('orders:socket-deleted', socketErr);
+    }
 
     res.json({ success: true, message: 'Заказ удалён' });
   } catch (err) {

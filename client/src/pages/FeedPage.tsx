@@ -78,7 +78,9 @@ export function FeedPage() {
     try {
       const data = await api(`/api/posts/${postId}/like`, { method: 'POST' });
       setPosts((prev) => prev.map((p) => p._id === postId ? { ...p, likes: data.likes, likedBy: data.likedBy } : p));
-    } catch {}
+    } catch {
+      showToast('Не удалось поставить лайк', 'error');
+    }
   };
 
   const toggleComments = async (postId: string) => {
@@ -91,7 +93,9 @@ export function FeedPage() {
         try {
           const data = await api(`/api/posts/${postId}/comments`);
           setCommentsData((prev) => ({ ...prev, [postId]: data }));
-        } catch {}
+        } catch {
+          showToast('Не удалось загрузить комментарии', 'error');
+        }
       }
     }
     setExpandedComments(newSet);
