@@ -153,15 +153,8 @@ export function Dashboard() {
       setOnlineUsers(data.users || []);
     });
 
-    const playChime = () => {
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav');
-      audio.volume = 0.35;
-      audio.play().catch((e) => console.log('Chime failed to play:', e.message));
-    };
-
     socket.on('order:created', () => {
       fetchData();
-      playChime();
     });
 
     socket.on('order:updated', () => {
@@ -523,7 +516,7 @@ export function Dashboard() {
             const retentionRate = uniqueUsers.length > 0 ? Math.round((Object.values(userMap).filter(u => u.count > 1).length / uniqueUsers.length) * 100) : 0;
             const avgLTV = uniqueUsers.length > 0 ? Math.round(Object.values(userMap).reduce((s: number, u: any) => s + u.spend, 0) / uniqueUsers.length) : 0;
             return [
-              { label: 'Загруженность залов', value: `${occupancyRate}%`, color: 'text-accent-gold', sub: `${totalOrders} броней` },
+              { label: 'Загрузка заказов', value: `${occupancyRate}%`, color: 'text-accent-gold', sub: `${totalOrders} заказов` },
               { label: 'Retention Rate', value: `${retentionRate}%`, color: 'text-amber-400', sub: 'вернувшиеся гости' },
               { label: 'Средний LTV', value: `${avgLTV.toLocaleString('ru-RU')} ₽`, color: 'text-green-400', sub: `${uniqueUsers.length} гостей` },
               { label: 'Выручка (месяц)', value: `${grossRevenue.toLocaleString('ru-RU')} ₽`, color: 'text-white', sub: `${totalHookahs} кальянов` },

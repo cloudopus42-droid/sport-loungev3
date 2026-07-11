@@ -97,10 +97,7 @@ export function AdminLayout() {
   useEffect(() => {
     if (!socket || !isAdmin) return;
     const handleNewBooking = (bookingData: any) => {
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav');
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log('Chime failed to play:', e.message));
-      showToast(`Новый заказ кальяна! Стол: ${bookingData?.seatLabel || 'Микс-билет'}`, 'success');
+      showToast(`Новый заказ кальяна! ${bookingData?.seatLabel ? `Стол: ${bookingData.seatLabel}` : 'Новый заказ'}`, 'success');
       setHasNewOrders(true);
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
         try {

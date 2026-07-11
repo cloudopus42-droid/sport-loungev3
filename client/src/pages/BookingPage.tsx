@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, Clock, Sparkles,
   Bot, ThumbsUp, ShoppingCart, ChevronRight,
-  Leaf, Zap, Bookmark, Trash2, Flame
+  Leaf, Zap, Bookmark, Trash2, Flame, ChefHat, Timer
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
+import { SmokeEffect } from '@/components/ui/SmokeEffect';
 
 type Flavor = {
   id: string;
@@ -60,6 +61,23 @@ const AI_MOODS = [
   { id: 'classic', label: 'Классика', emoji: '🏆', desc: 'Проверенные временем вкусы' },
 ];
 
+const BOWL_OPTIONS = [
+  { id: 'clay', label: 'Глиняная', emoji: '🏺' },
+  { id: 'phunnel', label: 'Phunnel', emoji: '🌀' },
+  { id: 'turkish', label: 'Турка', emoji: '☕' },
+  { id: 'fruit', label: 'Фруктовая', emoji: '🍊' },
+];
+
+const MASTER_OPTIONS = [
+  { id: 'any', label: 'Любой мастер' },
+  { id: 'senior', label: 'Старший мастер' },
+  { id: 'personal', label: 'Мой мастер' },
+];
+
+const TIME_SLOTS = ['Сейчас', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
+
+type OrderTab = 'order' | 'mixologist';
+
 const stages = [
   { id: 'accepted', label: 'Принят', desc: 'Заказ зарегистрирован' },
   { id: 'preparing', label: 'Подготовка', desc: 'Сборка микса и забивка чаши' },
@@ -90,6 +108,10 @@ export function BookingPage() {
   const [mixSaved, setMixSaved] = useState(false);
   const [userMixes, setUserMixes] = useState<any[]>([]);
   const [showSavedMixes, setShowSavedMixes] = useState(false);
+  const [activeTab, setActiveTab] = useState<OrderTab>('order');
+  const [bowlType, setBowlType] = useState('phunnel');
+  const [masterPref, setMasterPref] = useState('any');
+  const [preferredTime, setPreferredTime] = useState('Сейчас');
   const timerIntervalRef = useRef<any>(null);
   const fetchOrderStatusRef = useRef<AbortController | null>(null);
 
@@ -107,6 +129,18 @@ export function BookingPage() {
   }, [aiMood]);
 
   const location = useLocation();
+
+  const switchTab = useCallback((tab: OrderTab) => {
+    setActiveTab(tab);
+    window.history.replaceState(null, '', `#${tab}`);
+  }, []);
+
+  useEffect(() => {
+    const hash = location.hash.replace('#', '') as OrderTab;
+    if (hash === 'mixologist' || hash === 'order') {
+      setActiveTab(hash);
+    }
+  }, [location.hash]);
 
   useEffect(() => {
     if (location.state?.savedMix) {
@@ -215,7 +249,9 @@ export function BookingPage() {
         }
       }
       const orderStrength = selectedMix.strength === 3 ? 'light' : selectedMix.strength === 9 ? 'strong' : 'medium';
-      finalNotes = `[S:${orderStrength}]${finalNotes ? ' ' + finalNotes : ''}`;
+      const bowlLabel = BOWL_OPTIONS.find(b => b.id === bowlType)?.label || bowlType;
+      const masterLabel = MASTER_OPTIONS.find(m => m.id === masterPref)?.label || masterPref;
+      finalNotes = `[S:${orderStrength}][Чаша:${bowlLabel}][Мастер:${masterLabel}][Время:${preferredTime}]${finalNotes ? ' ' + finalNotes : ''}`;
       const res = await api('/api/orders', { method: 'POST', body: {
         mix_id: isCustom ? null : selectedMix.id, notes: finalNotes,
         strength: orderStrength,
@@ -261,7 +297,7 @@ export function BookingPage() {
   };
 
   const handleSaveMix = async () => {
-    if (!isAuthenticated) { showToast('Авторизуйтесь для сохранения', 'error'); navigate('/login?redirect=/booking'); return; }
+    if (!isAuthenticated) { showToast('Авторизуйтесь для сохранения', 'error'); navigate('/login?redirect=/order'); return; }
     if (selectedFlavors.length === 0 && aiRecommendations.length === 0) { showToast('Выберите хотя бы один вкус', 'error'); return; }
     setSavingMix(true);
     try {
@@ -282,7 +318,7 @@ export function BookingPage() {
   };
 
   const handleQuickOrder = () => {
-    if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/booking'); return; }
+    if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/order'); return; }
     setSelectedMix({
       id: 'custom-quick',
       name: selectedFlavors.length > 0 ? `Микс: ${selectedFlavors.join(', ')}` : 'Авторский микс',
@@ -295,6 +331,7 @@ export function BookingPage() {
 
   return (
     <div className="relative min-h-screen bg-dark-bg text-white overflow-hidden">
+      <SmokeEffect />
       {/* Ambient glows */}
       <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-[#FFBF00] opacity-[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#8D6B3D] opacity-[0.02] blur-[130px] rounded-full pointer-events-none z-0" />
@@ -305,17 +342,48 @@ export function BookingPage() {
           {/* Header */}
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#FFBF00]/20 bg-[#FFBF00]/5 text-[9px] font-semibold text-[#FFBF00] uppercase tracking-[0.2em] mb-3">
-              <Sparkles className="w-3 h-3" /> Premium Hookah Assembly
+              <Sparkles className="w-3 h-3" /> Premium Hookah Experience
             </div>
             <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight mb-1 font-heading">
-              Собери свой <span className="text-[#FFBF00]">кальян</span>
+              Заказ & <span className="text-[#FFBF00]">ИИ-Миксолог</span>
             </h1>
-            <p className="text-white/40 text-xs max-w-md">
-              Выберите вкусы и крепость, добавьте рецепт в профиль или закажите сразу
+            <p className="text-white/40 text-xs max-w-md mx-auto lg:mx-0">
+              Соберите идеальный кальян или доверьтесь рекомендациям ИИ — всё на одной странице
             </p>
           </div>
 
-          {/* Flavor Selection */}
+          {/* Tab navigation */}
+          <div className="liquid-glass rounded-2xl p-1 flex gap-1">
+            {([
+              { id: 'order' as const, label: 'Параметры заказа', icon: ShoppingCart },
+              { id: 'mixologist' as const, label: 'ИИ-Миксолог', icon: Bot },
+            ]).map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => switchTab(id)}
+                className={`relative flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
+                  activeTab === id
+                    ? 'bg-[#FFBF00] text-[#0b0807] shadow-[0_4px_16px_rgba(255,191,0,0.25)]'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'order' ? (
+              <motion.div
+                key="order-tab"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                className="space-y-5"
+              >
           <div className="liquid-glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Leaf className="w-3.5 h-3.5 text-[#FFBF00]" />
@@ -377,135 +445,68 @@ export function BookingPage() {
             </div>
           </div>
 
-          {/* AI Mixologist */}
-          <div className={`liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
+          {/* Bowl */}
+          <div className="liquid-glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Bot className="w-3.5 h-3.5 text-[#FFBF00]" />
-              <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-[#FFBF00]">ИИ-Миксолог</h3>
+              <Flame className="w-3.5 h-3.5 text-[#FFBF00]" />
+              <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Чаша</h3>
             </div>
-            <p className="text-[9px] text-white/30 mb-3">Расскажите, что вы любите — ИИ подберёт идеальный микс</p>
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {AI_MOODS.map(mood => {
-                const sel = aiMood.includes(mood.id);
-                return (
-                  <button key={mood.id} onClick={() => setAiMood(prev => prev.includes(mood.id) ? prev.filter(id => id !== mood.id) : [...prev, mood.id])}
-                    className={`px-2.5 py-1.5 rounded-lg text-[9px] transition-all border ${
-                      sel ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-[#FFBF00]' : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
-                    }`}
-                  >
-                    <span className="mr-1">{mood.emoji}</span>{mood.label}
-                  </button>
-                );
-              })}
+            <div className="grid grid-cols-2 gap-2">
+              {BOWL_OPTIONS.map(b => (
+                <button key={b.id} type="button" onClick={() => setBowlType(b.id)}
+                  className={`py-2 px-2 rounded-xl text-[10px] font-semibold transition-all border ${
+                    bowlType === b.id
+                      ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-[#FFBF00]'
+                      : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
+                  }`}
+                >
+                  <span className="mr-1">{b.emoji}</span>{b.label}
+                </button>
+              ))}
             </div>
-            {aiRecommendations.length > 0 && (
-              <div className="p-3 rounded-xl bg-[rgba(255,191,0,0.03)] border border-[rgba(255,191,0,0.1)]">
-                <p className="text-[9px] text-[#FFBF00] font-semibold mb-2 flex items-center gap-1">
-                  <ThumbsUp className="w-3 h-3" /> Рекомендуемые вкусы
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {aiRecommendations.map(flavor => (
-                    <button key={flavor} onClick={() => toggleFlavor(flavor)}
-                      className={`px-2 py-1 rounded-lg text-[8px] border transition-all ${
-                        selectedFlavors.includes(flavor)
-                          ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.25)] text-[#FFBF00]'
-                          : 'bg-white/[0.03] border-white/5 text-white/50 hover:border-[rgba(255,191,0,0.15)]'
-                      }`}
-                    >
-                      {flavor}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {aiMood.length === 0 && (
-              <p className="text-[8px] text-white/20 text-center py-2">Выберите настроение для рекомендации</p>
-            )}
           </div>
 
-          {/* Save to Profile */}
-          {isAuthenticated && (selectedFlavors.length > 0 || aiRecommendations.length > 0) && (
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSaveMix}
-              disabled={savingMix || mixSaved}
-              className="w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:opacity-40 text-[9px] font-bold text-[#FFBF00] uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2"
-            >
-              <Bot className="w-3.5 h-3.5" />
-              {mixSaved ? '✓ Сохранено' : savingMix ? 'Сохранение...' : 'Сохранить рецепт в профиль'}
-            </motion.button>
-          )}
-
-          {/* Saved Mixes Panel */}
-          {isAuthenticated && userMixes.length > 0 && (
-            <div className="liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]">
-              <button onClick={() => setShowSavedMixes(!showSavedMixes)}
-                className="flex items-center justify-between w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <Bookmark className="w-3.5 h-3.5 text-[#FFBF00]" />
-                  <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Мои рецепты</h3>
-                  <span className="text-[9px] text-white/30 ml-1">({userMixes.length})</span>
-                </div>
-                <ChevronRight className={`w-3 h-3 text-white/30 transition-transform ${showSavedMixes ? 'rotate-90' : ''}`} />
-              </button>
-              <AnimatePresence>
-                {showSavedMixes && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
-                      {userMixes.map(mix => (
-                        <div key={mix.id}
-                          className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[rgba(255,191,0,0.15)] transition-all group"
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-[rgba(255,191,0,0.08)] flex items-center justify-center flex-shrink-0">
-                            <Flame className="w-3.5 h-3.5 text-[#FFBF00]" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-semibold text-white truncate">{mix.name}</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {Array.isArray(mix.flavors) && mix.flavors.slice(0, 3).map((f: string) => (
-                                <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] text-white/50">{f}</span>
-                              ))}
-                              {Array.isArray(mix.flavors) && mix.flavors.length > 3 && (
-                                <span className="text-[8px] text-white/30">+{mix.flavors.length - 3}</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 mt-1.5">
-                              <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded ${
-                                mix.strength === 'light' ? 'bg-green-500/10 text-green-400' :
-                                mix.strength === 'strong' ? 'bg-red-500/10 text-red-400' :
-                                'bg-[rgba(255,191,0,0.1)] text-[#FFBF00]'
-                              }`}>
-                                {mix.strength === 'light' ? 'Лёгкая' : mix.strength === 'strong' ? 'Крепкая' : 'Средняя'}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-1.5 flex-shrink-0">
-                            <button onClick={() => handleOrderSavedMix(mix)}
-                              className="px-3 py-1 rounded-lg bg-[rgba(255,191,0,0.12)] border border-[rgba(255,191,0,0.2)] text-[#FFBF00] text-[8px] font-bold uppercase tracking-wider hover:bg-[rgba(255,191,0,0.2)] transition-all whitespace-nowrap"
-                            >
-                              Заказать
-                            </button>
-                            <button onClick={() => handleDeleteUserMix(mix.id)}
-                              className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all self-end"
-                              aria-label="Удалить рецепт"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          {/* Master */}
+          <div className="liquid-glass rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <ChefHat className="w-3.5 h-3.5 text-[#FFBF00]" />
+              <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Мастер</h3>
             </div>
-          )}
+            <div className="flex flex-wrap gap-2">
+              {MASTER_OPTIONS.map(m => (
+                <button key={m.id} type="button" onClick={() => setMasterPref(m.id)}
+                  className={`px-3 py-2 rounded-xl text-[10px] font-semibold transition-all border ${
+                    masterPref === m.id
+                      ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-[#FFBF00]'
+                      : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Time */}
+          <div className="liquid-glass rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Timer className="w-3.5 h-3.5 text-[#FFBF00]" />
+              <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Время подачи</h3>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {TIME_SLOTS.map(t => (
+                <button key={t} type="button" onClick={() => setPreferredTime(t)}
+                  className={`px-2.5 py-1.5 rounded-lg text-[9px] font-semibold transition-all border ${
+                    preferredTime === t
+                      ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-[#FFBF00]'
+                      : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Order Button */}
           <motion.button
@@ -568,6 +569,143 @@ export function BookingPage() {
               )}
             </motion.div>
           )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="mixologist-tab"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                className="space-y-5"
+              >
+                <div className={`liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Bot className="w-3.5 h-3.5 text-[#FFBF00]" />
+                    <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-[#FFBF00]">ИИ-Миксолог</h3>
+                  </div>
+                  <p className="text-[9px] text-white/30 mb-3">Расскажите, что вы любите — ИИ подберёт идеальный микс</p>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {AI_MOODS.map(mood => {
+                      const sel = aiMood.includes(mood.id);
+                      return (
+                        <button key={mood.id} type="button" onClick={() => setAiMood(prev => prev.includes(mood.id) ? prev.filter(id => id !== mood.id) : [...prev, mood.id])}
+                          className={`px-2.5 py-1.5 rounded-lg text-[9px] transition-all border ${
+                            sel ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-[#FFBF00]' : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
+                          }`}
+                        >
+                          <span className="mr-1">{mood.emoji}</span>{mood.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {aiRecommendations.length > 0 && (
+                    <div className="p-3 rounded-xl bg-[rgba(255,191,0,0.03)] border border-[rgba(255,191,0,0.1)]">
+                      <p className="text-[9px] text-[#FFBF00] font-semibold mb-2 flex items-center gap-1">
+                        <ThumbsUp className="w-3 h-3" /> Рекомендуемые вкусы
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {aiRecommendations.map(flavor => (
+                          <button key={flavor} type="button" onClick={() => toggleFlavor(flavor)}
+                            className={`px-2 py-1 rounded-lg text-[8px] border transition-all ${
+                              selectedFlavors.includes(flavor)
+                                ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.25)] text-[#FFBF00]'
+                                : 'bg-white/[0.03] border-white/5 text-white/50 hover:border-[rgba(255,191,0,0.15)]'
+                            }`}
+                          >
+                            {flavor}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {aiMood.length === 0 && (
+                    <p className="text-[8px] text-white/20 text-center py-2">Выберите настроение для рекомендации</p>
+                  )}
+                </div>
+
+                {isAuthenticated && (selectedFlavors.length > 0 || aiRecommendations.length > 0) && (
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSaveMix}
+                    disabled={savingMix || mixSaved}
+                    className="w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:opacity-40 text-[9px] font-bold text-[#FFBF00] uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2"
+                  >
+                    <Bot className="w-3.5 h-3.5" />
+                    {mixSaved ? '✓ Сохранено' : savingMix ? 'Сохранение...' : 'Сохранить рецепт в профиль'}
+                  </motion.button>
+                )}
+
+                {isAuthenticated && userMixes.length > 0 && (
+                  <div className="liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]">
+                    <button type="button" onClick={() => setShowSavedMixes(!showSavedMixes)}
+                      className="flex items-center justify-between w-full"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Bookmark className="w-3.5 h-3.5 text-[#FFBF00]" />
+                        <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Мои рецепты</h3>
+                        <span className="text-[9px] text-white/30 ml-1">({userMixes.length})</span>
+                      </div>
+                      <ChevronRight className={`w-3 h-3 text-white/30 transition-transform ${showSavedMixes ? 'rotate-90' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                      {showSavedMixes && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
+                            {userMixes.map(mix => (
+                              <div key={mix.id}
+                                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[rgba(255,191,0,0.15)] transition-all group"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-[rgba(255,191,0,0.08)] flex items-center justify-center flex-shrink-0">
+                                  <Flame className="w-3.5 h-3.5 text-[#FFBF00]" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[11px] font-semibold text-white truncate">{mix.name}</p>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {Array.isArray(mix.flavors) && mix.flavors.slice(0, 3).map((f: string) => (
+                                      <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] text-white/50">{f}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex flex-col gap-1.5 flex-shrink-0">
+                                  <button type="button" onClick={() => handleOrderSavedMix(mix)}
+                                    className="px-3 py-1 rounded-lg bg-[rgba(255,191,0,0.12)] border border-[rgba(255,191,0,0.2)] text-[#FFBF00] text-[8px] font-bold uppercase tracking-wider hover:bg-[rgba(255,191,0,0.2)] transition-all whitespace-nowrap"
+                                  >
+                                    Заказать
+                                  </button>
+                                  <button type="button" onClick={() => handleDeleteUserMix(mix.id)}
+                                    className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all self-end"
+                                    aria-label="Удалить рецепт"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleQuickOrder}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25)] transition-all flex items-center justify-center gap-2"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Оформить микс
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       {/* Order Confirmation Modal */}

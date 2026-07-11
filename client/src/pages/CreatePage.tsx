@@ -1,5 +1,5 @@
-import { BookingPage } from './BookingPage';
+import { Navigate } from 'react-router-dom';
 
 export function CreatePage() {
-  return <BookingPage />;
+  return <Navigate to="/order" replace />;
 }

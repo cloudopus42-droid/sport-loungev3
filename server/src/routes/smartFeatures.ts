@@ -99,6 +99,7 @@ export default router;
  * Called once on server startup.
  */
 const FEATURES = [
+  { feature_key: 'homepage_showcase', name: 'Витрина на главной', description: 'Блок витрины на главной: количество, фон, вкл/выкл', enabled: true, is_public: true, config: { topCount: 6, background: 'dark' } },
   { feature_key: 'ai_recommendations', name: 'ИИ-рекомендации', description: 'Персонализированные рекомендации на основе ИИ', enabled: false, is_public: true },
   { feature_key: 'loyalty_program', name: 'Программа лояльности', description: 'Баллы, уровни и привилегии для постоянных клиентов', enabled: false, is_public: true },
   { feature_key: 'push_notifications', name: 'Push-уведомления', description: 'Уведомления о статусе заказа и акциях', enabled: false, is_public: false },

@@ -133,8 +133,8 @@ export function OrderTrackerPage() {
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col">
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-8 space-y-8">
-        <Link to="/booking" className="inline-flex items-center gap-1.5 text-xs text-accent-gold-bright hover:text-accent-gold-light transition-colors">
-          <ArrowLeft className="w-3.5 h-3.5" /> Вернуться к бронированию
+        <Link to="/order" className="inline-flex items-center gap-1.5 text-xs text-accent-gold-bright hover:text-accent-gold-light transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" /> Вернуться к заказу
         </Link>
 
         <div className="text-center space-y-2">

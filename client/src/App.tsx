@@ -55,10 +55,10 @@ export default function App() {
             <Routes>
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
-                <Route path="booking" element={<BookingPage />} />
-                <Route path="create" element={<CreatePage />} />
-                <Route path="mixologist" element={<Navigate to="/booking" replace />} />
-                <Route path="order" element={<OrderTrackerPage />} />
+                <Route path="order" element={<BookingPage />} />
+                <Route path="mixologist" element={<Navigate to="/order#mixologist" replace />} />
+                <Route path="booking" element={<Navigate to="/order" replace />} />
+                <Route path="create" element={<Navigate to="/order" replace />} />
                 <Route path="order-tracker" element={<OrderTrackerPage />} />
 
                 <Route path="tobacco" element={<TobaccoPage />} />

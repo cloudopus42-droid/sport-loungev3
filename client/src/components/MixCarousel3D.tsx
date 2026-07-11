@@ -84,7 +84,7 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
       onWheel={handleWheel}
       onKeyDown={handleKeyDown}
       className="relative w-full overflow-hidden select-none outline-none"
-      style={{ perspective: '1200px', minHeight: '520px' }}
+      style={{ perspective: '1200px', minHeight: '600px' }}
     >
       <div className="relative flex items-center justify-center w-full h-full" style={{ transformStyle: 'preserve-3d' }}>
         {visibleItems.map((index) => {
@@ -99,6 +99,7 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
               initial={false}
               animate={{
                 x: t.x,
+                y: 60,
                 scale: t.scale,
                 opacity: t.opacity,
                 rotateY: t.rotateY,

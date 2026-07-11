@@ -34,7 +34,6 @@ async function seed(): Promise<void> {
     await retryDb(() => supabase.from('post_comments').delete().neq('post_id', '00000000-0000-0000-0000-000000000000'));
     await retryDb(() => supabase.from('posts').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
     await retryDb(() => supabase.from('bookings').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
-    await retryDb(() => supabase.from('seat_configs').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
     await retryDb(() => supabase.from('mixes').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
     await retryDb(() => supabase.from('promos').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
     await retryDb(() => supabase.from('showcases').delete().neq('id', '00000000-0000-0000-0000-000000000000'));

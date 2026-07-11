@@ -30,8 +30,7 @@ interface DesktopNavItem {
 
 const desktopNavItems: DesktopNavItem[] = [
   { label: 'Главная', to: '/' },
-  { label: 'Заказ', to: '/booking' },
-
+  { label: 'Заказ', to: '/order' },
 ];
 
 interface MobileTab {
@@ -42,7 +41,7 @@ interface MobileTab {
 
 const mobileTabs: MobileTab[] = [
   { label: 'Главная', to: '/', icon: HomeIcon },
-  { label: 'Заказ', to: '/booking', icon: CalendarCheck },
+  { label: 'Заказ', to: '/order', icon: CalendarCheck },
   { label: 'Профиль', to: '/profile', icon: UserIcon },
 ];
 
@@ -275,7 +274,7 @@ export function MainLayout() {
               </NavLink>
             )}
 
-            <NavLink to="/booking" aria-label="Сделать заказ"
+            <NavLink to="/order" aria-label="Сделать заказ"
               className="btn-primary px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5"
             >
               <Sparkles className="w-3 h-3" />

@@ -9,7 +9,7 @@ import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 
 interface ShowcaseItem {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   imageUrl: string;
@@ -17,10 +17,18 @@ interface ShowcaseItem {
   isActive: boolean;
 }
 
+interface ShowcaseSettings {
+  enabled: boolean;
+  topCount: number;
+  background: string;
+}
+
 const emptyForm = { title: '', description: '', imageUrl: '', order: 0 };
 
 export function AdminShowcasePage() {
   const [items, setItems] = useState<ShowcaseItem[]>([]);
+  const [settings, setSettings] = useState<ShowcaseSettings>({ enabled: true, topCount: 6, background: 'dark' });
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -31,14 +39,34 @@ export function AdminShowcasePage() {
 
   const fetchItems = useCallback(async () => {
     try {
-      const data = await api('/api/showcases');
+      const [data, settingsData] = await Promise.all([
+        api('/api/showcases/manage'),
+        api<ShowcaseSettings>('/api/showcases/settings'),
+      ]);
       setItems(Array.isArray(data) ? data : data.data || []);
+      if (settingsData) setSettings(settingsData);
     } catch {
       showToast('Ошибка загрузки витрины', 'error');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const saveSettings = async () => {
+    setSettingsSaving(true);
+    try {
+      const saved = await api<ShowcaseSettings>('/api/showcases/settings', {
+        method: 'PUT',
+        body: settings,
+      });
+      setSettings(saved);
+      showToast('Настройки витрины сохранены', 'success');
+    } catch {
+      showToast('Ошибка сохранения настроек', 'error');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
 
   useEffect(() => {
     const ac = new AbortController();
@@ -57,7 +85,7 @@ export function AdminShowcasePage() {
 
       if (editing) {
         const result = await api(`/api/showcases/${editing}`, { method: 'PUT', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
-        setItems((prev) => prev.map((i) => i._id === editing ? result : i));
+        setItems((prev) => prev.map((i) => i.id === editing ? result : i));
         showToast('Обновлено', 'success');
       } else {
         const result = await api('/api/showcases', { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
@@ -78,7 +106,7 @@ export function AdminShowcasePage() {
   const handleDelete = async (id: string) => {
     try {
       await api(`/api/showcases/${id}`, { method: 'DELETE' });
-      setItems((prev) => prev.filter((i) => i._id !== id));
+      setItems((prev) => prev.filter((i) => i.id !== id));
       showToast('Удалено', 'success');
     } catch {
       showToast('Ошибка удаления', 'error');
@@ -86,7 +114,7 @@ export function AdminShowcasePage() {
   };
 
   const startEdit = (item: ShowcaseItem) => {
-    setEditing(item._id);
+    setEditing(item.id);
     setForm({ title: item.title, description: item.description, imageUrl: item.imageUrl, order: item.order });
     setFile(null);
   };
@@ -106,7 +134,7 @@ export function AdminShowcasePage() {
     reordered.splice(toIndex, 0, moved);
     const updated = reordered.map((item, idx) => ({ ...item, order: idx }));
     setItems(updated);
-    api('/api/showcases/reorder', { method: 'PUT', body: updated.map(({ _id, order }) => ({ _id, order })) })
+    api('/api/showcases/reorder', { method: 'PUT', body: updated.map(({ id, order }) => ({ id, order })) })
       .catch(() => showToast('Ошибка сохранения порядка', 'error'));
   };
 
@@ -121,6 +149,47 @@ export function AdminShowcasePage() {
           <Plus className="w-4 h-4" /> Добавить
         </GlowButton>
       </div>
+
+      <GlassCard variant="premium" className="p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-white">Настройки витрины на главной</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <label className="flex items-center gap-2 text-sm text-white/70">
+            <input
+              type="checkbox"
+              checked={settings.enabled}
+              onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
+              className="rounded border-glass-border"
+            />
+            Показывать витрину
+          </label>
+          <div>
+            <label className="text-xs text-white/50 block mb-1">Кол-во карточек (top mixes)</label>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={settings.topCount}
+              onChange={(e) => setSettings({ ...settings, topCount: Number(e.target.value) })}
+              className="glass-input text-sm w-full"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-white/50 block mb-1">Фон секции</label>
+            <select
+              value={settings.background}
+              onChange={(e) => setSettings({ ...settings, background: e.target.value })}
+              className="glass-input text-sm w-full"
+            >
+              <option value="dark">Тёмный</option>
+              <option value="gold">Золотое свечение</option>
+              <option value="smoke">Дымка</option>
+            </select>
+          </div>
+        </div>
+        <GlowButton size="sm" onClick={saveSettings} loading={settingsSaving}>
+          Сохранить настройки
+        </GlowButton>
+      </GlassCard>
 
       {/* Form */}
       {(showForm || editing !== null) && (
@@ -166,7 +235,7 @@ export function AdminShowcasePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sorted.map((item, index) => (
             <motion.div
-              key={item._id}
+              key={item.id}
               layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -202,7 +271,7 @@ export function AdminShowcasePage() {
                         className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors">
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => handleDelete(item._id)}
+                      <button onClick={() => handleDelete(item.id)}
                         className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

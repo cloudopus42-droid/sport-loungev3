@@ -15,12 +15,6 @@ import api from '@/lib/api';
 import type { Booking, User as UserType } from '@/types';
 import { resolveImageUrl } from '@/lib/urls';
 
-const TABLE_OPTIONS = [
-  'Стол 1', 'Стол 2', 'Стол 3', 'Стол 4', 'Стол 5',
-  'Стол 6', 'Стол 7', 'Стол 8', 'VIP Кабинет 1', 'VIP Кабинет 2',
-  'Игровая Зона PC-1', 'Игровая Зона PC-2', 'PlayStation Зона 1', 'PlayStation Зона 2'
-];
-
 const LIQUID_BASES = [
   { id: 'water', name: 'На воде', price: 0, emoji: '💧', desc: 'Классическая легкая фильтрация' },
   { id: 'milk', name: 'На молоке', price: 150, emoji: '🥛', desc: 'Пар более плотный и нежный' },
@@ -410,10 +404,6 @@ export function ProfilePage() {
               console.error('Failed to sync notified_bookings:', err);
             }
             
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-200.wav');
-            audio.volume = 0.55;
-            audio.play().catch(() => {});
-            
             showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
 
             if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
@@ -535,8 +525,8 @@ export function ProfilePage() {
 
   // Perks list for card back side matching tier level
   const tierPerks: Record<string, string[]> = {
-    bronze: ['Скидка 5% на кальяны и ПК', 'Базовое бронирование залов', 'Начисление 1 XP за каждые 10 руб в чеке'],
-    silver: ['Скидка 10% на все услуги', 'Доступ в PlayStation Zone (2эт)', 'Начисление 1.2x XP лояльности', 'Приоритет на бронь столов'],
+    bronze: ['Скидка 5% на кальяны и ПК', 'Базовый приоритет заказов', 'Начисление 1 XP за каждые 10 руб в чеке'],
+    silver: ['Скидка 10% на все услуги', 'Доступ в PlayStation Zone (2эт)', 'Начисление 1.2x XP лояльности', 'Приоритет на заказы'],
     gold: ['Скидка 15% на всё меню', 'Свободный выбор PRO 600Hz залов', 'Начисление 1.5x XP за визиты', 'Бесплатный кальян в день рождения'],
     black: ['Скидка 20% на весь чек', 'Доступ в закрытые OLED VIP зоны', 'Личный ИИ-сомелье 24/7', 'Круглосуточный консьерж-сервис'],
     diamond: ['Скидка 25% на всё пожизненно', 'Персональная ложа VIP бесплатно', 'Ультра-кэшбэк XP за отзывы (+200 XP)', 'Индивидуальный кальянный мастер']
@@ -556,8 +546,9 @@ export function ProfilePage() {
         >
           <div className="text-center mb-3 flex items-center justify-between px-2">
             <span className="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold">Закрытый клуб VIP Resident</span>
-            <button 
-              onClick={() => setIsFlipped(!isFlipped)} 
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setIsFlipped((f) => !f); }}
               className="text-[10px] text-accent-gold-bright hover:text-white transition-all bg-white/5 border border-glass-border/30 px-2.5 py-0.5 rounded-full"
             >
               {isFlipped ? 'Показать Карту' : 'Привилегии'}
@@ -575,7 +566,8 @@ export function ProfilePage() {
                 rotateX,
                 rotateY,
                 transformStyle: 'preserve-3d',
-                backfaceVisibility: 'hidden'
+                backfaceVisibility: 'hidden',
+                pointerEvents: isFlipped ? 'none' : 'auto',
               }}
               onClick={() => setIsFlipped(true)}
               transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
@@ -622,7 +614,8 @@ export function ProfilePage() {
             <div
               style={{
                 transform: 'rotateY(180deg)',
-                backfaceVisibility: 'hidden'
+                backfaceVisibility: 'hidden',
+                pointerEvents: isFlipped ? 'auto' : 'none',
               }}
               onClick={() => setIsFlipped(false)}
               className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${cardTheme.gradient} border ${cardTheme.border} ${cardTheme.glow} p-6 flex flex-col justify-between overflow-hidden cursor-pointer select-none`}
@@ -1473,21 +1466,18 @@ export function ProfilePage() {
               {/* Form */}
               <form onSubmit={handleSubmitRepeatOrder} className="space-y-4">
                 
-                {/* Table Choice */}
+                {/* Delivery location (optional) */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider">
-                    🛋️ Куда подать кальян?
+                    📍 Где подать кальян? (необязательно)
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={repeatSeatLabel}
                     onChange={(e) => setRepeatSeatLabel(e.target.value)}
-                    className="w-full px-3 py-2 text-xs mafia-input font-bold"
-                    required
-                  >
-                    {TABLE_OPTIONS.map(opt => (
-                      <option key={opt} value={opt} className="bg-[#120b06] text-white font-bold">{opt}</option>
-                    ))}
-                  </select>
+                    placeholder="Например: у бара, VIP-зона..."
+                    className="w-full px-3 py-2 text-xs mafia-input"
+                  />
                 </div>
 
                 {/* Liquid Base choice */}
