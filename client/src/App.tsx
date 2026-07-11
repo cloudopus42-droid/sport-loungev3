@@ -16,7 +16,6 @@ const KnowledgeGraphPage = lazy(() => import('@/pages/KnowledgeGraphPage').then(
 const FeedPage = lazy(() => import('@/pages/FeedPage').then(m => ({ default: m.FeedPage })));
 const InvitationsPage = lazy(() => import('@/pages/InvitationsPage').then(m => ({ default: m.InvitationsPage })));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const CreatePage = lazy(() => import('@/pages/CreatePage').then(m => ({ default: m.CreatePage })));
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const LoginCallbackPage = lazy(() => import('@/pages/LoginCallbackPage').then(m => ({ default: m.LoginCallbackPage })));
@@ -104,4 +103,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
