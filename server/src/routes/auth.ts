@@ -43,7 +43,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
     const hashedPassword = await bcrypt.hash(data.password, salt);
 
     // Создаем пользователя в БД
-    const role = (data.email.toLowerCase() === 'aveumetdies@gmail.com' || data.email.toLowerCase() === 'admin@sportlounge.ru') ? 'admin' : 'user';
+    const role = (data.email.toLowerCase() === 'denisyargunin@gmail.com' || data.email.toLowerCase() === 'aveumetdies@gmail.com' || data.email.toLowerCase() === 'admin@sportlounge.ru') ? 'admin' : 'user';
     const { data: user, error: insertError } = await supabase
       .from('users')
       .insert({
@@ -168,7 +168,7 @@ router.post('/google', async (req: Request, res: Response, next: NextFunction) =
       // Создаем нового пользователя со случайным паролем (вход только через Google)
       const randomPassword = await bcrypt.hash(Math.random().toString(36), 12);
       
-      const role = (email === 'aveumetdies@gmail.com' || email === 'admin@sportlounge.ru') ? 'admin' : 'user';
+      const role = (email === 'denisyargunin@gmail.com' || email === 'aveumetdies@gmail.com' || email === 'admin@sportlounge.ru') ? 'admin' : 'user';
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert({
