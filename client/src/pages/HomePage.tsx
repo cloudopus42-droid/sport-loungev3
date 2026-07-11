@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';
@@ -42,7 +42,6 @@ export function HomePage() {
     background: 'dark',
   });
 
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null);
   const [cardCoords, setCardCoords] = useState({ x: 0, y: 0 });
 
@@ -79,20 +78,31 @@ export function HomePage() {
       className="space-y-12 pb-16"
     >
       {/* ─── HERO — Video Background ─── */}
-      <section className="relative overflow-visible pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
+      <section className="relative pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
         <video
-          ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className="absolute inset-0 w-full h-full object-cover z-0 scale-[1.02]"
+          style={{ filter: 'blur(2px)' }}
           src="/кальянhhs.mp4"
         />
-        <VideoAmbilight videoRef={videoRef} />
+        <VideoAmbilight />
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#1a1815]/70 via-[#1a1815]/30 to-transparent backdrop-blur-[2px] z-0" />
 
-        <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8">
+        <div className="relative max-w-4xl w-full mx-auto px-4 z-10">
+          <div
+            className="absolute inset-0 rounded-3xl"
+            style={{
+              background: 'rgba(26,24,21,0.35)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              border: '1px solid rgba(255,191,0,0.08)',
+              margin: '-20px',
+            }}
+          />
+          <div className="relative z-10 space-y-8">
           <motion.div
             className="flex items-center justify-center gap-2"
             initial={{ opacity: 0, y: -10 }}
@@ -169,6 +179,7 @@ export function HomePage() {
               <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
             </span>
           </motion.div>
+          </div>
         </div>
       </section>
 
