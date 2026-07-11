@@ -36,6 +36,8 @@ jobs:
 
       - name: Build
         run: cd client && npm run build
+        env:
+          VITE_API_URL: https://sport-loungev3.onrender.com
 
       - name: SPA fallback
         run: cp client/dist/index.html client/dist/404.html
