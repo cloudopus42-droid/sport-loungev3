@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import { logSwallowedError } from '../utils/logError';
 
 const ADMIN_BOT_TOKEN = process.env.ADMIN_BOT_TOKEN || '';
 const TELEGRAM_API = `https://api.telegram.org/bot${ADMIN_BOT_TOKEN}`;
@@ -412,7 +413,9 @@ async function handleCallback(chatId: number, callbackId: string, data: string) 
       const { getIO } = require('../socket');
       const io = getIO();
       io.emit('order:updated', { id: orderId, status: newStatus });
-    } catch { /* ignore */ }
+    } catch (socketErr) {
+      logSwallowedError('adminBot:socket-status-update', socketErr);
+    }
 
     const updatedOrder = await fetchOrderWithDetails(orderId);
     const text = updatedOrder
@@ -450,7 +453,9 @@ async function handleCallback(chatId: number, callbackId: string, data: string) 
       const { getIO } = require('../socket');
       const io = getIO();
       io.emit('order:updated', { id: orderId, status: 'cancelled' });
-    } catch { /* ignore */ }
+    } catch (socketErr) {
+      logSwallowedError('adminBot:socket-cancel', socketErr);
+    }
 
     await callTelegramApi('sendMessage', {
       chat_id: chatId,
@@ -588,7 +593,9 @@ async function confirmReplacement(chatId: number, orderId: string, newMixId: str
     const { getIO } = require('../socket');
     const io = getIO();
     io.emit('order:created', { id: replacement.id, status: 'accepted' });
-  } catch { /* ignore */ }
+  } catch (socketErr) {
+    logSwallowedError('adminBot:socket-replacement', socketErr);
+  }
 
   const text = [
     `✅ <b>Замена создана!</b>`,

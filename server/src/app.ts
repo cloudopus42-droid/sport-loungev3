@@ -20,6 +20,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { errorMonitor } from './middleware/errorMonitor';
 import { requestLogger } from './middleware/requestLogger';
 import { rateLimiter } from './middleware/rateLimiter';
+import { logSwallowedError } from './utils/logError';
 
 // Route imports
 import authRoutes from './routes/auth';
@@ -119,7 +120,7 @@ const flavorsRouter = Router();
 flavorsRouter.get('/', async (_req, res, next) => {
   try {
     const { data, error } = await supabase.from('mixes').select('id, name, flavor, is_active, price').eq('is_active', true).order('name');
-    if (error) { res.json([]); return; }
+    if (error) { logSwallowedError('flavors:list', error); res.json([]); return; }
     res.json((data || []).map((m: any) => ({ id: m.id, name: m.flavor || m.name, category: 'Основные', is_active: m.is_active !== false, price_value: m.price })));
   } catch (e) { next(e); }
 });

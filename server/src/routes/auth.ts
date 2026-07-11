@@ -6,6 +6,7 @@ import { auth } from '../middleware/auth';
 import { config } from '../config/env';
 import { supabase } from '../config/supabase';
 import { getIO } from '../socket';
+import { logSwallowedError } from '../utils/logError';
 import { uploadSingle, uploadToSupabase, deleteFromSupabase } from '../middleware/upload';
 import fs from 'fs';
 import path from 'path';
@@ -67,7 +68,9 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
         avatar: user.avatar,
         timestamp: new Date().toISOString(),
       });
-    } catch (_) { /* socket not ready */ }
+    } catch (socketErr) {
+      logSwallowedError('auth:socket-new-user', socketErr);
+    }
 
     const token = generateToken(user);
 

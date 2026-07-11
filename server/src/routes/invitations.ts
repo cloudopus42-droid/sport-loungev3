@@ -5,6 +5,7 @@ import { isAdmin } from '../middleware/isAdmin';
 import { uploadSingle, uploadToSupabase, deleteFromSupabase } from '../middleware/upload';
 import { getIO } from '../socket';
 import { supabase } from '../config/supabase';
+import { logSwallowedError } from '../utils/logError';
 
 const router = Router();
 
@@ -215,7 +216,9 @@ router.put(
       try {
         const io = getIO();
         io.emit('invitation:published', mapInvitationToFrontend(invitation));
-      } catch (_) {}
+      } catch (socketErr) {
+        logSwallowedError('invitations:socket-published', socketErr);
+      }
 
       res.json(mapInvitationToFrontend(invitation));
     } catch (error) {

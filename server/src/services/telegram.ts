@@ -194,7 +194,8 @@ export async function sendStatusNotification(
       const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(6000) });
       const data = (await res.json()) as any;
       return !!(data && data.ok);
-    } catch {
+    } catch (err) {
+      console.warn('⚠️ [Telegram] sendStatusNotification failed (direct + proxy):', err instanceof Error ? err.message : err);
       return false;
     }
   }
@@ -238,7 +239,8 @@ export async function sendChatMessageNotification(
       const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(6000) });
       const data = (await res.json()) as any;
       return !!(data && data.ok);
-    } catch {
+    } catch (err) {
+      console.warn('⚠️ [Telegram] sendChatMessageNotification failed (direct + proxy):', err instanceof Error ? err.message : err);
       return false;
     }
   }

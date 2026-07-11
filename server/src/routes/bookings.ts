@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getPagination, paginatedResponse } from '../utils/pagination';
 import { supabase } from '../config/supabase';
 import { getIO, getAdminRoom } from '../socket';
+import { logSwallowedError } from '../utils/logError';
 
 
 const router = Router();
@@ -163,7 +164,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
         hookahStrength: data.hookahStrength,
         hookahCount: data.hookahCount,
         comment: data.comment,
-      }).catch(() => {});
+      }).catch((err) => logSwallowedError('bookings:telegram-notify', err));
       adminNotifyNewOrder(
         booking!.id,
         data.seatLabel,
@@ -679,7 +680,7 @@ router.post('/public-mix', async (req: Request, res: Response, next: NextFunctio
       hookahStrength: hookahStrength,
       hookahCount: 1,
       comment: comment || 'Без комментариев',
-    }).catch(() => {});
+    }).catch((err) => logSwallowedError('bookings:mix-telegram-notify', err));
 
     // 3. Broadcast to admin panel via Socket.IO for real-time chime and toast
     try {
