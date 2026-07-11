@@ -36,7 +36,7 @@ export function GlowButton({
   return (
     <motion.button
       className={clsx(
-        'relative overflow-hidden font-semibold inline-flex items-center justify-center gap-2',
+        'glow-button relative overflow-hidden font-semibold inline-flex items-center justify-center gap-2',
         variantStyles[variant],
         sizeStyles[size],
         isDisabled && 'opacity-50 cursor-not-allowed',
@@ -45,6 +45,7 @@ export function GlowButton({
       whileHover={isDisabled ? {} : { scale: 1.02, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] } }}
       whileTap={isDisabled ? {} : { scale: 0.98, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
       disabled={isDisabled}
+      data-size={size}
       {...props}
     >
       {loading && (

@@ -28,12 +28,12 @@ export function Table<T extends { _id: string }>({
   const allSelected = hasSelection && data.length > 0 && data.every((item) => selectedIds.has(item._id));
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-glass-border">
+    <div className="overflow-x-auto rounded-xl border border-glass-border bg-black/10">
       <table className="w-full">
         <thead>
           <tr className="border-b border-glass-border bg-glass-bg">
             {hasSelection && (
-              <th className="px-4 py-3 text-left w-12">
+              <th className="px-3 py-2.5 text-left w-10">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -45,7 +45,7 @@ export function Table<T extends { _id: string }>({
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="px-4 py-3 text-left text-xs font-semibold text-white/60 uppercase tracking-wider"
+                className="px-3 py-2.5 text-left text-[10px] font-semibold text-white/50 uppercase tracking-wider"
               >
                 {col.label}
               </th>
@@ -65,7 +65,7 @@ export function Table<T extends { _id: string }>({
               onClick={() => onRowClick?.(item)}
             >
               {hasSelection && (
-                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={selectedIds.has(item._id)}
@@ -75,7 +75,7 @@ export function Table<T extends { _id: string }>({
                 </td>
               )}
               {columns.map((col) => (
-                <td key={col.key} className="px-4 py-3 text-sm text-white/80">
+                <td key={col.key} className="px-3 py-2.5 text-[13px] text-white/80">
                   {col.render
                     ? col.render(item)
                     : String((item as Record<string, unknown>)[col.key] ?? '')}
@@ -87,7 +87,7 @@ export function Table<T extends { _id: string }>({
             <tr>
               <td
                 colSpan={columns.length + (hasSelection ? 1 : 0)}
-                className="px-4 py-12 text-center text-white/40"
+                className="px-3 py-10 text-center text-sm text-white/40"
               >
                 Нет данных
               </td>
@@ -98,4 +98,3 @@ export function Table<T extends { _id: string }>({
     </div>
   );
 }
-

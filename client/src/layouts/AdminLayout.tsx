@@ -154,7 +154,7 @@ export function AdminLayout() {
   const clearNewOrders = () => setHasNewOrders(false);
 
   return (
-    <div className="min-h-screen flex bg-dark-bg">
+    <div className="admin-shell min-h-dvh flex bg-dark-bg">
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -173,21 +173,23 @@ export function AdminLayout() {
       <motion.aside
         className={`${isDesktop ? 'static' : 'fixed'} inset-y-0 left-0 z-50 bg-dark-surface/95 backdrop-blur-glass border-r border-glass-border flex flex-col overflow-hidden will-change-transform`}
         animate={{
-          width: collapsed ? 64 : 280,
-          ...(isDesktop ? {} : { x: sidebarOpen ? 0 : -280 }),
+          width: collapsed ? 56 : 236,
+          ...(isDesktop ? {} : { x: sidebarOpen ? 0 : -236 }),
         }}
         transition={{ duration: prefersReducedMotion ? 0.01 : 0.3, ease: 'easeInOut' }}
         aria-label="Админ панель"
       >
         {/* Logo + collapse toggle */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-glass-border min-h-[68px] flex-shrink-0">
-          <motion.div
-            className="w-9 h-9 rounded-xl bg-[#0D0F13] flex items-center justify-center shadow-elevated border border-glass-border flex-shrink-0"
-            whileHover={{ scale: 1.05 }}
-            transition={transitionFast}
-          >
-            <Crown className="w-5 h-5 text-black" />
-          </motion.div>
+        <div className="flex items-center gap-2.5 px-3 py-3 border-b border-glass-border min-h-[56px] flex-shrink-0">
+          {!collapsed && (
+            <motion.div
+              className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center border border-accent-gold/20 flex-shrink-0"
+              whileHover={{ scale: 1.05 }}
+              transition={transitionFast}
+            >
+              <Crown className="w-4 h-4 text-accent-gold" />
+            </motion.div>
+          )}
           <AnimatePresence mode="wait">
             {!collapsed && (
               <motion.div
@@ -197,12 +199,12 @@ export function AdminLayout() {
                 exit={{ opacity: 0, width: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0.01 : 0.15 }}
               >
-                <h1 className="text-base font-display font-bold text-white tracking-wide truncate">SPORT LOUNGE</h1>
-                <p className="text-[10px] text-white/30 uppercase tracking-wider truncate">Админ панель</p>
+                <h1 className="text-sm font-display font-semibold text-white tracking-wide truncate">SPORT LOUNGE</h1>
+                <p className="text-[9px] text-white/30 uppercase tracking-wider truncate">Админ панель</p>
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="flex items-center gap-1 ml-auto">
+          <div className={clsx('flex items-center gap-1', collapsed ? 'mx-auto' : 'ml-auto')}>
             <motion.button
               onClick={() => { setCollapsed(!collapsed); if (!collapsed && sidebarOpen) setSidebarOpen(false); }}
               className="hidden lg:flex p-1.5 rounded-lg text-white/40 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
@@ -223,7 +225,7 @@ export function AdminLayout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto overflow-x-hidden" aria-label="Admin navigation">
+        <nav className="flex-1 px-2 py-2.5 space-y-0.5 overflow-y-auto overflow-x-hidden" aria-label="Admin navigation">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -243,16 +245,16 @@ export function AdminLayout() {
                 {({ isActive }) => {
                   const linkContent = (
                     <div className={clsx(
-                      'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 overflow-hidden',
+                      'relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 overflow-hidden',
                       isActive
                         ? 'text-accent-gold bg-accent-gold/10'
                         : 'text-white/50 hover:text-white/80 hover:bg-glass-bg'
                     )}
                       style={{ willChange: 'transform' }}
                     >
-                      <div className="relative flex items-center gap-3 min-w-0 w-full">
+                      <div className="relative flex items-center gap-2.5 min-w-0 w-full">
                         <div className="relative flex-shrink-0">
-                          <Icon className="w-[18px] h-[18px]" />
+                          <Icon className="w-4 h-4" />
                           {(item.path === '/admin/orders' || item.path === '/admin/bookings') && hasNewOrders && (
                             <motion.span
                               className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-dark-surface"
@@ -304,11 +306,11 @@ export function AdminLayout() {
             <NavLink
               to="/"
               className={({ isActive }) => clsx(
-                'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+                'relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200',
                 isActive ? 'text-accent-gold bg-accent-gold/10' : 'text-white/40 hover:text-accent-gold hover:bg-accent-gold/5'
               )}
             >
-              <House className="w-[18px] h-[18px] flex-shrink-0" />
+              <House className="w-4 h-4 flex-shrink-0" />
               <AnimatePresence mode="wait">
                 {!collapsed && (
                   <motion.span
@@ -325,9 +327,9 @@ export function AdminLayout() {
             </NavLink>
           </div>
         </nav>
-        <div className="px-2 py-4 border-t border-glass-border flex-shrink-0">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-accent-gold flex items-center justify-center text-xs font-bold text-black flex-shrink-0">
+        <div className="px-2 py-2.5 border-t border-glass-border flex-shrink-0">
+          <div className="flex items-center gap-2.5 px-2.5 py-1.5">
+            <div className="w-7 h-7 rounded-full bg-accent-gold flex items-center justify-center text-[11px] font-bold text-black flex-shrink-0">
               {user?.name?.[0]?.toUpperCase() || 'A'}
             </div>
             <AnimatePresence mode="wait">
@@ -339,8 +341,8 @@ export function AdminLayout() {
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: prefersReducedMotion ? 0.01 : 0.15 }}
                 >
-                  <p className="text-sm font-medium text-white truncate">{user?.name || 'Админ'}</p>
-                  <p className="text-[10px] text-white/30 truncate">{user?.email}</p>
+                  <p className="text-xs font-medium text-white truncate">{user?.name || 'Админ'}</p>
+                  <p className="text-[9px] text-white/30 truncate">{user?.email}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -361,14 +363,14 @@ export function AdminLayout() {
 
       {/* Main content area */}
       <div
-        className="flex-1 flex flex-col max-h-screen overflow-hidden"
+        className="flex-1 flex flex-col max-h-dvh overflow-hidden"
         style={{ paddingLeft: 0 }}
       >
         {/* Top header (mobile) */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-glass-border bg-dark-surface/80 backdrop-blur-glass sticky top-0 z-30">
+        <header className="lg:hidden flex items-center justify-between px-3 py-2 border-b border-glass-border bg-dark-surface/90 backdrop-blur-glass sticky top-0 z-30">
           <div className="flex items-center gap-2">
             <motion.button
-              className="p-2 rounded-xl bg-glass-bg border border-glass-border text-white/60 hover:text-white focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
+              className="p-1.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
               onClick={() => setSidebarOpen(true)}
               whileTap={{ scale: 0.9 }}
               aria-label="Открыть меню"
@@ -377,7 +379,7 @@ export function AdminLayout() {
             </motion.button>
             <NavLink
               to="/"
-              className="p-2 rounded-xl bg-glass-bg border border-glass-border text-white/40 hover:text-accent-gold hover:border-accent-gold/30 transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
+              className="p-1.5 rounded-lg bg-glass-bg border border-glass-border text-white/40 hover:text-accent-gold hover:border-accent-gold/30 transition-all focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
               aria-label="На сайт"
               title="На сайт"
             >
@@ -389,13 +391,13 @@ export function AdminLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+        <main className="admin-content flex-1 p-3 pb-20 lg:p-5 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0, transition: prefersReducedMotion ? { duration: 0.01 } : { duration: 0.5, ease: [0.23, 1, 0.32, 1] as const } }}
-              exit={{ opacity: 0, y: -8, transition: { duration: prefersReducedMotion ? 0.01 : 0.2, ease: [0.23, 1, 0.32, 1] } }}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0, transition: prefersReducedMotion ? { duration: 0.01 } : { duration: 0.22, ease: [0.23, 1, 0.32, 1] as const } }}
+              exit={{ opacity: 0, y: -4, transition: { duration: prefersReducedMotion ? 0.01 : 0.12, ease: [0.23, 1, 0.32, 1] } }}
             >
               <Outlet />
             </motion.div>
