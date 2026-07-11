@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { registerSchema, loginSchema, profileUpdateSchema } from '../schemas/auth.schema';
@@ -10,6 +10,7 @@ import { uploadSingle, uploadToSupabase, deleteFromSupabase } from '../middlewar
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { asyncHandler } from '../utils/http';
 
 const router = Router();
 
@@ -22,8 +23,7 @@ function generateToken(user: { id: string; email: string; role: string }): strin
 }
 
 // POST /api/auth/register
-router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/register', asyncHandler(async (req: Request, res: Response) => {
     const data = registerSchema.parse(req.body);
 
     // Проверяем существование пользователя
@@ -84,14 +84,10 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
         createdAt: user.created_at,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/login', asyncHandler(async (req: Request, res: Response) => {
     const data = loginSchema.parse(req.body);
 
     const { data: user, error: fetchError } = await supabase
@@ -126,14 +122,10 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
         createdAt: user.created_at,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // POST /api/auth/google — Login/Register with Google OAuth Token
-router.post('/google', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/google', asyncHandler(async (req: Request, res: Response) => {
     const { accessToken } = req.body;
     if (!accessToken) {
       res.status(400).json({ error: 'Токен авторизации не предоставлен', status: 400 });
@@ -218,14 +210,10 @@ router.post('/google', async (req: Request, res: Response, next: NextFunction) =
         createdAt: dbUser.created_at,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // GET /api/auth/me
-router.get('/me', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/me', auth, asyncHandler(async (req: Request, res: Response) => {
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
@@ -249,14 +237,10 @@ router.get('/me', auth, async (req: Request, res: Response, next: NextFunction) 
         createdAt: user.created_at,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // PUT /api/auth/profile — Update profile
-router.put('/profile', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.put('/profile', auth, asyncHandler(async (req: Request, res: Response) => {
     const { name, phone, bio } = profileUpdateSchema.parse(req.body);
     const updates: any = {};
     if (name !== undefined) updates.name = name;
@@ -287,18 +271,14 @@ router.put('/profile', auth, async (req: Request, res: Response, next: NextFunct
         createdAt: user.created_at,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // POST /api/auth/avatar — Upload and set avatar image
 router.post(
   '/avatar',
   auth,
   uploadSingle('avatar'),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       if (!req.file) {
         res.status(400).json({ error: 'Файл аватара обязателен', status: 400 });
         return;
@@ -376,10 +356,7 @@ router.post(
           createdAt: updatedUser.created_at,
         },
       });
-    } catch (error) {
-      next(error);
-    }
-  }
+  })
 );
 
 export default router;

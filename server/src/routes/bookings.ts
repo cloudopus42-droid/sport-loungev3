@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { sendBookingNotification } from '../services/telegram';
@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getPagination, paginatedResponse } from '../utils/pagination';
 import { supabase } from '../config/supabase';
 import { getIO, getAdminRoom } from '../socket';
+import { asyncHandler } from '../utils/http';
 
 
 const router = Router();
@@ -70,8 +71,7 @@ function mapBookingToFrontend(b: any) {
 }
 
 // POST /api/bookings — Create booking (authenticated)
-router.post('/', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/', auth, asyncHandler(async (req: Request, res: Response) => {
     const data = createBookingSchema.parse(req.body);
 
     // Retry loop to handle race condition on concurrent bookings
@@ -212,14 +212,10 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     }
 
     res.status(201).json(mapBookingToFrontend(populated));
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // GET /api/bookings/my — My bookings (authenticated)
-router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/my', auth, asyncHandler(async (req: Request, res: Response) => {
     const pag = getPagination(req, 20, 100);
     const { count } = await supabase
       .from('bookings')
@@ -240,14 +236,10 @@ router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) 
     }
 
     res.json(paginatedResponse((bookings || []).map(mapBookingToFrontend), count, pag));
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // GET /api/bookings/date/:date — Bookings for a date (for checking availability)
-router.get('/date/:date', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/date/:date', asyncHandler(async (req: Request, res: Response) => {
     const { date } = req.params;
     const { data: bookings, error } = await supabase
       .from('bookings')
@@ -268,14 +260,10 @@ router.get('/date/:date', async (req: Request, res: Response, next: NextFunction
     }));
 
     res.json(mapped);
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // GET /api/bookings/taste-stats — Hookah flavor analytics (admin)
-router.get('/taste-stats', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/taste-stats', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
     const { data: bookings, error: dbErr } = await supabase
       .from('bookings')
       .select('hookah_mix, hookah_strength, user_id, user:user_id(id, name, email)')
@@ -350,14 +338,10 @@ router.get('/taste-stats', auth, isAdmin, async (req: Request, res: Response, ne
       strengths: strengthCounts,
       users: usersList
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // GET /api/bookings/all — All bookings (admin)
-router.get('/all', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/all', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
     const { date, status } = req.query;
     const pag = getPagination(req, 50, 200);
 
@@ -386,18 +370,14 @@ router.get('/all', auth, isAdmin, async (req: Request, res: Response, next: Next
     }
 
     res.json(paginatedResponse((bookings || []).map(mapBookingToFrontend), count, pag));
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // PUT /api/bookings/:id/status — Update status (admin)
 router.put(
   '/:id/status',
   auth,
   isAdmin,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       const { status } = req.body;
       if (!['confirmed', 'cancelled'].includes(status)) {
         res.status(400).json({ error: 'Неверный статус', status: 400 });
@@ -436,15 +416,11 @@ router.put(
       }
 
       res.json(mapBookingToFrontend(booking));
-    } catch (error) {
-      next(error);
-    }
-  }
+  })
 );
 
 // DELETE /api/bookings/:id — Cancel booking (owner or admin)
-router.delete('/:id', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.delete('/:id', auth, asyncHandler(async (req: Request, res: Response) => {
     // Получаем саму бронь
     const { data: booking, error: fetchError } = await supabase
       .from('bookings')
@@ -474,18 +450,14 @@ router.delete('/:id', auth, async (req: Request, res: Response, next: NextFuncti
     }
 
     res.json({ message: 'Бронь отменена' });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // PUT /api/bookings/:id/hookah-status — Update hookah status (admin)
 router.put(
   '/:id/hookah-status',
   auth,
   isAdmin,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       const { hookahStatus } = req.body;
       if (!['accepted', 'heating', 'almost', 'ready'].includes(hookahStatus)) {
         res.status(400).json({ error: 'Неверный статус кальяна', status: 400 });
@@ -522,15 +494,11 @@ router.put(
       }
 
       res.json(mapBookingToFrontend(booking));
-    } catch (error) {
-      next(error);
-    }
-  }
+  })
 );
 
 // GET /api/bookings/:id/hookah-status — Public hookah status with progress
-router.get('/:id/hookah-status', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/:id/hookah-status', auth, asyncHandler(async (req: Request, res: Response) => {
     const { data: booking, error } = await supabase
       .from('bookings')
       .select('id, status, created_at, hookah_status, hookah_status_updated_at')
@@ -550,10 +518,7 @@ router.get('/:id/hookah-status', auth, async (req: Request, res: Response, next:
       progressPercent: status.progress,
       minutesLeft: status.minutesLeft,
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // Helper: calculate hookah status based on elapsed time since booking was confirmed
 function getHookahStatusByTime(booking: any): {
@@ -625,8 +590,7 @@ function getHookahStatusByTime(booking: any): {
 }
 
 // POST /api/bookings/public-mix — Public mix order (guest or authenticated)
-router.post('/public-mix', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/public-mix', asyncHandler(async (req: Request, res: Response) => {
     const { bowl, base, strength, mix, price, phone, comment, ticketId, userId, userName } = req.body;
 
     if (!mix || !phone) {
@@ -717,9 +681,6 @@ router.post('/public-mix', async (req: Request, res: Response, next: NextFunctio
     }
 
     res.status(201).json(mapBookingToFrontend(booking));
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 export default router;

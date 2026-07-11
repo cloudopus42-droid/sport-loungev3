@@ -1,7 +1,8 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { supabase } from '../config/supabase';
+import { asyncHandler } from '../utils/http';
 import multer from 'multer';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -82,220 +83,188 @@ function mapShowcaseToDb(body: any) {
 }
 
 // GET /api/showcases/settings — public showcase display settings
-router.get('/settings', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    res.json(await getShowcaseSettings());
-  } catch (e) {
-    next(e);
-  }
-});
+router.get('/settings', asyncHandler(async (_req: Request, res: Response) => {
+  res.json(await getShowcaseSettings());
+}));
 
 // PUT /api/showcases/settings — admin: update showcase display settings
-router.put('/settings', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { enabled, topCount, background } = req.body || {};
-    const config = {
-      topCount: Math.min(20, Math.max(1, Number(topCount) || DEFAULT_SHOWCASE_SETTINGS.topCount)),
-      background: typeof background === 'string' ? background : DEFAULT_SHOWCASE_SETTINGS.background,
-    };
+router.put('/settings', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const { enabled, topCount, background } = req.body || {};
+  const config = {
+    topCount: Math.min(20, Math.max(1, Number(topCount) || DEFAULT_SHOWCASE_SETTINGS.topCount)),
+    background: typeof background === 'string' ? background : DEFAULT_SHOWCASE_SETTINGS.background,
+  };
 
-    const { data, error } = await supabase
-      .from('smart_features')
-      .upsert(
-        {
-          feature_key: 'homepage_showcase',
-          name: 'Витрина на главной',
-          description: 'Настройки блока витрины на главной странице',
-          enabled: enabled !== false,
-          is_public: true,
-          config,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'feature_key' }
-      )
-      .select('enabled, config')
-      .single();
+  const { data, error } = await supabase
+    .from('smart_features')
+    .upsert(
+      {
+        feature_key: 'homepage_showcase',
+        name: 'Витрина на главной',
+        description: 'Настройки блока витрины на главной странице',
+        enabled: enabled !== false,
+        is_public: true,
+        config,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'feature_key' }
+    )
+    .select('enabled, config')
+    .single();
 
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    const savedConfig = (data?.config || {}) as Record<string, unknown>;
-    res.json({
-      enabled: data?.enabled !== false,
-      topCount: typeof savedConfig.topCount === 'number' ? savedConfig.topCount : config.topCount,
-      background: typeof savedConfig.background === 'string' ? savedConfig.background : config.background,
-    });
-  } catch (e) {
-    next(e);
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
-});
+
+  const savedConfig = (data?.config || {}) as Record<string, unknown>;
+  res.json({
+    enabled: data?.enabled !== false,
+    topCount: typeof savedConfig.topCount === 'number' ? savedConfig.topCount : config.topCount,
+    background: typeof savedConfig.background === 'string' ? savedConfig.background : config.background,
+  });
+}));
 
 // GET /api/showcases/manage — admin: all showcase items
-router.get('/manage', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { data: items, error } = await supabase
-      .from('showcases')
-      .select('*')
-      .order('sort_order', { ascending: true });
+router.get('/manage', auth, isAdmin, asyncHandler(async (_req: Request, res: Response) => {
+  const { data: items, error } = await supabase
+    .from('showcases')
+    .select('*')
+    .order('sort_order', { ascending: true });
 
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    res.json((items || []).map(mapShowcaseToFrontend));
-  } catch (e) {
-    next(e);
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
-});
+
+  res.json((items || []).map(mapShowcaseToFrontend));
+}));
 
 // GET /api/showcases — public, active showcases sorted by order
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const settings = await getShowcaseSettings();
-    if (!settings.enabled) {
-      res.json([]);
-      return;
-    }
-
-    const { data: items, error } = await supabase
-      .from('showcases')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
-      .limit(settings.topCount);
-
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    res.json((items || []).map(mapShowcaseToFrontend));
-  } catch (e) {
-    next(e);
+router.get('/', asyncHandler(async (_req: Request, res: Response) => {
+  const settings = await getShowcaseSettings();
+  if (!settings.enabled) {
+    res.json([]);
+    return;
   }
-});
+
+  const { data: items, error } = await supabase
+    .from('showcases')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+    .limit(settings.topCount);
+
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
+  }
+
+  res.json((items || []).map(mapShowcaseToFrontend));
+}));
 
 // POST /api/showcases — admin
-router.post('/', auth, isAdmin, upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    if (req.file) {
-      req.body.imageUrl = `/uploads/showcases/${req.file.filename}`;
-    }
-
-    const dbData = mapShowcaseToDb(req.body);
-
-    const { data: item, error } = await supabase
-      .from('showcases')
-      .insert(dbData)
-      .select()
-      .single();
-
-    if (error || !item) {
-      res.status(500).json({ error: 'Не удалось создать элемент витрины: ' + error?.message });
-      return;
-    }
-
-    res.status(201).json(mapShowcaseToFrontend(item));
-  } catch (e) {
-    next(e);
+router.post('/', auth, isAdmin, upload.single('image'), asyncHandler(async (req: Request, res: Response) => {
+  if (req.file) {
+    req.body.imageUrl = `/uploads/showcases/${req.file.filename}`;
   }
-});
+
+  const dbData = mapShowcaseToDb(req.body);
+
+  const { data: item, error } = await supabase
+    .from('showcases')
+    .insert(dbData)
+    .select()
+    .single();
+
+  if (error || !item) {
+    res.status(500).json({ error: 'Не удалось создать элемент витрины: ' + error?.message });
+    return;
+  }
+
+  res.status(201).json(mapShowcaseToFrontend(item));
+}));
 
 // PUT /api/showcases/reorder — admin: update sort_order for multiple items
-router.put('/reorder', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const items = req.body;
-    if (!Array.isArray(items)) {
-      res.status(400).json({ error: 'Ожидается массив { _id, order }' });
-      return;
-    }
-
-    const MAX_RETRIES = 3;
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      let failed = false;
-
-      for (const item of items) {
-        const id = item._id || item.id;
-        if (!id) continue;
-        const { error } = await supabase
-          .from('showcases')
-          .update({ sort_order: item.order })
-          .eq('id', id);
-
-        if (error) {
-          failed = true;
-          if (attempt < MAX_RETRIES) {
-            console.warn(`⚠️ [Showcase] Reorder attempt ${attempt}/${MAX_RETRIES} failed: ${error.message}`);
-            await new Promise(r => setTimeout(r, 200 * attempt));
-          } else {
-            res.status(500).json({ error: 'Не удалось обновить порядок: ' + error.message });
-            return;
-          }
-          break;
-        }
-      }
-
-      if (!failed) break;
-    }
-
-    const { data: updated } = await supabase
-      .from('showcases')
-      .select('*')
-      .order('sort_order', { ascending: true });
-
-    res.json((updated || []).map(mapShowcaseToFrontend));
-  } catch (e) {
-    next(e);
+router.put('/reorder', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const items = req.body;
+  if (!Array.isArray(items)) {
+    res.status(400).json({ error: 'Ожидается массив { _id, order }' });
+    return;
   }
-});
+
+  const MAX_RETRIES = 3;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    let failed = false;
+
+    for (const item of items) {
+      const id = item._id || item.id;
+      if (!id) continue;
+      const { error } = await supabase
+        .from('showcases')
+        .update({ sort_order: item.order })
+        .eq('id', id);
+
+      if (error) {
+        failed = true;
+        if (attempt < MAX_RETRIES) {
+          console.warn(`⚠️ [Showcase] Reorder attempt ${attempt}/${MAX_RETRIES} failed: ${error.message}`);
+          await new Promise(r => setTimeout(r, 200 * attempt));
+        } else {
+          res.status(500).json({ error: 'Не удалось обновить порядок: ' + error.message });
+          return;
+        }
+        break;
+      }
+    }
+
+    if (!failed) break;
+  }
+
+  const { data: updated } = await supabase
+    .from('showcases')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  res.json((updated || []).map(mapShowcaseToFrontend));
+}));
 
 // PUT /api/showcases/:id — admin
-router.put('/:id', auth, isAdmin, upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    if (req.file) {
-      req.body.imageUrl = `/uploads/showcases/${req.file.filename}`;
-    }
-
-    const dbData = mapShowcaseToDb(req.body);
-
-    const { data: item, error } = await supabase
-      .from('showcases')
-      .update(dbData)
-      .eq('id', req.params.id)
-      .select()
-      .single();
-
-    if (error || !item) {
-      res.status(404).json({ error: 'Не найдено или ошибка обновления' });
-      return;
-    }
-
-    res.json(mapShowcaseToFrontend(item));
-  } catch (e) {
-    next(e);
+router.put('/:id', auth, isAdmin, upload.single('image'), asyncHandler(async (req: Request, res: Response) => {
+  if (req.file) {
+    req.body.imageUrl = `/uploads/showcases/${req.file.filename}`;
   }
-});
+
+  const dbData = mapShowcaseToDb(req.body);
+
+  const { data: item, error } = await supabase
+    .from('showcases')
+    .update(dbData)
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error || !item) {
+    res.status(404).json({ error: 'Не найдено или ошибка обновления' });
+    return;
+  }
+
+  res.json(mapShowcaseToFrontend(item));
+}));
 
 // DELETE /api/showcases/:id — admin
-router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { error } = await supabase
-      .from('showcases')
-      .delete()
-      .eq('id', req.params.id);
+router.delete('/:id', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const { error } = await supabase
+    .from('showcases')
+    .delete()
+    .eq('id', req.params.id);
 
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    res.json({ message: 'Удалено' });
-  } catch (e) {
-    next(e);
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
-});
+
+  res.json({ message: 'Удалено' });
+}));
 
 export default router;
