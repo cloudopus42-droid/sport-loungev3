@@ -121,7 +121,7 @@ export function ProfilePage() {
   // Repeat order modal states
   const [showRepeatModal, setShowRepeatModal] = useState(false);
   const [repeatBooking, setRepeatBooking] = useState<any | null>(null);
-  const [repeatSeatLabel, setRepeatSeatLabel] = useState(TABLE_OPTIONS[0]);
+  const [repeatSeatLabel, setRepeatSeatLabel] = useState('');
   const [repeatLiquidBase, setRepeatLiquidBase] = useState('water');
   const [repeatSpecialNotes, setRepeatSpecialNotes] = useState('');
   const [repeatPhone, setRepeatPhone] = useState(user?.phone || '');
