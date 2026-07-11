@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
 // Load env FIRST before any other imports
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -16,7 +17,12 @@ import { seedSmartFeatures } from './routes/smartFeatures';
 import { runMigrations } from './migrate';
 
 async function bootstrap(): Promise<void> {
-  // 1. Auto-apply SQL migrations
+  // 1. Ensure upload directories exist
+  const uploadsDir = path.resolve(__dirname, '../uploads');
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  fs.mkdirSync(path.join(uploadsDir, 'showcases'), { recursive: true });
+
+  // 2. Auto-apply SQL migrations
   await runMigrations();
 
   // 2. Connect to Database (legacy check)
