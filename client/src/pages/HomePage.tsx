@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';
@@ -42,45 +42,6 @@ export function HomePage() {
     background: 'dark',
   });
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const hero = heroRef.current;
-    if (!video || !hero) return;
-
-    let duration = 0;
-    let ticking = false;
-
-    const onMetadata = () => { duration = video.duration || 0; };
-    video.addEventListener('loadedmetadata', onMetadata);
-
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const rect = hero.getBoundingClientRect();
-          const wh = window.innerHeight;
-          const scrollable = hero.offsetHeight + wh;
-          const scrolled = wh - rect.top;
-          const progress = Math.max(0, Math.min(1, scrolled / scrollable));
-          const d = duration || video.duration || 0;
-          if (d > 0) video.currentTime = progress * d;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
-    return () => {
-      video.removeEventListener('loadedmetadata', onMetadata);
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, []);
-
   const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null);
   const [cardCoords, setCardCoords] = useState({ x: 0, y: 0 });
 
@@ -116,22 +77,21 @@ export function HomePage() {
       transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
       className="space-y-12 pb-16"
     >
-      {/* ─── HERO — Scroll-Controlled Video ─── */}
-      <section ref={heroRef} className="relative" style={{ height: '400vh' }}>
-        <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center text-center">
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover z-0 scale-[1.02]"
-            style={{ filter: 'blur(2px)' }}
-            src="/кальянhhs.mp4"
-          />
-          <VideoAmbilight />
-          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#1a1815]/70 via-[#1a1815]/30 to-transparent backdrop-blur-[2px] z-[1]" />
+      {/* ─── HERO — Video Background ─── */}
+      <section className="relative pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0 scale-[1.02]"
+          style={{ filter: 'blur(2px)' }}
+          src="/кальянhhs.mp4"
+        />
+        <VideoAmbilight />
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#1a1815]/70 via-[#1a1815]/30 to-transparent backdrop-blur-[2px] z-0" />
 
-          <div className="relative max-w-4xl w-full mx-auto px-4 z-10">
+        <div className="relative max-w-4xl w-full mx-auto px-4 z-10">
           <div
             className="absolute inset-0 rounded-3xl"
             style={{
@@ -221,8 +181,7 @@ export function HomePage() {
           </motion.div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
       {/* ─── SHOWCASE / COLLECTION ─── */}
       {showcaseSettings.enabled && (
