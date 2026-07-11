@@ -181,13 +181,15 @@ export function AdminLayout() {
       >
         {/* Logo + collapse toggle */}
         <div className="flex items-center gap-2.5 px-3 py-3 border-b border-glass-border min-h-[56px] flex-shrink-0">
-          <motion.div
-            className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center border border-accent-gold/20 flex-shrink-0"
-            whileHover={{ scale: 1.05 }}
-            transition={transitionFast}
-          >
-            <Crown className="w-4 h-4 text-accent-gold" />
-          </motion.div>
+          {!collapsed && (
+            <motion.div
+              className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center border border-accent-gold/20 flex-shrink-0"
+              whileHover={{ scale: 1.05 }}
+              transition={transitionFast}
+            >
+              <Crown className="w-4 h-4 text-accent-gold" />
+            </motion.div>
+          )}
           <AnimatePresence mode="wait">
             {!collapsed && (
               <motion.div
@@ -202,7 +204,7 @@ export function AdminLayout() {
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="flex items-center gap-1 ml-auto">
+          <div className={clsx('flex items-center gap-1', collapsed ? 'mx-auto' : 'ml-auto')}>
             <motion.button
               onClick={() => { setCollapsed(!collapsed); if (!collapsed && sidebarOpen) setSidebarOpen(false); }}
               className="hidden lg:flex p-1.5 rounded-lg text-white/40 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none"
