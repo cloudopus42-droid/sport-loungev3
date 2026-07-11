@@ -6,7 +6,7 @@ import { SocketProvider } from '@/contexts/SocketContext';
 import { FeatureProvider } from '@/contexts/FeatureContext';
 import { MainLayout } from '@/layouts/MainLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { LiquidGlassFilter } from '@/components/LiquidGlassFilter';
+
 
 // Lazily load route components
 const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -45,7 +45,6 @@ export default function App() {
     <AuthProvider>
       <SocketProvider>
         <FeatureProvider>
-          <LiquidGlassFilter />
           <Suspense fallback={
             <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center text-white font-sans">
               <div className="w-10 h-10 rounded-xl bg-accent-gold flex items-center justify-center mb-4">
