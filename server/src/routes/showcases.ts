@@ -4,7 +4,7 @@ import { isAdmin } from '../middleware/isAdmin';
 import { supabase } from '../config/supabase';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import { execSync } from 'child_process';
 
 const router = Router();
 
@@ -33,11 +33,9 @@ async function getShowcaseSettings() {
 
 const showcaseUploadDir = path.resolve(__dirname, '../../uploads/showcases');
 try {
-  if (!fs.existsSync(showcaseUploadDir)) {
-    fs.mkdirSync(showcaseUploadDir, { recursive: true });
-  }
+  execSync(`mkdir -p "${showcaseUploadDir}"`, { stdio: 'ignore' });
 } catch {
-  // parent dir may not exist yet; app.ts will handle creation
+  // bootstrap() handles this
 }
 
 const storage = multer.diskStorage({
