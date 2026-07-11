@@ -76,10 +76,10 @@ export function HomePage() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
       transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
-      className="space-y-12 pb-16 overflow-x-hidden"
+      className="space-y-12 pb-16"
     >
       {/* ─── HERO — Video Background ─── */}
-      <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
+      <section className="relative overflow-visible pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
         <video
           ref={videoRef}
           autoPlay

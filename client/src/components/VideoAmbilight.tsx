@@ -1,95 +1,93 @@
 import { useRef, useEffect } from 'react';
 
-type EdgeColors = { top: string; right: string; bottom: string; left: string };
+type RGB = [number, number, number];
+type EdgeRGB = Record<'top' | 'right' | 'bottom' | 'left', RGB>;
 
-function sampleEdges(video: HTMLVideoElement): EdgeColors {
-  const w = 16, h = 16;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return { top: '0,0,0', right: '0,0,0', bottom: '0,0,0', left: '0,0,0' };
-  ctx.drawImage(video, 0, 0, w, h);
-  const data = ctx.getImageData(0, 0, w, h).data;
+function sample(video: HTMLVideoElement): EdgeRGB {
+  const c = document.createElement('canvas');
+  c.width = 8;
+  c.height = 8;
+  const ctx = c.getContext('2d')!;
+  ctx.drawImage(video, 0, 0, 8, 8);
+  const d = ctx.getImageData(0, 0, 8, 8).data;
 
-  const avg = (y1: number, y2: number, x1: number, x2: number) => {
-    let r = 0, g = 0, b = 0, count = 0;
-    for (let y = y1; y < y2; y++)
-      for (let x = x1; x < x2; x++) {
-        const i = (y * w + x) * 4;
-        r += data[i]; g += data[i + 1]; b += data[i + 2]; count++;
+  const avg = (a: number, b: number, c: number, d: number): RGB => {
+    let r = 0, g = 0, bl = 0, n = 0;
+    for (let y = a; y < b; y++)
+      for (let x = c; x < d; x++) {
+        const i = (y * 8 + x) * 4;
+        r += d[i]; g += d[i + 1]; bl += d[i + 2]; n++;
       }
-    return `${Math.round(r / count)},${Math.round(g / count)},${Math.round(b / count)}`;
+    return [~~(r / n), ~~(g / n), ~~(bl / n)];
   };
 
   return {
-    top: avg(0, 2, 0, w),
-    right: avg(0, h, w - 2, w),
-    bottom: avg(h - 2, h, 0, w),
-    left: avg(0, h, 0, 2),
+    top: avg(0, 1, 0, 8),
+    right: avg(0, 8, 7, 8),
+    bottom: avg(7, 8, 0, 8),
+    left: avg(0, 8, 0, 1),
   };
 }
 
+function lerp(a: RGB, b: RGB, t: number): RGB {
+  return [
+    a[0] + (b[0] - a[0]) * t | 0,
+    a[1] + (b[1] - a[1]) * t | 0,
+    a[2] + (b[2] - a[2]) * t | 0,
+  ];
+}
+
 export function VideoAmbilight({ videoRef }: { videoRef: React.RefObject<HTMLVideoElement | null> }) {
-  const colorsRef = useRef<EdgeColors>({ top: '0,0,0', right: '0,0,0', bottom: '0,0,0', left: '0,0,0' });
-  const styleRef = useRef<HTMLStyleElement>(null);
+  const cur = useRef<EdgeRGB>({ top: [0, 0, 0], right: [0, 0, 0], bottom: [0, 0, 0], left: [0, 0, 0] });
+  const tgt = useRef<EdgeRGB>({ top: [0, 0, 0], right: [0, 0, 0], bottom: [0, 0, 0], left: [0, 0, 0] });
+  const el = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
-    let raf = 0, last = 0;
+    const div = el.current;
+    if (!video || !div) return;
 
-    const tick = (time: number) => {
-      raf = requestAnimationFrame(tick);
-      if (time - last < 200) return;
-      last = time;
-      if (video.readyState < 2 || video.paused) return;
-      const c = sampleEdges(video);
-      colorsRef.current = c;
-      if (styleRef.current) {
-        styleRef.current.textContent = `
-          .ambilight-glow {
-            --ambient-top: ${c.top};
-            --ambient-right: ${c.right};
-            --ambient-bottom: ${c.bottom};
-            --ambient-left: ${c.left};
-          }
-        `;
+    let id = 0, last = 0;
+    const sides: (keyof EdgeRGB)[] = ['top', 'right', 'bottom', 'left'];
+
+    const tick = (now: number) => {
+      id = requestAnimationFrame(tick);
+      const ready = video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA;
+
+      if (ready && !video.paused && now - last > 100) {
+        tgt.current = sample(video);
+        last = now;
       }
+
+      const c = cur.current, t = tgt.current;
+      for (const s of sides) c[s] = lerp(c[s], t[s], 0.1);
+
+      div.style.background = `
+        radial-gradient(ellipse at 50% 0%, rgba(${c.top[0]},${c.top[1]},${c.top[2]},0.4) 0%, transparent 70%),
+        radial-gradient(ellipse at 100% 50%, rgba(${c.right[0]},${c.right[1]},${c.right[2]},0.4) 0%, transparent 70%),
+        radial-gradient(ellipse at 50% 100%, rgba(${c.bottom[0]},${c.bottom[1]},${c.bottom[2]},0.4) 0%, transparent 70%),
+        radial-gradient(ellipse at 0% 50%, rgba(${c.left[0]},${c.left[1]},${c.left[2]},0.4) 0%, transparent 70%)
+      `;
     };
 
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    id = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(id);
   }, [videoRef]);
 
   return (
-    <>
-      <style ref={styleRef} />
-      <div
-        className="ambilight-glow absolute inset-0 z-0 pointer-events-none"
-        style={{
-          boxShadow: `
-            inset 0 60px 80px -20px rgba(var(--ambient-top, 0,0,0), 0.7),
-            inset -60px 0 80px -20px rgba(var(--ambient-right, 0,0,0), 0.7),
-            inset 0 -60px 80px -20px rgba(var(--ambient-bottom, 0,0,0), 0.7),
-            inset 60px 0 80px -20px rgba(var(--ambient-left, 0,0,0), 0.7)
-          `,
-          transition: 'box-shadow 0.4s ease',
-        }}
-      />
-      <div
-        className="absolute inset-0 z-0 pointer-events-none opacity-70"
-        style={{
-          background: `
-            radial-gradient(ellipse at 50% 0%, rgba(var(--ambient-top, 0,0,0), 0.25) 0%, transparent 60%),
-            radial-gradient(ellipse at 100% 50%, rgba(var(--ambient-right, 0,0,0), 0.25) 0%, transparent 60%),
-            radial-gradient(ellipse at 50% 100%, rgba(var(--ambient-bottom, 0,0,0), 0.25) 0%, transparent 60%),
-            radial-gradient(ellipse at 0% 50%, rgba(var(--ambient-left, 0,0,0), 0.25) 0%, transparent 60%)
-          `,
-          filter: 'blur(30px)',
-          transition: 'background 0.4s ease',
-        }}
-      />
-    </>
+    <div
+      ref={el}
+      className="absolute pointer-events-none z-0"
+      style={{
+        top: '-70px',
+        right: '-70px',
+        bottom: '-70px',
+        left: '-70px',
+        filter: 'blur(45px)',
+        opacity: 0.65,
+        willChange: 'background',
+        transform: 'translateZ(0)',
+      }}
+    />
   );
 }
