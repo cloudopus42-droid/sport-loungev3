@@ -78,7 +78,7 @@
     border-radius: var(--radius-lg);
     position: relative;
     overflow: hidden;
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    transition: all var(--transition-base);
     transform: translateZ(0);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -99,7 +99,6 @@
     );
     pointer-events: none;
     z-index: 1;
-    animation: glassReflection 8s ease-in-out infinite;
   }
 
   .glass-card:hover {
@@ -116,8 +115,7 @@
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(190%) contrast(1.1);
     border: 1px solid rgba(255, 191, 0, 0.16);
     border-radius: var(--radius-lg);
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
-    transform: translateZ(0);
+    transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
     box-shadow:
@@ -146,7 +144,6 @@
     );
     pointer-events: none;
     z-index: 2;
-    animation: glassShimmer 7s ease-in-out infinite;
   }
 
   .glass-card-premium::after {
@@ -162,7 +159,6 @@
     background-size: 200% 100%;
     pointer-events: none;
     z-index: 1;
-    animation: wetShimmer 5s linear infinite;
   }
 
   .glass-card-gold-ring {
@@ -282,7 +278,7 @@
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(185%) contrast(1.08);
     border: 1px solid rgba(255, 191, 0, 0.14);
     border-radius: var(--radius-lg);
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
     box-shadow:
@@ -302,7 +298,6 @@
       rgba(255, 191, 0, 0.05) 100%
     );
     pointer-events: none;
-    animation: glassReflection 9s ease-in-out infinite;
   }
 
   .liquid-glass::after {
@@ -315,7 +310,6 @@
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
     transform: rotate(25deg);
     pointer-events: none;
-    animation: wetShimmer 6s ease-in-out infinite;
   }
 
   .liquid-glass:hover {

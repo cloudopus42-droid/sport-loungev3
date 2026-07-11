@@ -95,6 +95,7 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
           return (
             <motion.div
               key={item.id}
+              layout
               initial={false}
               animate={{
                 x: t.x,
