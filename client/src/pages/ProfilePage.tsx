@@ -545,11 +545,11 @@ export function ProfilePage() {
           className="perspective-1000 w-full"
         >
           <div className="text-center mb-3 flex items-center justify-between px-2">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-accent-gold font-bold">Закрытый клуб VIP Resident</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-accent-gold font-bold">Закрытый клуб VIP Resident</span>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setIsFlipped((f) => !f); }}
-              className="text-[10px] text-accent-gold-bright hover:text-white transition-all bg-white/5 border border-glass-border/30 px-2.5 py-0.5 rounded-full"
+              className="text-xs text-accent-gold-bright hover:text-white transition-all bg-white/5 border border-glass-border/30 px-2.5 py-0.5 rounded-full"
             >
               {isFlipped ? 'Показать Карту' : 'Привилегии'}
             </button>
@@ -581,11 +581,11 @@ export function ProfilePage() {
                     {cardTheme.icon}
                     <span className="text-sm font-semibold tracking-wider text-white font-display uppercase">{cardTheme.name}</span>
                   </div>
-                  <div className={`text-[10px] mt-1 ${cardTheme.text} font-mono tracking-widest`}>
+                  <div className={`text-xs mt-1 ${cardTheme.text} font-mono tracking-widest`}>
                     MEMBER ID: #{user?.id?.slice(0, 8).toUpperCase() || ''}
                   </div>
                 </div>
-                <div className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${cardTheme.badge}`}>
+                <div className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${cardTheme.badge}`}>
                   {membership.memberships?.name}
                 </div>
               </div>
@@ -593,18 +593,18 @@ export function ProfilePage() {
               <div className="flex justify-between items-center z-10 my-1">
                 <div className="w-10 h-8 rounded-md bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 opacity-80 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] border border-yellow-250/20" />
                 <div className="text-right">
-                  <span className={`text-[9px] block ${cardTheme.text} uppercase tracking-wider font-mono`}>Клубные привилегии</span>
+                  <span className={`text-[11px] block ${cardTheme.text} uppercase tracking-wider font-mono`}>Клубные привилегии</span>
                   <span className="text-white text-base sm:text-lg font-bold font-mono">Скидка {membership.memberships?.discount_percent}%</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-end z-10 border-t border-white/10 pt-3">
                 <div>
-                  <span className={`text-[9px] block ${cardTheme.text} uppercase tracking-wider`}>Владелец карты</span>
+                  <span className={`text-[11px] block ${cardTheme.text} uppercase tracking-wider`}>Владелец карты</span>
                   <span className="text-white text-sm sm:text-base font-semibold font-display tracking-wide">{user.name}</span>
                 </div>
                 <div className="text-right">
-                  <span className={`text-[9px] block ${cardTheme.text} uppercase tracking-wider`}>Очки лояльности</span>
+                  <span className={`text-[11px] block ${cardTheme.text} uppercase tracking-wider`}>Очки лояльности</span>
                   <span className="text-accent-gold-bright text-lg sm:text-xl font-bold font-mono">{membership.points} XP</span>
                 </div>
               </div>
@@ -627,7 +627,7 @@ export function ProfilePage() {
                     <Crown className="w-4.5 h-4.5 text-accent-gold" />
                     <span className="text-xs font-bold uppercase tracking-wider text-white">Привилегии вашего уровня</span>
                   </div>
-                  <ul className="space-y-2 text-[10px] sm:text-xs text-white/80">
+                  <ul className="space-y-2 text-xs text-white/80">
                     {perks.map((perk, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-accent-gold font-bold">✓</span>
@@ -636,7 +636,7 @@ export function ProfilePage() {
                     ))}
                   </ul>
                 </div>
-                <div className="text-[9px] text-white/30 border-t border-white/10 pt-2 text-center">
+                <div className="text-[11px] text-white/30 border-t border-white/10 pt-2 text-center">
                   Нажмите на карту для возврата к лицевой стороне
                 </div>
               </div>
@@ -647,11 +647,11 @@ export function ProfilePage() {
           <div className="mt-4 bg-white/5 p-4 rounded-3xl border border-glass-border/30 space-y-3">
             <div className="flex justify-between items-center text-xs">
               <div className="flex flex-col">
-                <span className="text-white/40 uppercase text-[9px] tracking-wider font-bold">Ранг Прогресса</span>
+                <span className="text-white/40 uppercase text-[11px] tracking-wider font-bold">Ранг Прогресса</span>
                 <span className="text-white font-bold text-sm">{membership.memberships?.name}</span>
               </div>
               <div className="text-right flex flex-col">
-                <span className="text-white/40 uppercase text-[9px] tracking-wider font-bold">Следующий ранг</span>
+                <span className="text-white/40 uppercase text-[11px] tracking-wider font-bold">Следующий ранг</span>
                 <span className="text-accent-gold-bright font-bold text-xs">{xpProgress.next}</span>
               </div>
             </div>
@@ -663,7 +663,7 @@ export function ProfilePage() {
               />
             </div>
 
-            <div className="flex justify-between items-center text-[10px]">
+            <div className="flex justify-between items-center text-xs">
               <span className="text-white/40 font-mono">{membership.points} XP / {xpProgress.max} XP</span>
               {xpProgress.remaining > 0 ? (
                 <span className="text-accent-gold-bright font-bold">Осталось {xpProgress.remaining} XP до повышения</span>
@@ -740,7 +740,7 @@ export function ProfilePage() {
               <>
                 <h2 className="text-xl sm:text-2xl font-display font-bold text-white">{user.name}</h2>
                 {selectedStatus && (
-                  <div className="mt-1.5 px-3 py-0.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-semibold text-accent-gold/90 w-fit mx-auto shadow-sm">
+                  <div className="mt-1.5 px-3 py-0.5 rounded-full bg-white/5 border border-white/5 text-xs font-semibold text-accent-gold/90 w-fit mx-auto shadow-sm">
                     {selectedStatus}
                   </div>
                 )}
@@ -751,7 +751,7 @@ export function ProfilePage() {
                 </div>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   <Badge text={user.role === 'admin' ? 'Админ' : 'Пользователь'} color={user.role === 'admin' ? 'gold' : 'gray'} size="sm" />
-                  <span className="text-[10px] text-white/20">с {new Date(user.createdAt).toLocaleDateString('ru-RU')}</span>
+                  <span className="text-xs text-white/20">с {new Date(user.createdAt).toLocaleDateString('ru-RU')}</span>
                 </div>
                 <div className="flex gap-2 mt-4 justify-center">
                   <button onClick={() => setEditing(true)}
@@ -786,7 +786,7 @@ export function ProfilePage() {
                     setSelectedStatus(selectedStatus === s ? '' : s);
                     updatePrefs({ statusText: selectedStatus === s ? '' : s });
                   }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all border ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
                       selectedStatus === s
                         ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45'
                         : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
@@ -807,7 +807,7 @@ export function ProfilePage() {
                     setSelectedFrameId(f.id);
                     updatePrefs({ frameId: f.id });
                   }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all border ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
                       selectedFrameId === f.id
                         ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45 shadow-[0_0_8px_rgba(0,242,254,0.15)]'
                         : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
@@ -887,7 +887,7 @@ export function ProfilePage() {
           <GlassCard className="p-4 sm:p-5 border border-accent-gold/20 bg-black/45 space-y-4">
             {preferences.topFlavors.length > 0 && (
               <div className="space-y-2">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block font-bold">Любимые табачные ноты:</span>
+                <span className="text-xs uppercase tracking-wider text-white/50 block font-bold">Любимые табачные ноты:</span>
                 <div className="flex flex-wrap gap-2">
                   {preferences.topFlavors.map((flavor, index) => (
                     <span 
@@ -904,13 +904,13 @@ export function ProfilePage() {
 
             {preferences.topMixes.length > 0 && (
               <div className="space-y-2 pt-2 border-t border-white/5">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block font-bold">Популярные у вас миксы:</span>
+                <span className="text-xs uppercase tracking-wider text-white/50 block font-bold">Популярные у вас миксы:</span>
                 <div className="space-y-2.5">
                   {preferences.topMixes.map((mixName, index) => (
                     <div key={index} className="flex flex-col space-y-1">
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-white/80 font-medium">{mixName}</span>
-                        <span className="text-[10px] font-mono text-accent-gold-bright font-bold">Любимый выбор #{index + 1}</span>
+                        <span className="text-xs font-mono text-accent-gold-bright font-bold">Любимый выбор #{index + 1}</span>
                       </div>
                       <div className="relative w-full h-1.5 bg-stone-900 rounded-full overflow-hidden border border-white/5">
                         <div 
@@ -956,9 +956,9 @@ export function ProfilePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-1">
                         <h4 className="text-[11px] font-bold text-white truncate">{ach.name}</h4>
-                        {ach.unlocked && <span className="text-[8px] text-accent-gold-bright font-bold font-mono">+{ach.points_reward} XP</span>}
+                        {ach.unlocked && <span className="text-[11px] text-accent-gold-bright font-bold font-mono">+{ach.points_reward} XP</span>}
                       </div>
-                      <p className="text-[9px] text-white/50 leading-tight mt-0.5 line-clamp-2">{ach.description}</p>
+                      <p className="text-[11px] text-white/50 leading-tight mt-0.5 line-clamp-2">{ach.description}</p>
                     </div>
                   </div>
                 </GlassCard>
@@ -1026,24 +1026,24 @@ export function ProfilePage() {
                               {booking.status === 'confirmed' && (
                                 <button 
                                   onClick={() => setReviewBookingId(booking._id)}
-                                  className="text-[10px] text-accent-gold-bright border border-accent-gold-bright/25 bg-accent-gold-bright/5 px-2 py-0.5 rounded-md hover:bg-accent-gold-bright/15 transition-all flex items-center gap-1 font-semibold"
+                                  className="text-xs text-accent-gold-bright border border-accent-gold-bright/25 bg-accent-gold-bright/5 px-2 py-0.5 rounded-md hover:bg-accent-gold-bright/15 transition-all flex items-center gap-1 font-semibold"
                                 >
                                   <Star className="w-2.5 h-2.5 fill-accent-gold" /> Оценить визит
                                 </button>
                               )}
                               {booking.status === 'pending' && (
                                 <button onClick={() => handleCancelBooking(booking._id)}
-                                  className="text-[10px] sm:text-xs text-red-400/60 hover:text-red-400">Отменить</button>
+                                  className="text-xs text-red-400/60 hover:text-red-400">Отменить</button>
                               )}
                             </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-white/40">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-white/40">
                             <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
                             <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{booking.time}</span>
                             <span className="flex items-center gap-1"><User className="w-3 h-3" />{booking.guestsCount} чел</span>
                           </div>
                           {(booking as any).hookahMix && (
-                            <div className="text-[10px] sm:text-xs text-white/40 mt-1">💨 {(booking as any).hookahMix} • {(booking as any).hookahCount || 1} шт</div>
+                            <div className="text-xs text-white/40 mt-1">💨 {(booking as any).hookahMix} • {(booking as any).hookahCount || 1} шт</div>
                           )}
 
                           {hs && booking.status !== 'cancelled' && (
@@ -1053,11 +1053,11 @@ export function ProfilePage() {
                                   <Flame className="w-3.5 h-3.5 text-accent-gold-bright animate-bounce animate-duration-1000" />
                                   <span className="text-xs font-semibold text-white/95">Приготовление: <span className="text-accent-gold-bright">{hs.hookahStatusLabel}</span></span>
                                 </div>
-                                {hs.minutesLeft > 0 && <span className="text-[10px] text-white/40">{hs.minutesLeft} мин осталось</span>}
+                                {hs.minutesLeft > 0 && <span className="text-xs text-white/40">{hs.minutesLeft} мин осталось</span>}
                               </div>
                               
                               <div className="flex items-center justify-between gap-3 bg-black/45 p-2.5 rounded-xl border border-glass-border/20 mb-2">
-                                <div className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">Угли чаши:</div>
+                                <div className="text-xs font-semibold text-white/40 uppercase tracking-wider">Угли чаши:</div>
                                 <div className="flex gap-2.5">
                                   {[
                                     { minPct: 15, label: 'Сборка' },
@@ -1068,7 +1068,7 @@ export function ProfilePage() {
                                     return (
                                       <div key={idx} className="flex flex-col items-center gap-1">
                                         <div 
-                                          className={`w-5 h-5 rounded-full transition-all duration-700 flex items-center justify-center text-[10px] font-bold ${
+                                          className={`w-5 h-5 rounded-full transition-all duration-700 flex items-center justify-center text-xs font-bold ${
                                             active 
                                               ? 'bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500 shadow-[0_0_16px_rgba(239,68,68,0.9)] text-black border border-yellow-300/30' 
                                               : 'bg-stone-850 text-stone-500 border border-stone-700/30'
@@ -1076,7 +1076,7 @@ export function ProfilePage() {
                                         >
                                           {idx + 1}
                                         </div>
-                                        <span className="text-[8px] text-white/30 uppercase tracking-wider">{coal.label}</span>
+                                        <span className="text-[11px] text-white/30 uppercase tracking-wider">{coal.label}</span>
                                       </div>
                                     );
                                   })}
@@ -1112,7 +1112,7 @@ export function ProfilePage() {
                           <GlassCard className="p-3.5 border border-accent-gold/15 hover:border-accent-gold/30 transition-colors">
                             <div className="flex items-start justify-between mb-2">
                               <h5 className="text-xs font-bold text-white">{mix.name}</h5>
-                              <span className={`text-[8px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold ${
+                              <span className={`text-[11px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold ${
                                 mix.strength === 'light' ? 'text-green-400 bg-green-400/10' :
                                 mix.strength === 'strong' ? 'text-red-400 bg-red-400/10' :
                                 'text-yellow-400 bg-yellow-400/10'
@@ -1120,18 +1120,18 @@ export function ProfilePage() {
                             </div>
                             <div className="flex flex-wrap gap-1 mb-2">
                               {mix.flavors?.map((f: string) => (
-                                <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] text-white/60">{f}</span>
+                                <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[11px] text-white/60">{f}</span>
                               ))}
                             </div>
-                            {mix.notes && <p className="text-[9px] text-white/30 mb-2">{mix.notes}</p>}
+                            {mix.notes && <p className="text-[11px] text-white/30 mb-2">{mix.notes}</p>}
                             <div className="flex gap-2 mt-1">
                               <button onClick={() => navigate('/create', { state: { savedMix: mix } })}
-                                className="flex-1 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[9px] font-bold uppercase tracking-wider hover:bg-accent-gold/20 transition-all flex items-center justify-center gap-1.5"
+                                className="flex-1 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[11px] font-bold uppercase tracking-wider hover:bg-accent-gold/20 transition-all flex items-center justify-center gap-1.5"
                               >
                                 <ShoppingCart className="w-3 h-3" /> Заказать
                               </button>
                               <button onClick={async (e) => { e.stopPropagation(); try { await api(`/api/mixes/user-mixes/${mix.id}`, { method: 'DELETE' }); setUserMixes(prev => prev.filter(m => m.id !== mix.id)); showToast('Рецепт удалён', 'success'); } catch (err: any) { showToast(err?.response?.data?.error || 'Ошибка удаления', 'error'); } }}
-                                className="px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-wider hover:bg-red-500/20 transition-all"
+                                className="px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-bold uppercase tracking-wider hover:bg-red-500/20 transition-all"
                               >
                                 Удалить
                               </button>
@@ -1160,8 +1160,8 @@ export function ProfilePage() {
                             <GlassCard className="p-4 border border-accent-gold/20 flex flex-col justify-between h-full hover:border-accent-gold/40 transition-colors">
                               <div>
                                 <div className="flex justify-between items-start mb-2">
-                                  <span className="text-[10px] font-mono text-accent-gold-bright font-bold tracking-widest">{booking.seatId}</span>
-                                  <span className="text-[9px] text-white/30">{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
+                                  <span className="text-xs font-mono text-accent-gold-bright font-bold tracking-widest">{booking.seatId}</span>
+                                  <span className="text-[11px] text-white/30">{new Date(booking.date).toLocaleDateString('ru-RU')}</span>
                                 </div>
                                 {(booking as any).hookahMix && (
                                   <div className="space-y-2 mt-2">
@@ -1181,7 +1181,7 @@ export function ProfilePage() {
                                         return <div key={idx}>{line}</div>;
                                       })}
                                       {booking.comment && (
-                                        <div className="text-[10px] text-white/50 italic mt-1 font-light">
+                                        <div className="text-xs text-white/50 italic mt-1 font-light">
                                           "{booking.comment}"
                                         </div>
                                       )}
@@ -1223,7 +1223,7 @@ export function ProfilePage() {
                 <div key={log.id} className="flex justify-between items-center py-2 text-xs text-white/70">
                   <div className="flex flex-col">
                     <span className="font-medium text-white/90">{log.description}</span>
-                    <span className="text-[9px] text-white/30">{new Date(log.created_at).toLocaleDateString('ru-RU')}</span>
+                    <span className="text-[11px] text-white/30">{new Date(log.created_at).toLocaleDateString('ru-RU')}</span>
                   </div>
                   <span className={`font-mono font-bold ${log.type === 'earn' ? 'text-green-400' : 'text-red-400'}`}>
                     {log.type === 'earn' ? '+' : '-'}{log.points_delta} XP
@@ -1345,7 +1345,7 @@ export function ProfilePage() {
                     <Crown className="w-5 h-5 animate-pulse" />
                     <span className="text-xs uppercase tracking-[0.2em] font-bold">SPORT LOUNGE PASS</span>
                   </div>
-                  <p className="text-[10px] text-white/40 uppercase tracking-wider font-mono">ID: #{user.id?.slice(0, 12).toUpperCase()}</p>
+                  <p className="text-xs text-white/40 uppercase tracking-wider font-mono">ID: #{user.id?.slice(0, 12).toUpperCase()}</p>
                 </div>
 
                 {/* QR Code Container with scanning animation */}
@@ -1420,7 +1420,7 @@ export function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="text-[10px] text-white/30 italic">
+                <div className="text-xs text-white/30 italic">
                   Покажите этот QR код администратору на ресепшене для авторизации и применения скидки.
                 </div>
 
@@ -1449,7 +1449,7 @@ export function ProfilePage() {
             >
               {/* Header */}
               <div className="text-center space-y-1 relative pb-3 border-b border-[#d4af37]/20">
-                <span className="text-[9px] uppercase tracking-widest text-[#d4af37] font-bold block mb-1">
+                <span className="text-[11px] uppercase tracking-widest text-[#d4af37] font-bold block mb-1">
                   ПОВТОРЕНИЕ РИТУАЛА
                 </span>
                 <h3 className="text-lg font-display font-light text-white uppercase tracking-wider">
@@ -1459,7 +1459,7 @@ export function ProfilePage() {
 
               {/* Mix details summary */}
               <div className="bg-black/35 p-3 rounded-xl border border-glass-border/10 text-xs text-white/70 space-y-1.5">
-                <div className="text-[10px] text-accent-gold-bright font-bold uppercase tracking-wider">Повторяемый микс:</div>
+                <div className="text-xs text-accent-gold-bright font-bold uppercase tracking-wider">Повторяемый микс:</div>
                 <div className="font-light leading-relaxed">{repeatBooking.hookahMix}</div>
               </div>
 
@@ -1468,7 +1468,7 @@ export function ProfilePage() {
                 
                 {/* Delivery location (optional) */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider">
+                  <label className="text-xs text-white/50 block font-medium uppercase tracking-wider">
                     📍 Где подать кальян? (необязательно)
                   </label>
                   <input
@@ -1482,7 +1482,7 @@ export function ProfilePage() {
 
                 {/* Liquid Base choice */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider">
+                  <label className="text-xs text-white/50 block font-medium uppercase tracking-wider">
                     💧 Жидкость в колбе:
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -1501,7 +1501,7 @@ export function ProfilePage() {
                           <span className="text-sm">{base.emoji}</span>
                           <span className="text-[11px] font-bold text-white">{base.name}</span>
                         </div>
-                        <p className="text-[9px] text-white/40 mt-0.5 leading-none">
+                        <p className="text-[11px] text-white/40 mt-0.5 leading-none">
                           {base.price > 0 ? `+${base.price} ₽` : 'Бесплатно'}
                         </p>
                       </button>
@@ -1511,7 +1511,7 @@ export function ProfilePage() {
 
                 {/* Phone */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider flex items-center gap-1">
+                  <label className="text-xs text-white/50 block font-medium uppercase tracking-wider flex items-center gap-1">
                     <Phone className="w-3 h-3 text-[#d4af37]" /> Номер телефона:
                   </label>
                   <input
@@ -1526,7 +1526,7 @@ export function ProfilePage() {
 
                 {/* Comment / notes */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-white/50 block font-medium uppercase tracking-wider flex items-center gap-1">
+                  <label className="text-xs text-white/50 block font-medium uppercase tracking-wider flex items-center gap-1">
                     <FileText className="w-3 h-3 text-[#d4af37]" /> Дополнительные пожелания:
                   </label>
                   <textarea

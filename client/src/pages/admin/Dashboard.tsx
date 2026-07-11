@@ -294,7 +294,7 @@ export function Dashboard() {
                 <span className="text-[10px] font-bold text-black">802.00 ₽</span>
               </div>
 
-              <div className="absolute bottom-1 left-0 right-0 flex justify-between px-2 text-[9px] font-semibold text-white/30 uppercase tracking-widest z-20">
+              <div className="absolute bottom-1 left-0 right-0 flex justify-between px-2 text-[11px] font-semibold text-white/30 uppercase tracking-widest z-20">
                 <span>Пн</span>
                 <span>Вт</span>
                 <span>Ср</span>
@@ -312,7 +312,7 @@ export function Dashboard() {
                 <PlusIcon className="w-4 h-4 text-accent-gold" />
                 <span>Очередь приготовления кальянов</span>
               </h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-accent-gold/15 border border-accent-gold/25 text-[9px] font-bold text-accent-gold">
+              <span className="px-2.5 py-0.5 rounded-full bg-accent-gold/15 border border-accent-gold/25 text-[11px] font-bold text-accent-gold">
                 {activeOrders.length} в очереди
               </span>
             </div>
@@ -320,7 +320,7 @@ export function Dashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
                 <thead>
-                  <tr className="text-white/30 border-b border-glass-border/10 uppercase text-[9px] tracking-wider">
+                  <tr className="text-white/30 border-b border-glass-border/10 uppercase text-[11px] tracking-wider">
                     <th className="py-2.5 font-bold">Стол</th>
                     <th className="py-2.5 px-3 font-bold">Выбранный микс</th>
                     <th className="py-2.5 px-3 font-bold">Крепость</th>
@@ -348,7 +348,7 @@ export function Dashboard() {
                         </td>
                         <td className="py-3.5 px-3 text-white/70 truncate max-w-[160px] font-light">{order.mix}</td>
                         <td className="py-3.5 px-3">
-                          <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                          <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
                             order.strength === 'strong' 
                               ? 'bg-red-500/10 border border-red-500/30 text-red-400' 
                               : order.strength === 'medium'
@@ -444,14 +444,14 @@ export function Dashboard() {
 
               {/* List of registered users online */}
               <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                <p className="text-[9px] uppercase tracking-wider text-white/30 font-bold">Зарегистрированные пользователи:</p>
+                <p className="text-[11px] uppercase tracking-wider text-white/30 font-bold">Зарегистрированные пользователи:</p>
                 {onlineUsers.length === 0 ? (
                   <p className="text-xs text-white/20 italic">Нет авторизованных гостей в сети</p>
                 ) : (
                   onlineUsers.map((u, i) => (
                     <div key={i} className="flex justify-between items-center bg-white/5 p-2 rounded border border-glass-border/10">
                       <span className="text-xs text-white/80 font-medium">{u.name}</span>
-                      <span className="text-[9px] font-bold text-accent-gold uppercase tracking-widest">{u.role === 'admin' ? 'Админ' : 'Гость'}</span>
+                      <span className="text-[11px] font-bold text-accent-gold uppercase tracking-widest">{u.role === 'admin' ? 'Админ' : 'Гость'}</span>
                     </div>
                   ))
                 )}
@@ -478,7 +478,7 @@ export function Dashboard() {
                     </div>
                     <div>
                       <p className="text-xs text-white/80 font-medium leading-none">{feed.title}</p>
-                      <p className="text-[9px] text-white/30 font-light mt-1">{feed.time}</p>
+                      <p className="text-[11px] text-white/30 font-light mt-1">{feed.time}</p>
                     </div>
                   </div>
                 </div>
@@ -524,7 +524,7 @@ export function Dashboard() {
               <div key={card.label} className="p-3 rounded-xl bg-white/5 border border-glass-border/20">
                 <p className="text-[10px] text-white/40">{card.label}</p>
                 <p className={`text-lg font-bold mt-0.5 ${card.color}`}>{card.value}</p>
-                <p className="text-[9px] text-white/30 mt-0.5">{card.sub}</p>
+                <p className="text-[11px] text-white/30 mt-0.5">{card.sub}</p>
               </div>
             ));
           })()}

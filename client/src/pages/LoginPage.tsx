@@ -119,14 +119,14 @@ export function LoginPage() {
             >
               <div className="flex items-center gap-2 border-b border-white/5 pb-3 mb-2">
                 <div className="w-7 h-7 rounded-lg bg-[rgba(255,191,0,0.1)] flex items-center justify-center">
-                  <Lock className="w-3.5 h-3.5 text-[#FFBF00]" />
+                  <Lock className="w-3.5 h-3.5 text-accent-gold" />
                 </div>
                 <h2 className="text-sm font-semibold text-white font-heading">Вход</h2>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] text-white/50 mb-1.5 font-medium uppercase tracking-wider">Email</label>
+                  <label className="block text-xs text-white/50 mb-1.5 font-medium uppercase tracking-wider">Email</label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -136,7 +136,7 @@ export function LoginPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] text-white/50 mb-1.5 font-medium uppercase tracking-wider">Пароль</label>
+                  <label className="block text-xs text-white/50 mb-1.5 font-medium uppercase tracking-wider">Пароль</label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
@@ -168,12 +168,12 @@ export function LoginPage() {
 
               <div className="flex items-center my-2">
                 <div className="flex-1 border-t border-white/5"></div>
-                <span className="px-3 text-[9px] text-white/20 font-semibold tracking-wider">ИЛИ</span>
+                <span className="px-3 text-[11px] text-white/20 font-semibold tracking-wider">ИЛИ</span>
                 <div className="flex-1 border-t border-white/5"></div>
               </div>
 
               <button type="button" onClick={handleGoogleLogin} disabled={loading || googleLoading}
-                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs flex items-center justify-center gap-2.5 transition-all hover:border-[#FFBF00]/30 hover:text-[#FFBF00]"
+                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs flex items-center justify-center gap-2.5 transition-all hover:border-[#FFBF00]/30 hover:text-accent-gold"
               >
                 {googleLoading ? (
                   <div className="w-4 h-4 border-2 border-[#FFBF00] border-t-transparent rounded-full animate-spin" />
@@ -191,7 +191,7 @@ export function LoginPage() {
               <p className="text-center text-xs text-white/40 pt-1">
                 Нет аккаунта?{' '}
                 <button type="button" onClick={flip}
-                  className="text-[#FFBF00] hover:text-[#FFBF00]/80 transition-colors font-medium underline underline-offset-2 decoration-[rgba(255,191,0,0.3)]"
+                  className="text-accent-gold hover:text-accent-gold/80 transition-colors font-medium underline underline-offset-2 decoration-[rgba(255,191,0,0.3)]"
                 >Зарегистрироваться</button>
               </p>
             </motion.form>
@@ -216,14 +216,14 @@ export function LoginPage() {
                     <ChevronLeft className="w-4 h-4 text-white/50" />
                   </button>
                   <div className="w-7 h-7 rounded-lg bg-[rgba(255,191,0,0.1)] flex items-center justify-center">
-                    <Sparkles className="w-3.5 h-3.5 text-[#FFBF00]" />
+                    <Sparkles className="w-3.5 h-3.5 text-accent-gold" />
                   </div>
                   <h2 className="text-sm font-semibold text-white font-heading">Регистрация</h2>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[10px] text-white/50 mb-1.5 font-medium uppercase tracking-wider">Имя</label>
+                    <label className="block text-xs text-white/50 mb-1.5 font-medium uppercase tracking-wider">Имя</label>
                     <div className="relative">
                       <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                       <input type="text" value={name} onChange={(e) => setName(e.target.value)}
@@ -233,7 +233,7 @@ export function LoginPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] text-white/50 mb-1.5 font-medium uppercase tracking-wider">Email</label>
+                    <label className="block text-xs text-white/50 mb-1.5 font-medium uppercase tracking-wider">Email</label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -243,7 +243,7 @@ export function LoginPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] text-white/50 mb-1.5 font-medium uppercase tracking-wider">Пароль</label>
+                    <label className="block text-xs text-white/50 mb-1.5 font-medium uppercase tracking-wider">Пароль</label>
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                       <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
@@ -257,7 +257,7 @@ export function LoginPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] text-white/50 mb-1.5 font-medium uppercase tracking-wider">Подтвердите пароль</label>
+                    <label className="block text-xs text-white/50 mb-1.5 font-medium uppercase tracking-wider">Подтвердите пароль</label>
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                       <input type={showConfirm ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
@@ -296,7 +296,7 @@ export function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-center text-[10px] text-white/20 mt-6"
+            className="text-center text-xs text-white/20 mt-6"
           >
             Нажимая «Войти», вы соглашаетесь с{' '}
             <a href="/cookie-policy" className="text-white/30 hover:text-white/50 transition-colors">условиями использования</a>
