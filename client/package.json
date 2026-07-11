@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm install --include=dev",
     "build": "vite build && node scripts/generate-build-info.mjs",
     "preview": "vite preview",
     "tauri": "tauri",
