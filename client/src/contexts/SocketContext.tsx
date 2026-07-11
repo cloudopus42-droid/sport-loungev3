@@ -1,6 +1,7 @@
-import { createContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { type Socket } from 'socket.io-client';
 import { connectSocket, disconnectSocket } from '@/lib/socket';
+import { AuthContext } from '@/contexts/AuthContext';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -17,12 +18,12 @@ interface SocketProviderProps {
 }
 
 export function SocketProvider({ children }: SocketProviderProps) {
+  const { token } = useContext(AuthContext);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || undefined;
-    const s = connectSocket(token);
+    const s = connectSocket(token || undefined);
     setSocket(s);
 
     const handleConnect = () => setIsConnected(true);
@@ -40,7 +41,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       s.off('disconnect', handleDisconnect);
       disconnectSocket();
     };
-  }, []);
+  }, [token]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>
@@ -48,4 +49,3 @@ export function SocketProvider({ children }: SocketProviderProps) {
     </SocketContext.Provider>
   );
 }
-

@@ -138,7 +138,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 });
 
 // GET /api/orders - Get order queue (admin only or filtering)
-router.get('/', auth, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status } = req.query;
     const { count } = await supabase
@@ -230,6 +230,10 @@ router.get('/:id/status', auth, async (req: Request, res: Response, next: NextFu
       res.status(404).json({ error: 'Заказ не найден', status: 404 });
       return;
     }
+    if (order.user_id !== req.user!.id && req.user!.role !== 'admin') {
+      res.status(403).json({ error: 'Нет доступа', status: 403 });
+      return;
+    }
 
     res.json(mapOrderToFrontend(order));
   } catch (err) {
@@ -248,6 +252,10 @@ router.post('/:id/request-master', auth, async (req: Request, res: Response, nex
 
     if (fetchErr || !order) {
       res.status(404).json({ error: 'Заказ не найден', status: 404 });
+      return;
+    }
+    if (order.user_id !== req.user!.id && req.user!.role !== 'admin') {
+      res.status(403).json({ error: 'Нет доступа', status: 403 });
       return;
     }
 

@@ -14,6 +14,7 @@ import helmet from 'helmet';
 import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument } from './config/swagger';
+import { config } from './config/env';
 
 import { Router } from 'express';
 import { errorHandler } from './middleware/errorHandler';
@@ -59,7 +60,7 @@ app.use(
 
 app.use(
   cors({
-    origin: true,
+    origin: config.allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -139,8 +140,9 @@ app.use('/api/pages', pagesRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/admin/logs', adminLogRoutes);
 
-// Swagger API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+if (!config.isProduction) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+}
 
 // SPA fallback — serve client/dist/index.html for non-API routes
 const clientDistPath = path.resolve(__dirname, '../../client/dist');

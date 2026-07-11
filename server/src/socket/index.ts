@@ -1,6 +1,8 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import jwt from 'jsonwebtoken';
 import { config } from '../config/env';
+import type { JwtPayload } from '../middleware/auth';
 
 let io: SocketIOServer | null = null;
 
@@ -29,23 +31,43 @@ export function initSocket(server: HttpServer): SocketIOServer {
   const onlineUsers = new Map<string, { socketId: string; userId?: string; name?: string; role?: string }>();
   const adminRoom = 'admin';
 
+  ioServer.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      next();
+      return;
+    }
+
+    try {
+      socket.data.user = jwt.verify(token, config.jwtSecret) as JwtPayload;
+      next();
+    } catch {
+      next(new Error('Unauthorized'));
+    }
+  });
+
   ioServer.on('connection', (socket) => {
     console.log(`🔌 Socket connected: ${socket.id}`);
-    
-    onlineUsers.set(socket.id, { socketId: socket.id });
+
+    const user = socket.data.user as JwtPayload | undefined;
+    onlineUsers.set(socket.id, {
+      socketId: socket.id,
+      userId: user?.id,
+      role: user?.role,
+    });
+    if (user?.role === 'admin') {
+      socket.join(adminRoom);
+    }
     throttledOnlineEmit(ioServer, onlineUsers);
 
     socket.on('user:active', (userInfo) => {
-      if (userInfo && userInfo.id) {
+      if (user && userInfo && typeof userInfo.name === 'string') {
         onlineUsers.set(socket.id, {
           socketId: socket.id,
-          userId: userInfo.id,
-          name: userInfo.name,
-          role: userInfo.role,
+          userId: user.id,
+          name: userInfo.name.slice(0, 100),
+          role: user.role,
         });
-        if (userInfo.role === 'admin' || userInfo.isAdmin) {
-          socket.join(adminRoom);
-        }
         throttledOnlineEmit(ioServer, onlineUsers);
       }
     });

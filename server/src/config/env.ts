@@ -4,9 +4,11 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+const testJwtSecret = 'test-jwt-secret-minimum-32-characters';
+
 const envSchema = z.object({
   PORT: z.string().default('5000').transform(Number),
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters').default('dev-jwt-secret-min-32-chars-long!!'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   ALLOWED_ORIGINS: z.string().default('http://localhost:5173,http://localhost:3000'),
   TELEGRAM_TOKEN: z.string().default(''),
   TELEGRAM_CHAT_ID: z.string().default(''),
@@ -18,7 +20,10 @@ const envSchema = z.object({
   SUPABASE_DB_PASSWORD: z.string().default(''),
 });
 
-const parsed = envSchema.safeParse(process.env);
+const parsed = envSchema.safeParse({
+  ...process.env,
+  JWT_SECRET: process.env.JWT_SECRET || (process.env.NODE_ENV === 'test' ? testJwtSecret : undefined),
+});
 
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:', parsed.error.flatten().fieldErrors);

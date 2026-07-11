@@ -1,7 +1,11 @@
-const RENDER_API_KEY = 'rnd_eUEcmLjAq9rMWQ7pBQvdaTjQcqPX';
+const RENDER_API_KEY = process.env.RENDER_API_KEY;
 const REPO = 'https://github.com/cloudopus42-droid/sport-loungev3';
 
 async function main() {
+  if (!RENDER_API_KEY) {
+    throw new Error('RENDER_API_KEY is required');
+  }
+
   const fetch = global.fetch;
   
   const headers = {
