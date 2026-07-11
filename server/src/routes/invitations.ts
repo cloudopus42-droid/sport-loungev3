@@ -1,10 +1,11 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { createInvitationSchema } from '../schemas/invitation.schema';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { uploadSingle, uploadToSupabase, deleteFromSupabase } from '../middleware/upload';
 import { getIO } from '../socket';
 import { supabase } from '../config/supabase';
+import { asyncHandler, stripUndefined } from '../utils/http';
 
 const router = Router();
 
@@ -42,63 +43,51 @@ function mapInvitationToDb(body: any) {
 }
 
 // GET /api/invitations — Public, published only
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { data: invitations, error } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('status', 'published')
-      .order('date_time', { ascending: true });
+router.get('/', asyncHandler(async (_req: Request, res: Response) => {
+  const { data: invitations, error } = await supabase
+    .from('invitations')
+    .select('*')
+    .eq('status', 'published')
+    .order('date_time', { ascending: true });
 
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    res.json((invitations || []).map(mapInvitationToFrontend));
-  } catch (error) {
-    next(error);
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
-});
+
+  res.json((invitations || []).map(mapInvitationToFrontend));
+}));
 
 // GET /api/invitations/all — Auth + Admin, all invitations
-router.get('/all', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { data: invitations, error } = await supabase
-      .from('invitations')
-      .select('*')
-      .order('created_at', { ascending: false });
+router.get('/all', auth, isAdmin, asyncHandler(async (_req: Request, res: Response) => {
+  const { data: invitations, error } = await supabase
+    .from('invitations')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    res.json((invitations || []).map(mapInvitationToFrontend));
-  } catch (error) {
-    next(error);
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
-});
+
+  res.json((invitations || []).map(mapInvitationToFrontend));
+}));
 
 // GET /api/invitations/:id — Public
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { data: invitation, error } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('id', req.params.id)
-      .maybeSingle();
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
+  const { data: invitation, error } = await supabase
+    .from('invitations')
+    .select('*')
+    .eq('id', req.params.id)
+    .maybeSingle();
 
-    if (error || !invitation) {
-      res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
-      return;
-    }
-
-    res.json(mapInvitationToFrontend(invitation));
-  } catch (error) {
-    next(error);
+  if (error || !invitation) {
+    res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
+    return;
   }
-});
+
+  res.json(mapInvitationToFrontend(invitation));
+}));
 
 // POST /api/invitations — Auth + Admin + upload
 router.post(
@@ -106,36 +95,32 @@ router.post(
   auth,
   isAdmin,
   uploadSingle('image'),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const parsedData = createInvitationSchema.parse({
-        ...req.body,
-        maxParticipants: req.body.maxParticipants
-          ? Number(req.body.maxParticipants)
-          : undefined,
-      });
+  asyncHandler(async (req: Request, res: Response) => {
+    const parsedData = createInvitationSchema.parse({
+      ...req.body,
+      maxParticipants: req.body.maxParticipants
+        ? Number(req.body.maxParticipants)
+        : undefined,
+    });
 
-      const imageUrl = req.file ? await uploadToSupabase(req.file, 'invitations') : undefined;
+    const imageUrl = req.file ? await uploadToSupabase(req.file, 'invitations') : undefined;
 
-      const dbData = mapInvitationToDb(parsedData);
-      if (imageUrl) dbData.image_url = imageUrl;
+    const dbData = mapInvitationToDb(parsedData);
+    if (imageUrl) dbData.image_url = imageUrl;
 
-      const { data: invitation, error } = await supabase
-        .from('invitations')
-        .insert(dbData)
-        .select()
-        .single();
+    const { data: invitation, error } = await supabase
+      .from('invitations')
+      .insert(dbData)
+      .select()
+      .single();
 
-      if (error || !invitation) {
-        res.status(500).json({ error: 'Не удалось создать приглашение: ' + error?.message });
-        return;
-      }
-
-      res.status(201).json(mapInvitationToFrontend(invitation));
-    } catch (error) {
-      next(error);
+    if (error || !invitation) {
+      res.status(500).json({ error: 'Не удалось создать приглашение: ' + error?.message });
+      return;
     }
-  }
+
+    res.status(201).json(mapInvitationToFrontend(invitation));
+  })
 );
 
 // PUT /api/invitations/:id — Auth + Admin + upload
@@ -144,53 +129,47 @@ router.put(
   auth,
   isAdmin,
   uploadSingle('image'),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const parsedData = createInvitationSchema.partial().parse({
-        ...req.body,
-        maxParticipants: req.body.maxParticipants
-          ? Number(req.body.maxParticipants)
-          : undefined,
-      });
+  asyncHandler(async (req: Request, res: Response) => {
+    const parsedData = createInvitationSchema.partial().parse({
+      ...req.body,
+      maxParticipants: req.body.maxParticipants
+        ? Number(req.body.maxParticipants)
+        : undefined,
+    });
 
-      const dbData = mapInvitationToDb(parsedData);
+    const dbData = mapInvitationToDb(parsedData);
 
-      if (req.file) {
-        const { data: oldInvitation } = await supabase
-          .from('invitations')
-          .select('image_url')
-          .eq('id', req.params.id)
-          .maybeSingle();
-
-        if (oldInvitation?.image_url) {
-          await deleteFromSupabase(oldInvitation.image_url);
-        }
-
-        dbData.image_url = await uploadToSupabase(req.file, 'invitations');
-      }
-
-      // Удаляем undefined значения из объекта обновления
-      Object.keys(dbData).forEach(
-        (key) => dbData[key] === undefined && delete dbData[key]
-      );
-
-      const { data: invitation, error } = await supabase
+    if (req.file) {
+      const { data: oldInvitation } = await supabase
         .from('invitations')
-        .update(dbData)
+        .select('image_url')
         .eq('id', req.params.id)
-        .select()
-        .single();
+        .maybeSingle();
 
-      if (error || !invitation) {
-        res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
-        return;
+      if (oldInvitation?.image_url) {
+        await deleteFromSupabase(oldInvitation.image_url);
       }
 
-      res.json(mapInvitationToFrontend(invitation));
-    } catch (error) {
-      next(error);
+      dbData.image_url = await uploadToSupabase(req.file, 'invitations');
     }
-  }
+
+    // Удаляем undefined значения из объекта обновления
+    stripUndefined(dbData);
+
+    const { data: invitation, error } = await supabase
+      .from('invitations')
+      .update(dbData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error || !invitation) {
+      res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
+      return;
+    }
+
+    res.json(mapInvitationToFrontend(invitation));
+  })
 );
 
 // PUT /api/invitations/:id/publish — Auth + Admin
@@ -198,30 +177,26 @@ router.put(
   '/:id/publish',
   auth,
   isAdmin,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { data: invitation, error } = await supabase
-        .from('invitations')
-        .update({ status: 'published' })
-        .eq('id', req.params.id)
-        .select()
-        .single();
+  asyncHandler(async (req: Request, res: Response) => {
+    const { data: invitation, error } = await supabase
+      .from('invitations')
+      .update({ status: 'published' })
+      .eq('id', req.params.id)
+      .select()
+      .single();
 
-      if (error || !invitation) {
-        res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
-        return;
-      }
-
-      try {
-        const io = getIO();
-        io.emit('invitation:published', mapInvitationToFrontend(invitation));
-      } catch (_) {}
-
-      res.json(mapInvitationToFrontend(invitation));
-    } catch (error) {
-      next(error);
+    if (error || !invitation) {
+      res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
+      return;
     }
-  }
+
+    try {
+      const io = getIO();
+      io.emit('invitation:published', mapInvitationToFrontend(invitation));
+    } catch (_) {}
+
+    res.json(mapInvitationToFrontend(invitation));
+  })
 );
 
 // DELETE /api/invitations/:id — Auth + Admin
@@ -229,38 +204,34 @@ router.delete(
   '/:id',
   auth,
   isAdmin,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { data: invitation, error: fetchError } = await supabase
-        .from('invitations')
-        .select('image_url')
-        .eq('id', req.params.id)
-        .maybeSingle();
+  asyncHandler(async (req: Request, res: Response) => {
+    const { data: invitation, error: fetchError } = await supabase
+      .from('invitations')
+      .select('image_url')
+      .eq('id', req.params.id)
+      .maybeSingle();
 
-      if (fetchError || !invitation) {
-        res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
-        return;
-      }
-
-      if (invitation.image_url) {
-        await deleteFromSupabase(invitation.image_url);
-      }
-
-      const { error: deleteError } = await supabase
-        .from('invitations')
-        .delete()
-        .eq('id', req.params.id);
-
-      if (deleteError) {
-        res.status(500).json({ error: deleteError.message });
-        return;
-      }
-
-      res.json({ message: 'Приглашение удалено' });
-    } catch (error) {
-      next(error);
+    if (fetchError || !invitation) {
+      res.status(404).json({ error: 'Приглашение не найдено', status: 404 });
+      return;
     }
-  }
+
+    if (invitation.image_url) {
+      await deleteFromSupabase(invitation.image_url);
+    }
+
+    const { error: deleteError } = await supabase
+      .from('invitations')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (deleteError) {
+      res.status(500).json({ error: deleteError.message });
+      return;
+    }
+
+    res.json({ message: 'Приглашение удалено' });
+  })
 );
 
 export default router;

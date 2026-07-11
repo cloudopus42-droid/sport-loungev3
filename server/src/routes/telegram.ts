@@ -1,8 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { config } from '../config/env';
 import { sendTelegramMessageSchema } from '../schemas/telegram.schema';
+import { asyncHandler } from '../utils/http';
 
 const router = Router();
 
@@ -78,59 +79,51 @@ function sendWithRetry(payload: any, maxRetries: number): Promise<{ success: boo
 }
 
 // POST /api/telegram/send — send a message via Telegram (admin)
-router.post('/send', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const data = sendTelegramMessageSchema.parse(req.body);
+router.post('/send', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const data = sendTelegramMessageSchema.parse(req.body);
 
-    if (!config.telegramToken || !config.telegramChatId) {
-      res.status(503).json({ success: false, error: 'Telegram не настроен' });
-      return;
-    }
-
-    const payload = {
-      chat_id: data.chat_id,
-      text: data.text,
-      parse_mode: data.parse_mode,
-      disable_web_page_preview: data.disable_web_page_preview,
-      disable_notification: false,
-    };
-
-    const result = await sendWithRetry(payload, 3);
-
-    if (result.success) {
-      res.json({ success: true, message: 'Сообщение отправлено' });
-    } else {
-      res.status(502).json({ success: false, error: result.error || 'Не удалось отправить сообщение' });
-    }
-  } catch (err) {
-    next(err);
+  if (!config.telegramToken || !config.telegramChatId) {
+    res.status(503).json({ success: false, error: 'Telegram не настроен' });
+    return;
   }
-});
+
+  const payload = {
+    chat_id: data.chat_id,
+    text: data.text,
+    parse_mode: data.parse_mode,
+    disable_web_page_preview: data.disable_web_page_preview,
+    disable_notification: false,
+  };
+
+  const result = await sendWithRetry(payload, 3);
+
+  if (result.success) {
+    res.json({ success: true, message: 'Сообщение отправлено' });
+  } else {
+    res.status(502).json({ success: false, error: result.error || 'Не удалось отправить сообщение' });
+  }
+}));
 
 // POST /api/telegram/test — quick connectivity test
-router.post('/test', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    if (!config.telegramToken || !config.telegramChatId) {
-      res.status(503).json({ success: false, error: 'Telegram не настроен' });
-      return;
-    }
-
-    const payload = {
-      chat_id: config.telegramChatId,
-      text: '🧪 *Test message from SPORT LOUNGE server*',
-      parse_mode: 'MarkdownV2',
-    };
-
-    const result = await sendWithRetry(payload, 2);
-
-    if (result.success) {
-      res.json({ success: true, message: 'Telegram connectivity OK' });
-    } else {
-      res.status(502).json({ success: false, error: result.error || 'Telegram недоступен' });
-    }
-  } catch (err) {
-    next(err);
+router.post('/test', auth, isAdmin, asyncHandler(async (_req: Request, res: Response) => {
+  if (!config.telegramToken || !config.telegramChatId) {
+    res.status(503).json({ success: false, error: 'Telegram не настроен' });
+    return;
   }
-});
+
+  const payload = {
+    chat_id: config.telegramChatId,
+    text: '🧪 *Test message from SPORT LOUNGE server*',
+    parse_mode: 'MarkdownV2',
+  };
+
+  const result = await sendWithRetry(payload, 2);
+
+  if (result.success) {
+    res.json({ success: true, message: 'Telegram connectivity OK' });
+  } else {
+    res.status(502).json({ success: false, error: result.error || 'Telegram недоступен' });
+  }
+}));
 
 export default router;

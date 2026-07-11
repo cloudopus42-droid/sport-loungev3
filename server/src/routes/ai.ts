@@ -1,8 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { auth } from '../middleware/auth';
 import { supabase } from '../config/supabase';
 import { sendChatMessageNotification } from '../services/telegram';
+import { asyncHandler } from '../utils/http';
 
 const router = Router();
 
@@ -24,8 +25,7 @@ const dnaSchema = z.object({
 });
 
 // POST /api/ai/chat — Luxury Concierge assistant chat
-router.post('/chat', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/chat', auth, asyncHandler(async (req: Request, res: Response) => {
     const { message, history } = chatSchema.parse(req.body);
     const msgLower = message.toLowerCase();
 
@@ -116,14 +116,10 @@ router.post('/chat', auth, async (req: Request, res: Response, next: NextFunctio
     }
 
     res.json({ response: responseText });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 // POST /api/ai/flavor-dna — Custom mix taste DNA profiling
-router.post('/flavor-dna', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/flavor-dna', auth, asyncHandler(async (req: Request, res: Response) => {
     const { flavors, percentages } = dnaSchema.parse(req.body);
 
     let sweetness = 0;
@@ -181,9 +177,6 @@ router.post('/flavor-dna', auth, async (req: Request, res: Response, next: NextF
       },
       review
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}));
 
 export default router;

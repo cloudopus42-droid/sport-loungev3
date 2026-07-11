@@ -1,8 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabase } from '../config/supabase';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
+import { asyncHandler } from '../utils/http';
 
 const router = Router();
 
@@ -26,71 +27,59 @@ function mapFeature(f: any) {
 }
 
 // GET /api/smart-features — Admin: list all features
-router.get('/', auth, isAdmin, async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { data, error } = await supabase
-      .from('smart_features')
-      .select('*')
-      .order('feature_key');
+router.get('/', auth, isAdmin, asyncHandler(async (_req: Request, res: Response) => {
+  const { data, error } = await supabase
+    .from('smart_features')
+    .select('*')
+    .order('feature_key');
 
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    res.json((data || []).map(mapFeature));
-  } catch (error) {
-    next(error);
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
-});
+
+  res.json((data || []).map(mapFeature));
+}));
 
 // PUT /api/smart-features/:id — Admin: update enabled + config
-router.put('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const body = updateFeatureSchema.parse(req.body);
+router.put('/:id', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const body = updateFeatureSchema.parse(req.body);
 
-    const { data, error } = await supabase
-      .from('smart_features')
-      .update({ enabled: body.enabled, config: body.config ?? {}, updated_at: new Date().toISOString() })
-      .eq('id', req.params.id)
-      .select()
-      .single();
+  const { data, error } = await supabase
+    .from('smart_features')
+    .update({ enabled: body.enabled, config: body.config ?? {}, updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .select()
+    .single();
 
-    if (error || !data) {
-      res.status(404).json({ error: 'Фича не найдена', status: 404 });
-      return;
-    }
-
-    res.json(mapFeature(data));
-  } catch (error) {
-    next(error);
+  if (error || !data) {
+    res.status(404).json({ error: 'Фича не найдена', status: 404 });
+    return;
   }
-});
+
+  res.json(mapFeature(data));
+}));
 
 // GET /api/smart-features/status — Public: returns { feature_key: { enabled, config } }
-router.get('/status', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { data, error } = await supabase
-      .from('smart_features')
-      .select('feature_key, enabled, config, is_public');
+router.get('/status', asyncHandler(async (_req: Request, res: Response) => {
+  const { data, error } = await supabase
+    .from('smart_features')
+    .select('feature_key, enabled, config, is_public');
 
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-
-    const result: Record<string, { enabled: boolean; config: any }> = {};
-    for (const f of data || []) {
-      if (f.is_public || f.enabled) {
-        result[f.feature_key] = { enabled: f.enabled, config: f.config };
-      }
-    }
-
-    res.json(result);
-  } catch (error) {
-    next(error);
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
-});
+
+  const result: Record<string, { enabled: boolean; config: any }> = {};
+  for (const f of data || []) {
+    if (f.is_public || f.enabled) {
+      result[f.feature_key] = { enabled: f.enabled, config: f.config };
+    }
+  }
+
+  res.json(result);
+}));
 
 export default router;
 

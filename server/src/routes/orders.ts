@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { supabase } from '../config/supabase';
@@ -12,6 +12,7 @@ import {
   sendDelayNotification 
 } from '../services/ordersTelegram';
 import { sendStatusNotification } from '../services/telegram';
+import { asyncHandler } from '../utils/http';
 
 const router = Router();
 
@@ -57,8 +58,7 @@ function mapOrderToFrontend(o: any) {
 }
 
 // POST /api/orders - Create a new hookah order (auth required)
-router.post('/', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/', auth, asyncHandler(async (req: Request, res: Response) => {
     const data = createOrderSchema.parse(req.body);
     const userId = req.user!.id;
     const promisedTime = new Date(Date.now() + 15 * 60 * 1000).toISOString();
@@ -132,14 +132,10 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     try { getIO().emit('order:created', mapOrderToFrontend(order)); } catch {}
 
     res.status(201).json(mapOrderToFrontend(order));
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // GET /api/orders - Get order queue (admin only or filtering)
-router.get('/', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/', auth, asyncHandler(async (req: Request, res: Response) => {
     const { status } = req.query;
     const { count } = await supabase
       .from('orders')
@@ -176,14 +172,10 @@ router.get('/', auth, async (req: Request, res: Response, next: NextFunction) =>
     });
 
     res.json(paginatedResponse(mapped, count, pag));
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // GET /api/orders/my - Retrieve personal order history
-router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/my', auth, asyncHandler(async (req: Request, res: Response) => {
     const pag = getPagination(req, 20, 100);
     const { count } = await supabase
       .from('orders')
@@ -212,14 +204,10 @@ router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) 
     });
 
     res.json(paginatedResponse(mapped, count, pag));
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // GET /api/orders/:id/status - Status check (polling support)
-router.get('/:id/status', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/:id/status', auth, asyncHandler(async (req: Request, res: Response) => {
     const { data: order, error } = await supabase
       .from('orders')
       .select('*')
@@ -232,14 +220,10 @@ router.get('/:id/status', auth, async (req: Request, res: Response, next: NextFu
     }
 
     res.json(mapOrderToFrontend(order));
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // POST /api/orders/:id/request-master - Request master helper (button click)
-router.post('/:id/request-master', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/:id/request-master', auth, asyncHandler(async (req: Request, res: Response) => {
     const { data: order, error: fetchErr } = await supabase
       .from('orders')
       .select('*')
@@ -284,14 +268,10 @@ router.post('/:id/request-master', auth, async (req: Request, res: Response, nex
     }
 
     res.json({ success: true, message: 'Мастер вызван. Сообщение отправлено в Telegram.' });
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // POST /api/orders/:id/reset-master - Reset master call flag (admin only)
-router.post('/:id/reset-master', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/:id/reset-master', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
     const { data: order, error: fetchErr } = await supabase
       .from('orders')
       .select('id')
@@ -323,14 +303,10 @@ router.post('/:id/reset-master', auth, isAdmin, async (req: Request, res: Respon
     }
 
     res.json({ success: true, message: 'Вызов мастера сброшен.' });
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // POST /api/orders/:id/rating - Submit order experience evaluation
-router.post('/:id/rating', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/:id/rating', auth, asyncHandler(async (req: Request, res: Response) => {
     const data = ratingSchema.parse(req.body);
 
     // Retry loop to handle race condition on concurrent rating submissions
@@ -381,14 +357,10 @@ router.post('/:id/rating', auth, async (req: Request, res: Response, next: NextF
       res.status(500).json({ error: 'Не удалось сохранить рейтинг: ' + updateErr?.message });
       return;
     }
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // PUT /api/orders/reorder - Reorder queue items (Admin only)
-router.put('/reorder', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.put('/reorder', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
     const queueIds = req.body.ids;
     if (!Array.isArray(queueIds)) {
       res.status(400).json({ error: 'Некорректный формат. Ожидается массив ID заказов.', status: 400 });
@@ -424,14 +396,10 @@ router.put('/reorder', auth, isAdmin, async (req: Request, res: Response, next: 
     }
 
     res.json({ success: true, orders: mapped });
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // POST /api/orders/:id/extend-time - Extend delivery promised time (Admin only)
-router.post('/:id/extend-time', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/:id/extend-time', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
     const { minutes } = req.body;
     if (typeof minutes !== 'number' || minutes <= 0) {
       res.status(400).json({ error: 'Неверное количество минут', status: 400 });
@@ -473,14 +441,10 @@ router.post('/:id/extend-time', auth, isAdmin, async (req: Request, res: Respons
     }
 
     res.json(mapOrderToFrontend(updated));
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // GET /api/users/me/preferences - Simple flavor recommendation logic
-router.get('/me/preferences', auth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/me/preferences', auth, asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
 
     // Get client's past 15 orders that had a mix
@@ -526,14 +490,10 @@ router.get('/me/preferences', auth, async (req: Request, res: Response, next: Ne
       topFlavors,
       topMixes,
     });
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // PUT /api/orders/:id/status - Update state (for admin dashboard preparation transitions)
-router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.put('/:id/status', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
     const { status } = req.body;
     const allowed = ['accepted', 'preparing', 'roasting', 'delivering', 'done', 'cancelled'];
     
@@ -587,14 +547,10 @@ router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, nex
     }
 
     res.json(mapOrderToFrontend(updated));
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 // DELETE /api/orders/:id — Hard-delete order (admin only)
-router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.delete('/:id', auth, isAdmin, asyncHandler(async (req: Request, res: Response) => {
     const { data: order, error: fetchErr } = await supabase
       .from('orders')
       .select('id')
@@ -632,9 +588,6 @@ router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: N
     } catch {}
 
     res.json({ success: true, message: 'Заказ удалён' });
-  } catch (err) {
-    next(err);
-  }
-});
+}));
 
 export default router;
