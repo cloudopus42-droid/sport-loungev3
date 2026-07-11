@@ -6,8 +6,8 @@ type GlassVariant = 'card' | 'panel' | 'nav' | 'sidebar' | 'modal';
 type DepthLevel = 'flat' | 'raised' | 'deep';
 
 const variantClasses: Record<GlassVariant, string> = {
-  card: 'glass-card',
-  panel: 'glass-card-premium',
+  card: 'glass-card bg-liquid-glass',
+  panel: 'glass-card-premium bg-liquid-glass',
   nav: 'backdrop-blur-glass bg-dark-bg/80 border-b border-[rgba(255,191,0,0.12)]',
   sidebar: 'bg-dark-surface border-r border-[rgba(255,191,0,0.12)]',
   modal: 'bg-dark-surface border border-[rgba(255,191,0,0.15)] rounded-[16px] shadow-glass',

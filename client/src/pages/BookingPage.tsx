@@ -353,7 +353,7 @@ export function BookingPage() {
           </div>
 
           {/* Tab navigation */}
-          <div className="liquid-glass rounded-2xl p-1 flex gap-1">
+          <div className="liquid-glass bg-liquid-glass rounded-2xl p-1 flex gap-1">
             {([
               { id: 'order' as const, label: 'Параметры заказа', icon: ShoppingCart },
               { id: 'mixologist' as const, label: 'ИИ-Миксолог', icon: Bot },
@@ -384,7 +384,7 @@ export function BookingPage() {
                 transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
                 className="space-y-5"
               >
-          <div className="liquid-glass rounded-2xl p-4">
+          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Leaf className="w-3.5 h-3.5 text-[#FFBF00]" />
               <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Вкусы (до 4)</h3>
@@ -423,7 +423,7 @@ export function BookingPage() {
           </div>
 
           {/* Strength */}
-          <div className="liquid-glass rounded-2xl p-4">
+          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Zap className="w-3.5 h-3.5 text-[#FFBF00]" />
               <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Крепость</h3>
@@ -446,7 +446,7 @@ export function BookingPage() {
           </div>
 
           {/* Bowl */}
-          <div className="liquid-glass rounded-2xl p-4">
+          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Flame className="w-3.5 h-3.5 text-[#FFBF00]" />
               <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Чаша</h3>
@@ -467,7 +467,7 @@ export function BookingPage() {
           </div>
 
           {/* Master */}
-          <div className="liquid-glass rounded-2xl p-4">
+          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <ChefHat className="w-3.5 h-3.5 text-[#FFBF00]" />
               <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Мастер</h3>
@@ -488,7 +488,7 @@ export function BookingPage() {
           </div>
 
           {/* Time */}
-          <div className="liquid-glass rounded-2xl p-4">
+          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Timer className="w-3.5 h-3.5 text-[#FFBF00]" />
               <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/70">Время подачи</h3>
@@ -524,7 +524,7 @@ export function BookingPage() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]"
+              className="liquid-glass bg-liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]"
             >
               <button onClick={() => setShowOrderTracker(!showOrderTracker)}
                 className="flex items-center justify-between w-full mb-3"
@@ -579,7 +579,7 @@ export function BookingPage() {
                 transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
                 className="space-y-5"
               >
-                <div className={`liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
+                <div className={`liquid-glass bg-liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
                   <div className="flex items-center gap-2 mb-3">
                     <Bot className="w-3.5 h-3.5 text-[#FFBF00]" />
                     <h3 className="text-[10px] uppercase tracking-[0.15em] font-semibold text-[#FFBF00]">ИИ-Миксолог</h3>
@@ -637,7 +637,7 @@ export function BookingPage() {
                 )}
 
                 {isAuthenticated && userMixes.length > 0 && (
-                  <div className="liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]">
+                  <div className="liquid-glass bg-liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]">
                     <button type="button" onClick={() => setShowSavedMixes(!showSavedMixes)}
                       className="flex items-center justify-between w-full"
                     >

@@ -407,7 +407,7 @@ export function Dashboard() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.1 }}
                 >
-                  <GlassCard className="p-4 flex flex-col justify-between hover:border-accent-gold/25 transition-all group border-glass-border/30 liquid-glass">
+                  <GlassCard className="p-4 flex flex-col justify-between hover:border-accent-gold/25 transition-all group border-glass-border/30 liquid-glass bg-liquid-glass">
                     <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 border border-accent-gold/20">
                       <kpi.icon className="w-4 h-4 text-accent-gold" />
                     </div>

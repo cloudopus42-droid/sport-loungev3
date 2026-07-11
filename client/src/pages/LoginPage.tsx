@@ -113,7 +113,7 @@ export function LoginPage() {
             {/* Front: Login */}
             <motion.form
               onSubmit={handleLogin}
-              className="glass-card p-6 space-y-5"
+              className="glass-card bg-liquid-glass p-6 space-y-5"
               style={{ backfaceVisibility: 'hidden' }}
               animate={{ opacity: isLogin ? 1 : 0 }}
             >
@@ -210,7 +210,7 @@ export function LoginPage() {
               className="absolute inset-0"
               style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
             >
-              <form onSubmit={handleRegister} className="glass-card p-6 space-y-4">
+              <form onSubmit={handleRegister} className="glass-card bg-liquid-glass p-6 space-y-4">
                 <div className="flex items-center gap-2 border-b border-white/5 pb-3 mb-2">
                   <button aria-label="Назад" type="button" onClick={flip} className="p-1 rounded-lg hover:bg-white/5 transition-colors">
                     <ChevronLeft className="w-4 h-4 text-white/50" />

@@ -70,6 +70,20 @@
 }
 
 @layer components {
+  .bg-liquid-glass {
+    background: rgba(15, 12, 10, 0.25);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+  }
+
+  @supports not (hanging-punctuation:first) {
+    .bg-liquid-glass {
+      backdrop-filter: url(#displacementFilter) blur(2px);
+    }
+  }
+
   .glass-card {
     background: rgba(15, 12, 10, var(--glass-opacity));
     backdrop-filter: blur(var(--glass-blur)) saturate(180%) contrast(1.08);

@@ -37,7 +37,7 @@ export function NotFound() {
         transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
       >
         <motion.div
-          className="glass-card-premium p-8 sm:p-12 max-w-md mx-auto"
+          className="glass-card-premium bg-liquid-glass p-8 sm:p-12 max-w-md mx-auto"
           initial={{ y: 20 }}
           animate={{ y: 0 }}
         >

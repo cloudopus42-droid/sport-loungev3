@@ -6,9 +6,9 @@ import { fadeUp } from '@/lib/motion';
 type CardVariant = 'default' | 'premium' | 'gold-ring';
 
 const variantClasses: Record<CardVariant, string> = {
-  default: 'glass-card',
-  premium: 'glass-card-premium',
-  'gold-ring': 'glass-card-gold-ring',
+  default: 'glass-card bg-liquid-glass',
+  premium: 'glass-card-premium bg-liquid-glass',
+  'gold-ring': 'glass-card-gold-ring bg-liquid-glass',
 };
 
 interface GlassCardProps {
