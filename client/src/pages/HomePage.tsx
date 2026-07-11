@@ -183,56 +183,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ─── DASHBOARD — System Status Widgets ─── */}
-      <section className="relative pt-4 max-w-6xl mx-auto px-4 z-10">
-        <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-6 select-none">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-[10px] font-mono text-white/50 tracking-wider">LIVE TELEMETRY FEED: SYSTEM ONLINE</span>
-          </div>
-          <span className="text-[10px] font-mono text-[#FFBF00] font-bold">SPORT LOUNGE CONSOLE V3.0</span>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <GlassCard className="p-5 flex flex-col justify-between border border-[rgba(255,191,0,0.08)] bg-[rgba(15,12,10,0.5)] select-none">
-              <div>
-                <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-2">Нагрузка хоста</span>
-                <span className="text-3xl font-extrabold text-white font-mono tracking-tight block">34 / 54</span>
-                <span className="text-xs text-white/40 block mt-1">активных заказов в очереди</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-white/60 pt-4 border-t border-white/5">
-                <GlowIcon name="clock" color="gold" size={14} className="text-[#FFBF00]" />
-                <span>Ожидание сборки заказа: ~8.5 мин</span>
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 flex flex-col justify-between border border-[rgba(255,191,0,0.08)] bg-[rgba(15,12,10,0.5)] select-none">
-              <div>
-                <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-3">Интенсивность покура</span>
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-white/60">
-                      <span>Сладкий</span>
-                      <span className="text-[#FFBF00] font-mono font-bold">72%</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#FFBF00] to-[#FFD54F]" style={{ width: '72%' }} />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-white/60">
-                      <span>Крепкий</span>
-                      <span className="text-[#FFBF00] font-mono font-bold">65%</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#FFBF00] to-[#FFBF00]" style={{ width: '65%' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-        </div>
-      </section>
 
       {/* ─── SHOWCASE / COLLECTION ─── */}
       {showcaseSettings.enabled && (
