@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';
@@ -9,21 +9,40 @@ import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
 import { GlowIcon } from '@/components/ui/GlowIcon';
+import { VideoAmbilight } from '@/components/VideoAmbilight';
 
 type ShowcaseItem = {
   id: string;
   title: string;
   description?: string;
-  image_url?: string;
-  link_url?: string;
-  sort_order: number;
-  is_active: boolean;
+  imageUrl?: string;
+  linkUrl?: string;
+  order: number;
+  isActive: boolean;
+};
+
+type ShowcaseSettings = {
+  enabled: boolean;
+  topCount: number;
+  background: string;
+};
+
+const SHOWCASE_BACKGROUNDS: Record<string, string> = {
+  dark: 'transparent',
+  gold: 'radial-gradient(ellipse at center, rgba(255,191,0,0.06) 0%, transparent 70%)',
+  smoke: 'radial-gradient(ellipse at bottom, rgba(255,191,0,0.04) 0%, transparent 60%)',
 };
 
 export function HomePage() {
   const [promos, setPromos] = useState<Promo[]>([]);
   const [showcaseItems, setShowcaseItems] = useState<ShowcaseItem[]>([]);
+  const [showcaseSettings, setShowcaseSettings] = useState<ShowcaseSettings>({
+    enabled: true,
+    topCount: 6,
+    background: 'dark',
+  });
 
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null);
   const [cardCoords, setCardCoords] = useState({ x: 0, y: 0 });
 
@@ -40,15 +59,16 @@ export function HomePage() {
     api<Promo[]>('/api/promos', { signal: ac.signal })
       .then((data) => setPromos(data))
       .catch(() => {});
+    api<ShowcaseSettings>('/api/showcases/settings', { signal: ac.signal })
+      .then((data) => { if (data) setShowcaseSettings(data); })
+      .catch(() => {});
     api<ShowcaseItem[]>('/api/showcases', { signal: ac.signal })
-      .then((data) => setShowcaseItems(data?.filter(s => s.is_active) || []))
+      .then((data) => setShowcaseItems(Array.isArray(data) ? data.filter(s => s.isActive !== false) : []))
       .catch(() => {});
     return () => ac.abort();
   }, []);
 
-  const handleAddressClick = () => {
-    window.open('https://yandex.ru/maps/-/CDT1Z-pC', '_blank');
-  };
+  const mapsUrl = 'https://yandex.ru/maps/-/CDT1Z-pC';
 
   return (
     <motion.div
@@ -61,6 +81,7 @@ export function HomePage() {
       {/* ─── HERO — Video Background ─── */}
       <section className="relative overflow-hidden pt-12 pb-16 min-h-[580px] flex items-center justify-center text-center">
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
@@ -68,6 +89,7 @@ export function HomePage() {
           className="absolute inset-0 w-full h-full object-cover z-0"
           src="/кальянhhs.mp4"
         />
+        <VideoAmbilight videoRef={videoRef} />
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#1a1815]/70 via-[#1a1815]/30 to-transparent backdrop-blur-[2px] z-0" />
 
         <div className="relative max-w-4xl w-full mx-auto px-4 z-10 space-y-8">
@@ -108,7 +130,7 @@ export function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <NavLink to="/booking" className="w-full sm:w-auto">
+            <NavLink to="/order" className="w-full sm:w-auto">
               <motion.button
                 className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto"
                 whileHover={{ scale: 1.02 }}
@@ -117,7 +139,7 @@ export function HomePage() {
                 <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
               </motion.button>
             </NavLink>
-            <NavLink to="/booking" className="w-full sm:w-auto">
+            <NavLink to="/order#mixologist" className="w-full sm:w-auto">
               <motion.button
                 className="btn-secondary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 w-full sm:w-auto"
                 whileHover={{ scale: 1.02 }}
@@ -134,9 +156,14 @@ export function HomePage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <span className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors" onClick={handleAddressClick}>
-              <GlowIcon name="mappin" color="gold" size={14} /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
-            </span>
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors"
+            >
+              <GlowIcon name="mappin" color="gold" size={14} className="pointer-events-none flex-shrink-0" /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
+            </a>
             <span className="hidden sm:inline opacity-30">•</span>
             <span className="flex items-center gap-1.5">
               <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
@@ -160,7 +187,7 @@ export function HomePage() {
               <div>
                 <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold mb-2">Нагрузка хоста</span>
                 <span className="text-3xl font-extrabold text-white font-mono tracking-tight block">34 / 54</span>
-                <span className="text-xs text-white/40 block mt-1">активных столов в зале</span>
+                <span className="text-xs text-white/40 block mt-1">активных заказов в очереди</span>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-white/60 pt-4 border-t border-white/5">
                 <GlowIcon name="clock" color="gold" size={14} className="text-[#FFBF00]" />
@@ -193,30 +220,12 @@ export function HomePage() {
                 </div>
               </div>
             </GlassCard>
-
-            <GlassCard className="p-5 sm:col-span-2 flex items-center justify-between gap-4 border border-[rgba(255,191,0,0.08)] bg-[rgba(15,12,10,0.5)] select-none">
-              <div className="flex items-center gap-3 truncate">
-                <div className="w-9 h-9 rounded-xl bg-[#FFBF00]/10 border border-[#FFBF00]/20 flex items-center justify-center text-lg flex-shrink-0">
-                  📻
-                </div>
-                <div className="truncate">
-                  <span className="text-[8px] text-white/40 block uppercase tracking-wider font-semibold">Аудиосистема заведения</span>
-                  <span className="text-xs text-white font-bold block truncate">Speed Dial — Zero 7</span>
-                </div>
-              </div>
-              <div className="flex items-end gap-1 h-6 flex-shrink-0">
-                <span className="w-0.5 h-3 bg-[#FFBF00] rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-[#FFBF00] rounded-full soundwave-bar" />
-                <span className="w-0.5 h-4 bg-[#FFBF00] rounded-full soundwave-bar" />
-                <span className="w-0.5 h-2 bg-[#FFBF00] rounded-full soundwave-bar" />
-                <span className="w-0.5 h-5 bg-[#FFBF00] rounded-full soundwave-bar" />
-              </div>
-            </GlassCard>
         </div>
       </section>
 
       {/* ─── SHOWCASE / COLLECTION ─── */}
-      <section id="carousel" className="relative pt-8">
+      {showcaseSettings.enabled && (
+      <section id="carousel" className="relative pt-8" style={{ background: SHOWCASE_BACKGROUNDS[showcaseSettings.background] || undefined }}>
         <div className="text-center space-y-2 mb-6 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#FFBF00] font-semibold">
             <Flame className="w-3.5 h-3.5 inline mr-1 text-[#FFBF00]" /> НАША КОЛЛЕКЦИЯ
@@ -227,23 +236,24 @@ export function HomePage() {
         </div>
 
         <MixCarousel3D
-          items={showcaseItems.length > 0 ? showcaseItems.map(s => ({
+          items={showcaseItems.length > 0 ? showcaseItems.slice(0, showcaseSettings.topCount).map(s => ({
             id: s.id,
             title: s.title,
             subtitle: s.description,
-            imageUrl: s.image_url ? resolveImageUrl(s.image_url) : undefined,
-            linkUrl: s.link_url,
+            imageUrl: s.imageUrl ? resolveImageUrl(s.imageUrl) : undefined,
+            linkUrl: s.linkUrl,
           })) : [
             { id: '1', title: 'Премиум табаки', subtitle: 'Отборные сорта', gradient: 'linear-gradient(135deg, #1a1815 0%, #12100d 100%)' },
             { id: '2', title: 'Авторские миксы', subtitle: 'Шеф-миксолог рекомендует', gradient: 'linear-gradient(135deg, #2d1b69 0%, #1a1815 100%)' },
-            { id: '3', title: 'VIP-залы', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #3d1f00 0%, #1a1815 100%)' },
+            { id: '3', title: 'VIP-зоны', subtitle: 'Для особых гостей', gradient: 'linear-gradient(135deg, #3d1f00 0%, #1a1815 100%)' },
           ]}
           onItemClick={(item) => {
             if (item.linkUrl) window.open(item.linkUrl, '_blank');
-            else if (item.id.length < 5) window.location.href = '/booking';
+            else window.location.href = '/order';
           }}
         />
       </section>
+      )}
 
       {/* ─── WHY US — Advantages ─── */}
       <section id="why-us" className="relative pt-8">
@@ -329,7 +339,7 @@ export function HomePage() {
               </div>
 
               <div className="pt-6 z-10">
-                <NavLink to="/booking">
+                <NavLink to="/order">
                   <motion.button
                     className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 text-sm font-semibold w-full sm:w-auto"
                     whileHover={{ scale: 1.02 }}
