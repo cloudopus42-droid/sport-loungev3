@@ -171,4 +171,39 @@ router.get('/:id/orders', auth, isAdmin, async (req: Request, res: Response, nex
   }
 });
 
+// DELETE /api/users/:id - Delete user (admin only)
+router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data: user, error: fetchErr } = await supabase
+      .from('users')
+      .select('id, role')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (fetchErr || !user) {
+      res.status(404).json({ error: 'Пользователь не найден' });
+      return;
+    }
+
+    if (user.role === 'admin') {
+      res.status(403).json({ error: 'Нельзя удалить администратора' });
+      return;
+    }
+
+    const { error: deleteErr } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (deleteErr) {
+      res.status(500).json({ error: 'Не удалось удалить: ' + deleteErr.message });
+      return;
+    }
+
+    res.json({ message: 'Пользователь удалён' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

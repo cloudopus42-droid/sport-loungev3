@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, Shield, Ban, CheckCircle, Eye, X } from 'lucide-react';
+import { Users, Search, Shield, Ban, CheckCircle, Eye, X, Trash2, AlertTriangle } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
+import { TabSwitcher } from '@/components/ui/TabSwitcher';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 
@@ -26,21 +28,22 @@ interface UserDetail {
 }
 
 const PRICE_OPTIONS = [null, 500, 750, 1000];
+type Tab = 'all' | 'blocked' | 'admins';
 
 export function UsersAdmin() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [activeTab, setActiveTab] = useState<Tab>('all');
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
   const [editingPrice, setEditingPrice] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<UserData | null>(null);
 
   const fetchUsers = useCallback(async (signal?: AbortSignal) => {
     try {
       const params: any = {};
       if (search) params.search = search;
-      if (roleFilter) params.role = roleFilter;
       const data = await api<UserData[]>('/api/users', { params, signal });
       setUsers(data);
     } catch (err: any) {
@@ -48,7 +51,7 @@ export function UsersAdmin() {
       showToast('Ошибка загрузки клиентов', 'error');
     }
     setLoading(false);
-  }, [search, roleFilter]);
+  }, [search]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -56,9 +59,19 @@ export function UsersAdmin() {
     return () => ac.abort();
   }, [fetchUsers]);
 
-  const handleSearch = useCallback((value: string) => {
-    setSearch(value);
-  }, []);
+  const filteredUsers = useMemo(() => {
+    switch (activeTab) {
+      case 'blocked': return users.filter(u => u.isBlocked);
+      case 'admins': return users.filter(u => u.role === 'admin');
+      default: return users;
+    }
+  }, [users, activeTab]);
+
+  const counts = useMemo(() => ({
+    all: users.length,
+    blocked: users.filter(u => u.isBlocked).length,
+    admins: users.filter(u => u.role === 'admin').length,
+  }), [users]);
 
   const openDetail = async (userId: string) => {
     try {
@@ -113,6 +126,37 @@ export function UsersAdmin() {
     }
   };
 
+  const changeRole = async (userId: string, newRole: string) => {
+    try {
+      await api(`/api/users/${userId}`, {
+        method: 'PATCH',
+        body: { role: newRole },
+      });
+      setUsers(prev => prev.map(u =>
+        u.id === userId ? { ...u, role: newRole } : u
+      ));
+      if (selectedUser?.user.id === userId) {
+        setSelectedUser(prev => prev ? { ...prev, user: { ...prev.user, role: newRole } } : null);
+      }
+      showToast(newRole === 'admin' ? 'Назначен администратором' : 'Роль изменена на Клиент', 'success');
+    } catch {
+      showToast('Не удалось изменить роль', 'error');
+    }
+  };
+
+  const deleteUser = async () => {
+    if (!deleteTarget) return;
+    try {
+      await api(`/api/users/${deleteTarget.id}`, { method: 'DELETE' });
+      setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+      showToast('Пользователь удалён', 'success');
+      setDeleteTarget(null);
+      if (selectedUser?.user.id === deleteTarget.id) closeDetail();
+    } catch (err: any) {
+      showToast(err?.message || 'Не удалось удалить', 'error');
+    }
+  };
+
   const formatDate = (d: string) => new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
   return (
@@ -125,35 +169,36 @@ export function UsersAdmin() {
           </div>
           <div>
             <h1 className="text-base font-display font-bold text-white">Клиенты</h1>
-            <p className="text-[10px] text-white/40">Управление пользователями и персональными ценами</p>
+            <p className="text-[10px] text-white/40">Управление пользователями и ролями</p>
           </div>
         </div>
       </div>
 
-      {/* Search & Filters */}
+      {/* Search */}
       <GlassCard className="p-3">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Поиск по имени, email или телефону..."
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#0D0F13] border border-glass-border text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-[#FFBF00]/50 transition-colors"
-            />
-          </div>
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-[#0D0F13] border border-glass-border text-white text-xs focus:outline-none focus:border-[#FFBF00]/50 appearance-none cursor-pointer"
-          >
-            <option value="">Все роли</option>
-            <option value="user">Клиенты</option>
-            <option value="admin">Администраторы</option>
-          </select>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Поиск по имени, email или телефону..."
+            className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#0D0F13] border border-glass-border text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-[#FFBF00]/50 transition-colors"
+          />
         </div>
       </GlassCard>
+
+      {/* Tabs */}
+      <TabSwitcher<Tab>
+        tabs={[
+          { id: 'all', label: 'Все', icon: <Users className="w-3.5 h-3.5" /> },
+          { id: 'blocked', label: 'Заблокированные', icon: <Ban className="w-3.5 h-3.5" /> },
+          { id: 'admins', label: 'Администраторы', icon: <Shield className="w-3.5 h-3.5" /> },
+        ]}
+        active={activeTab}
+        onSelect={setActiveTab}
+        variant="glass"
+      />
 
       {/* Users List */}
       <div className="space-y-1.5">
@@ -161,13 +206,15 @@ export function UsersAdmin() {
           <div className="flex justify-center py-8">
             <div className="w-5 h-5 border-2 border-[#FFBF00] border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : users.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <GlassCard className="p-6 text-center">
             <Users className="w-10 h-10 text-white/10 mx-auto mb-2" />
-            <p className="text-white/40 text-sm">Клиенты не найдены</p>
+            <p className="text-white/40 text-sm">
+              {activeTab === 'blocked' ? 'Нет заблокированных' : activeTab === 'admins' ? 'Нет администраторов' : 'Клиенты не найдены'}
+            </p>
           </GlassCard>
         ) : (
-          users.map((user) => (
+          filteredUsers.map((user) => (
             <motion.div
               key={user.id}
               layout
@@ -204,7 +251,19 @@ export function UsersAdmin() {
                     <p className="text-[10px] text-white/40 truncate">{user.email}</p>
                   </div>
 
-                  {/* Price (inline editable) */}
+                  {/* Role selector */}
+                  <div className="hidden sm:block">
+                    <select
+                      value={user.role}
+                      onChange={(e) => changeRole(user.id, e.target.value)}
+                      className="bg-[#0D0F13] border border-glass-border rounded-lg text-[10px] font-medium text-white px-2 py-1 cursor-pointer focus:outline-none focus:border-[#FFBF00]/50 appearance-none"
+                    >
+                      <option value="user">Клиент</option>
+                      <option value="admin">Админ</option>
+                    </select>
+                  </div>
+
+                  {/* Price (inline) */}
                   <div className="hidden sm:flex items-center gap-2">
                     <span className="text-xs text-white/30">Цена:</span>
                     <select
@@ -227,7 +286,7 @@ export function UsersAdmin() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <motion.button
                       onClick={() => openDetail(user.id)}
                       className="p-2 rounded-lg text-white/40 hover:text-[#FFBF00] hover:bg-[#FFBF00]/10 transition-colors"
@@ -248,6 +307,16 @@ export function UsersAdmin() {
                     >
                       {user.isBlocked ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                     </motion.button>
+                    {user.role !== 'admin' && (
+                      <motion.button
+                        onClick={() => setDeleteTarget(user)}
+                        className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        whileTap={{ scale: 0.9 }}
+                        title="Удалить"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </motion.button>
+                    )}
                   </div>
                 </div>
               </GlassCard>
@@ -320,6 +389,28 @@ export function UsersAdmin() {
                   </div>
                 </div>
 
+                {/* Role Selector */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-white/50 uppercase tracking-wider">Роль</label>
+                  <div className="flex gap-2">
+                    {['user', 'admin'].map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => changeRole(selectedUser.user.id, r)}
+                        className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all cursor-pointer ${
+                          selectedUser.user.role === r
+                            ? r === 'admin'
+                              ? 'bg-[#FFBF00]/10 border-[#FFBF00]/40 text-[#FFBF00]'
+                              : 'bg-green-500/10 border-green-500/40 text-green-400'
+                            : 'bg-[#0D0F13] border-glass-border text-white/50 hover:border-white/20 hover:text-white/70'
+                        }`}
+                      >
+                        {r === 'admin' ? 'Администратор' : 'Клиент'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* User Info */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-2 border-b border-white/5">
@@ -380,6 +471,14 @@ export function UsersAdmin() {
                 >
                   {selectedUser.user.isBlocked ? 'Разблокировать' : 'Заблокировать'}
                 </button>
+                {selectedUser.user.role !== 'admin' && (
+                  <button
+                    onClick={() => { setDeleteTarget(selectedUser.user); closeDetail(); }}
+                    className="px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   onClick={closeDetail}
                   className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
@@ -391,6 +490,17 @@ export function UsersAdmin() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Delete Confirm */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={deleteUser}
+        title="Удалить пользователя?"
+        message={`Вы уверены, что хотите удалить ${deleteTarget?.name || deleteTarget?.email}? Это действие необратимо.`}
+        confirmText="Удалить"
+        variant="danger"
+      />
     </div>
   );
 }
