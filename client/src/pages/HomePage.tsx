@@ -8,7 +8,7 @@ import api from '@/lib/api';
 import { resolveImageUrl } from '@/lib/urls';
 import { CONTACT, WORKING_HOURS } from '@/config/seats';
 import type { Promo } from '@/types';
-import { GlowIcon } from '@/components/ui/GlowIcon';
+import { PremiumIcon } from '@/components/ui/PremiumIcon';
 import { VideoAmbilight } from '@/components/VideoAmbilight';
 
 type ShowcaseItem = {
@@ -146,7 +146,7 @@ export function HomePage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <GlowIcon name="clock" color="gold" size={16} glow={false} /> Сделать заказ
+                <PremiumIcon name="clockPremium" size={16} /> Сделать заказ
               </motion.button>
             </NavLink>
             <NavLink to="/order#mixologist" className="w-full sm:w-auto">
@@ -155,7 +155,7 @@ export function HomePage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <GlowIcon name="flame" color="gold" size={16} animateOnHover /> ИИ-Миксолог
+                <PremiumIcon name="flamePremium" size={16} /> ИИ-Миксолог
               </motion.button>
             </NavLink>
           </motion.div>
@@ -172,11 +172,11 @@ export function HomePage() {
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors"
             >
-              <GlowIcon name="mappin" color="gold" size={14} className="pointer-events-none flex-shrink-0" /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
+              <PremiumIcon name="mappin" size={14} className="pointer-events-none flex-shrink-0" /> Г. ЧЕБОКСАРЫ, УЛ. ГАГАРИНА 40А
             </a>
             <span className="hidden sm:inline opacity-30">•</span>
             <span className="flex items-center gap-1.5">
-              <GlowIcon name="clock" color="gold" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
+              <PremiumIcon name="clockPremium" size={14} /> РАБОТАЕМ КРУГЛОСУТОЧНО 24/7
             </span>
           </motion.div>
           </div>
@@ -219,7 +219,7 @@ export function HomePage() {
       <section id="why-us" className="relative pt-8">
         <div className="text-center space-y-2 mb-10 select-none">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#FFBF00] font-semibold flex items-center justify-center gap-1">
-            <GlowIcon name="flame" color="gold" size={14} /> НАШИ ПРЕИМУЩЕСТВА
+            <PremiumIcon name="flamePremium" size={14} /> НАШИ ПРЕИМУЩЕСТВА
           </span>
           <h2 className="text-3xl sm:text-4xl font-display font-light text-white uppercase tracking-wider">
             Почему гости <span className="gradient-text font-semibold italic">выбирают нас</span>
@@ -263,7 +263,7 @@ export function HomePage() {
               <GlassCard className="p-6 h-full flex flex-col justify-between hover:border-[#FFBF00]/40 border-[rgba(255,191,0,0.12)] z-10 relative">
                 <div>
                   <div className="w-10 h-10 rounded-xl bg-[#FFBF00]/10 border border-[#FFBF00]/20 flex items-center justify-center mb-4">
-                    <GlowIcon name={item.iconName} color="gold" size={18} animateOnHover />
+                    <PremiumIcon name={item.iconName === 'award' ? 'awardPremium' : item.iconName === 'flame' ? 'flamePremium' : item.iconName === 'clock' ? 'clockPremium' : 'compassPremium'} size={18} />
                   </div>
                   <h4 className="text-sm font-semibold text-white mb-2">{item.title}</h4>
                   <p className="text-[11px] text-white/45 leading-relaxed font-light">{item.desc}</p>
@@ -382,7 +382,7 @@ export function HomePage() {
       {/* ─── CONTACTS ─── */}
       <section id="contacts" className="relative pt-6">
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
-          <GlowIcon name="mappin" color="gold" size={20} className="flex-shrink-0" /> Как нас найти
+           <PremiumIcon name="mappin" size={20} className="flex-shrink-0" /> Как нас найти
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -406,7 +406,7 @@ export function HomePage() {
                 <h3 className="text-base sm:text-lg font-display font-semibold text-white">Адрес и Контакты</h3>
 
                 <div className="flex items-start gap-3.5">
-                  <GlowIcon name="mappin" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
+                   <PremiumIcon name="mappin" size={16} className="mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs sm:text-sm text-white font-medium">{CONTACT.address}</p>
                     <a
@@ -423,7 +423,7 @@ export function HomePage() {
                 <div className="h-px bg-[rgba(255,191,0,0.12)]" />
 
                 <div className="flex items-start gap-3.5">
-                  <GlowIcon name="clock" color="gold" size={16} className="mt-0.5 flex-shrink-0" />
+                   <PremiumIcon name="clockPremium" size={16} className="mt-0.5 flex-shrink-0" />
                   <div className="text-xs sm:text-sm">
                     <p className="text-white font-medium">{WORKING_HOURS}</p>
                     <p className="text-[11px] text-white/30 mt-0.5">Работаем без выходных дней</p>
@@ -438,7 +438,7 @@ export function HomePage() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-3.5 group"
                 >
-                  <GlowIcon name="send" color="gold" size={16} className="flex-shrink-0" />
+                   <PremiumIcon name="sendPremium" size={16} className="flex-shrink-0" />
                   <div>
                     <p className="text-xs sm:text-sm text-[#FFBF00] group-hover:underline font-medium">@{CONTACT.telegram}</p>
                     <p className="text-[11px] text-white/30">Написать нам в Telegram</p>

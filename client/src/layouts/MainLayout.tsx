@@ -5,6 +5,7 @@ import {
   Crown, LogOut, CalendarCheck, Sparkles
 } from 'lucide-react';
 import { HomeIcon, MenuIcon, UserIcon, CloseIcon } from '@/components/icons';
+import { PremiumIcon } from '@/components/ui/PremiumIcon';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
 import { SEO } from '@/components/SEO';
@@ -36,13 +37,13 @@ const desktopNavItems: DesktopNavItem[] = [
 interface MobileTab {
   label: string;
   to: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string;
 }
 
 const mobileTabs: MobileTab[] = [
-  { label: 'Главная', to: '/', icon: HomeIcon },
-  { label: 'Заказ', to: '/order', icon: CalendarCheck },
-  { label: 'Профиль', to: '/profile', icon: UserIcon },
+  { label: 'Главная', to: '/', icon: 'homeNav' },
+  { label: 'Заказ', to: '/order', icon: 'orderNav' },
+  { label: 'Профиль', to: '/profile', icon: 'profileNav' },
 ];
 
 export function MainLayout() {
@@ -228,7 +229,7 @@ export function MainLayout() {
                   isActive ? 'text-white' : 'text-white/40 hover:text-white/60'
                 )}
               >
-                <Crown className="w-3 h-3" />
+                <PremiumIcon name="crown" size={12} />
                 <span>Админ</span>
               </NavLink>
             )}
@@ -262,7 +263,7 @@ export function MainLayout() {
                   title="Выйти"
                   aria-label="Выйти"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                      <PremiumIcon name="logOut" size={14} />
                 </button>
               </>
             ) : (
@@ -277,7 +278,7 @@ export function MainLayout() {
             <NavLink to="/order" aria-label="Сделать заказ"
               className="btn-primary px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5"
             >
-              <Sparkles className="w-3 h-3" />
+              <PremiumIcon name="sparkle" size={12} />
               Заказ
             </NavLink>
 
@@ -289,7 +290,7 @@ export function MainLayout() {
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
             >
-              <MenuIcon className="w-4 h-4" />
+              <PremiumIcon name="menu" size={16} />
             </button>
           </div>
         </div>
@@ -328,7 +329,7 @@ export function MainLayout() {
                   className="p-3 text-white/40 hover:text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Закрыть меню"
                 >
-                  <CloseIcon className="w-4 h-4" />
+                    <PremiumIcon name="close" size={16} />
                 </button>
               </div>
 
@@ -377,7 +378,7 @@ export function MainLayout() {
                           : 'text-white/40 hover:text-white/60 border border-transparent'
                       )}
                     >
-                      <Crown className="w-3.5 h-3.5" />
+                      <PremiumIcon name="crown" size={14} />
                       Панель админа
                     </NavLink>
                   </>
@@ -399,7 +400,7 @@ export function MainLayout() {
                       <p className="font-mono text-[10px] text-white/30 truncate">{user?.email}</p>
                     </div>
                     <button onClick={handleLogout} className="p-3 text-white/20 hover:text-red-400 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Выйти">
-                      <LogOut className="w-3.5 h-3.5" />
+                  <PremiumIcon name="logOut" size={14} />
                     </button>
                   </div>
                 ) : (
@@ -408,7 +409,7 @@ export function MainLayout() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-white/10 text-white/40 font-mono text-[11px] uppercase tracking-wider hover:text-white hover:border-white/20 transition-all"
                   >
-                    <UserIcon className="w-3.5 h-3.5" />
+                      <PremiumIcon name="user" size={14} />
                     Войти
                   </NavLink>
                 )}
@@ -446,7 +447,6 @@ export function MainLayout() {
           <div className="relative flex items-center justify-around px-2 py-1.5 gap-0.5">
             {mobileTabs.map((tab) => {
               const to = getMobileTabTo(tab);
-              const Icon = tab.icon;
               return (
                 <NavLink
                   key={tab.label}
@@ -462,7 +462,7 @@ export function MainLayout() {
                         isActive ? 'text-white' : 'text-white/30 hover:text-white/50'
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <PremiumIcon name={tab.icon} size={16} />
                       <span className={clsx(
                         'font-mono text-[9px] uppercase tracking-wider',
                         isActive ? 'text-white' : 'text-white/30'

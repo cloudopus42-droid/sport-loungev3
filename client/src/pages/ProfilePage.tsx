@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
+import { PremiumIcon } from '@/components/ui/PremiumIcon';
 import { Badge } from '@/components/ui/Badge';
 import { TabSwitcher } from '@/components/ui/TabSwitcher';
 import { showToast } from '@/components/NotificationToast';
@@ -17,10 +18,10 @@ import type { Booking, User as UserType } from '@/types';
 import { resolveImageUrl } from '@/lib/urls';
 
 const LIQUID_BASES = [
-  { id: 'water', name: 'На воде', price: 0, emoji: '💧', desc: 'Классическая легкая фильтрация' },
-  { id: 'milk', name: 'На молоке', price: 150, emoji: '🥛', desc: 'Пар более плотный и нежный' },
-  { id: 'juice', name: 'На соке', price: 200, emoji: '🍹', desc: 'Фруктовые и ягодные оттенки' },
-  { id: 'wine', name: 'На вине / Коктейле', price: 450, emoji: '🍷', desc: 'Алкогольная ароматика' },
+  { id: 'water', name: 'На воде', price: 0, icon: 'ice', desc: 'Классическая легкая фильтрация' },
+  { id: 'milk', name: 'На молоке', price: 150, icon: 'coconut', desc: 'Пар более плотный и нежный' },
+  { id: 'juice', name: 'На соке', price: 200, icon: 'citrus', desc: 'Фруктовые и ягодные оттенки' },
+  { id: 'wine', name: 'На вине / Коктейле', price: 450, icon: 'diamond', desc: 'Алкогольная ароматика' },
 ];
 
 const statusLabels: Record<string, { text: string; color: 'green' | 'yellow' | 'gray' }> = {
@@ -104,11 +105,11 @@ const AVATAR_FRAMES = [
 ];
 
 const STATUS_OPTIONS = [
-  '💨 Дымлю на полную',
-  '🎮 В режиме киберспорта',
-  '👑 VIP Резидент',
-  '🔋 Заряжаюсь на победу',
-  '💬 Готов к общению'
+  { text: 'Дымлю на полную', icon: 'smoke' },
+  { text: 'В режиме киберспорта', icon: 'gaming' },
+  { text: 'VIP Резидент', icon: 'crown' },
+  { text: 'Заряжаюсь на победу', icon: 'bolt' },
+  { text: 'Готов к общению', icon: 'chat' },
 ];
 
 export function ProfilePage() {
@@ -669,7 +670,7 @@ export function ProfilePage() {
               {xpProgress.remaining > 0 ? (
                 <span className="text-accent-gold-bright font-bold">Осталось {xpProgress.remaining} XP до повышения</span>
               ) : (
-                <span className="text-accent-gold-bright font-bold">Уровень максимален! 👑</span>
+                <span className="text-accent-gold-bright font-bold flex items-center gap-1">Уровень максимален! <PremiumIcon name="crown" size={14} /></span>
               )}
             </div>
 
@@ -783,17 +784,18 @@ export function ProfilePage() {
               <p className="text-xs text-white/40 mb-2">Клубный статус / Настроение</p>
               <div className="flex flex-wrap gap-1.5">
                 {STATUS_OPTIONS.map(s => (
-                  <button key={s} onClick={() => {
-                    setSelectedStatus(selectedStatus === s ? '' : s);
-                    updatePrefs({ statusText: selectedStatus === s ? '' : s });
+                  <button key={s.text} onClick={() => {
+                    setSelectedStatus(selectedStatus === s.text ? '' : s.text);
+                    updatePrefs({ statusText: selectedStatus === s.text ? '' : s.text });
                   }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
-                      selectedStatus === s
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border flex items-center gap-1.5 ${
+                      selectedStatus === s.text
                         ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45'
                         : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    {s}
+                    <PremiumIcon name={s.icon} size={14} />
+                    {s.text}
                   </button>
                 ))}
               </div>
@@ -1471,7 +1473,7 @@ export function ProfilePage() {
                 {/* Liquid Base choice */}
                 <div className="space-y-1.5">
                   <label className="text-xs text-white/50 block font-medium uppercase tracking-wider">
-                    💧 Жидкость в колбе:
+                    <PremiumIcon name="ice" size={14} className="inline-block" /> Жидкость в колбе:
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {LIQUID_BASES.map((base) => (
@@ -1486,7 +1488,7 @@ export function ProfilePage() {
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm">{base.emoji}</span>
+                          <PremiumIcon name={base.icon} size={16} />
                           <span className="text-[11px] font-bold text-white">{base.name}</span>
                         </div>
                         <p className="text-[11px] text-white/40 mt-0.5 leading-none">

@@ -6,6 +6,7 @@ import {
   Bot, ThumbsUp, ShoppingCart, ChevronRight,
   Leaf, Zap, Bookmark, Trash2, Flame, Timer, Sun, Moon, Sunrise
 } from 'lucide-react';
+import { PremiumIcon } from '@/components/ui/PremiumIcon';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -20,7 +21,7 @@ type Flavor = {
   id: string;
   name: string;
   category: string;
-  emoji?: string;
+  icon?: string;
   color?: string;
   is_active: boolean;
   price_value?: number;
@@ -34,33 +35,33 @@ const bookingFormSchema = z.object({
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
 const FALLBACK_FLAVORS: Flavor[] = [
-  { id: '1', name: 'Двойное яблоко', category: 'Фрукты', emoji: '🍏', color: '#4CAF50', is_active: true },
-  { id: '2', name: 'Манго-Маракуйя', category: 'Фрукты', emoji: '🥭', color: '#FF9800', is_active: true },
-  { id: '3', name: 'Персик-Лайм', category: 'Фрукты', emoji: '🍑', color: '#FFB07C', is_active: true },
-  { id: '4', name: 'Грейпфрут-Мята', category: 'Фрукты', emoji: '🍊', color: '#FF6B52', is_active: true },
-  { id: '5', name: 'Клубника-Мята', category: 'Ягоды', emoji: '🍓', color: '#E91E63', is_active: true },
-  { id: '6', name: 'Черника-Ежевика', category: 'Ягоды', emoji: '🫐', color: '#673AB7', is_active: true },
-  { id: '7', name: 'Малина-Личи', category: 'Ягоды', emoji: '🫐', color: '#D32F2F', is_active: true },
-  { id: '8', name: 'Арбуз-Дыня', category: 'Фрукты', emoji: '🍉', color: '#4CAF50', is_active: true },
-  { id: '9', name: 'Банан-Шоколад', category: 'Десерт', emoji: '🍌', color: '#795548', is_active: true },
-  { id: '10', name: 'Кокос-Ваниль', category: 'Десерт', emoji: '🥥', color: '#D7CCC8', is_active: true },
-  { id: '11', name: 'Лимон-Имбирь', category: 'Пряные', emoji: '🍋', color: '#FFEB3B', is_active: true },
-  { id: '12', name: 'Мята-Айс', category: 'Свежие', emoji: '🧊', color: '#00BCD4', is_active: true },
-  { id: '13', name: 'Кактус-Фрост', category: 'Свежие', emoji: '🌵', color: '#009688', is_active: true },
-  { id: '14', name: 'Виноград-Ягоды', category: 'Ягоды', emoji: '🍇', color: '#9C27B0', is_active: true },
-  { id: '15', name: 'Sport Mix (авторский)', category: 'Авторские', emoji: '🔥', color: '#FF5722', is_active: true },
-  { id: '16', name: 'Lounge Premium', category: 'Авторские', emoji: '💎', color: '#FFBF00', is_active: true },
+  { id: '1', name: 'Двойное яблоко', category: 'Фрукты', icon: 'apple', color: '#4CAF50', is_active: true },
+  { id: '2', name: 'Манго-Маракуйя', category: 'Фрукты', icon: 'mango', color: '#FF9800', is_active: true },
+  { id: '3', name: 'Персик-Лайм', category: 'Фрукты', icon: 'peach', color: '#FFB07C', is_active: true },
+  { id: '4', name: 'Грейпфрут-Мята', category: 'Фрукты', icon: 'citrus', color: '#FF6B52', is_active: true },
+  { id: '5', name: 'Клубника-Мята', category: 'Ягоды', icon: 'strawberry', color: '#E91E63', is_active: true },
+  { id: '6', name: 'Черника-Ежевика', category: 'Ягоды', icon: 'berry', color: '#673AB7', is_active: true },
+  { id: '7', name: 'Малина-Личи', category: 'Ягоды', icon: 'berry', color: '#D32F2F', is_active: true },
+  { id: '8', name: 'Арбуз-Дыня', category: 'Фрукты', icon: 'watermelon', color: '#4CAF50', is_active: true },
+  { id: '9', name: 'Банан-Шоколад', category: 'Десерт', icon: 'banana', color: '#795548', is_active: true },
+  { id: '10', name: 'Кокос-Ваниль', category: 'Десерт', icon: 'coconut', color: '#D7CCC8', is_active: true },
+  { id: '11', name: 'Лимон-Имбирь', category: 'Пряные', icon: 'lemon', color: '#FFEB3B', is_active: true },
+  { id: '12', name: 'Мята-Айс', category: 'Свежие', icon: 'ice', color: '#00BCD4', is_active: true },
+  { id: '13', name: 'Кактус-Фрост', category: 'Свежие', icon: 'cactus', color: '#009688', is_active: true },
+  { id: '14', name: 'Виноград-Ягоды', category: 'Ягоды', icon: 'grape', color: '#9C27B0', is_active: true },
+  { id: '15', name: 'Sport Mix (авторский)', category: 'Авторские', icon: 'fire', color: '#FF5722', is_active: true },
+  { id: '16', name: 'Lounge Premium', category: 'Авторские', icon: 'diamond', color: '#FFBF00', is_active: true },
 ];
 
 const FLAVOR_CATS = ['Все', 'Фрукты', 'Ягоды', 'Десерт', 'Пряные', 'Свежие', 'Авторские'];
 
 const AI_MOODS = [
-  { id: 'sweet', label: 'Сладкий', emoji: '🍯', desc: 'Фруктовые и десертные ноты' },
-  { id: 'strong', label: 'Крепкий', emoji: '💪', desc: 'Насыщенный дым и крепость' },
-  { id: 'fresh', label: 'Свежий', emoji: '🌿', desc: 'Мятные и цитрусовые оттенки' },
-  { id: 'berry', label: 'Ягодный', emoji: '🫐', desc: 'Лесные и садовые ягоды' },
-  { id: 'exotic', label: 'Экзотика', emoji: '🌴', desc: 'Тропические сочетания' },
-  { id: 'classic', label: 'Классика', emoji: '🏆', desc: 'Проверенные временем вкусы' },
+  { id: 'sweet', label: 'Сладкий', icon: 'honey', desc: 'Фруктовые и десертные ноты' },
+  { id: 'strong', label: 'Крепкий', icon: 'muscle', desc: 'Насыщенный дым и крепость' },
+  { id: 'fresh', label: 'Свежий', icon: 'leaf', desc: 'Мятные и цитрусовые оттенки' },
+  { id: 'berry', label: 'Ягодный', icon: 'berry', desc: 'Лесные и садовые ягоды' },
+  { id: 'exotic', label: 'Экзотика', icon: 'palm', desc: 'Тропические сочетания' },
+  { id: 'classic', label: 'Классика', icon: 'trophy', desc: 'Проверенные временем вкусы' },
 ];
 
 type TimePeriod = 'asap' | 'morning' | 'afternoon' | 'evening' | 'night' | 'custom';
@@ -403,7 +404,7 @@ export function BookingPage() {
                               : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
                           }`}
                         >
-                          <span>{flavor.emoji || '🍂'}</span>
+                          <PremiumIcon name={flavor.icon || 'leaf'} size={16} />
                           <span className="truncate">{flavor.name}</span>
                         </motion.button>
                       );
@@ -419,9 +420,9 @@ export function BookingPage() {
                 </div>
                 <div className="flex gap-2">
                   {([
-                    { id: 'light' as const, label: 'Лёгкая', hint: 'Мягкий вкус', icon: '🕊️' },
-                    { id: 'medium' as const, label: 'Средняя', hint: 'Золотая середина', icon: '⚖️' },
-                    { id: 'strong' as const, label: 'Крепкая', hint: 'Насыщенный пар', icon: '💪' },
+                    { id: 'light' as const, label: 'Лёгкая', hint: 'Мягкий вкус', icon: 'dove' },
+                    { id: 'medium' as const, label: 'Средняя', hint: 'Золотая середина', icon: 'scale' },
+                    { id: 'strong' as const, label: 'Крепкая', hint: 'Насыщенный пар', icon: 'muscle' },
                   ]).map(s => (
                     <button key={s.id} type="button" onClick={() => setStrength(s.id)}
                       className={`flex-1 flex flex-col items-center py-2 rounded-xl text-xs font-semibold transition-all border ${
@@ -432,7 +433,7 @@ export function BookingPage() {
                           : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
                       }`}
                     >
-                      <span className="text-base leading-none mb-0.5">{s.icon}</span>
+                      <PremiumIcon name={s.icon} size={18} className="mb-0.5" />
                       <span>{s.label}</span>
                       <span className={`${strength === s.id ? 'opacity-70' : 'opacity-0'} text-[11px] leading-none mt-0.5 hidden sm:inline`}>{s.hint}</span>
                     </button>
@@ -580,7 +581,7 @@ export function BookingPage() {
                           sel ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold' : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
                         }`}
                       >
-                        <span className="mr-1">{mood.emoji}</span>{mood.label}
+                        <PremiumIcon name={mood.icon} size={14} className="mr-1 inline-block" />{mood.label}
                       </button>
                     );
                   })}
@@ -620,9 +621,9 @@ export function BookingPage() {
                     </div>
                     <div className="flex gap-2">
                       {([
-                        { id: 'light' as const, label: 'Лёгкая', icon: '🕊️' },
-                        { id: 'medium' as const, label: 'Средняя', icon: '⚖️' },
-                        { id: 'strong' as const, label: 'Крепкая', icon: '💪' },
+                        { id: 'light' as const, label: 'Лёгкая', icon: 'dove' },
+                        { id: 'medium' as const, label: 'Средняя', icon: 'scale' },
+                        { id: 'strong' as const, label: 'Крепкая', icon: 'muscle' },
                       ]).map(s => (
                         <button key={s.id} type="button" onClick={() => setAiStrength(s.id)}
                           className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all border ${
@@ -633,7 +634,7 @@ export function BookingPage() {
                               : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
                           }`}
                         >
-                          <span>{s.icon}</span> {s.label}
+                          <PremiumIcon name={s.icon} size={14} /> {s.label}
                         </button>
                       ))}
                     </div>
