@@ -97,21 +97,21 @@ export function AdminBookingsPage() {
   const totalCount = bookings.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <motion.div className="flex items-center justify-between" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <div>
-          <h1 className="text-2xl font-display font-bold text-white">Управление заказами кальянов</h1>
-          <p className="text-sm text-white/40 mt-0.5">Входящие заказы • Статусы приготовления</p>
+          <h1 className="text-lg font-display font-bold text-white">Управление заказами кальянов</h1>
+          <p className="text-xs text-white/40 mt-0">Входящие заказы • Статусы приготовления</p>
         </div>
       </motion.div>
 
       {/* Filters */}
-      <GlassCard variant="premium" className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Filter className="w-4 h-4 text-accent-gold" />
-          <span className="text-sm font-medium text-white">Фильтры</span>
+      <GlassCard variant="premium" className="p-3">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Filter className="w-3.5 h-3.5 text-accent-gold" />
+          <span className="text-xs font-medium text-white">Фильтры</span>
         </div>
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5 text-white/40" />
             <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
@@ -129,20 +129,20 @@ export function AdminBookingsPage() {
       </GlassCard>
 
       {/* Grid: Left - Orders list, Right - Stats and hookah queue */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Left Side: Orders list */}
-        <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-lg font-display font-semibold text-white">Входящие заказы</h3>
+        <div className="lg:col-span-2 space-y-2">
+          <h3 className="text-sm font-display font-semibold text-white">Входящие заказы</h3>
           {loading ? (
-            <div className="flex justify-center py-10">
+            <div className="flex justify-center py-8">
               <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
             </div>
           ) : bookings.length === 0 ? (
-            <GlassCard className="p-8 text-center">
+            <GlassCard className="p-6 text-center">
               <p className="text-sm text-white/40">Нет заказов{filterDate ? ' на выбранную дату' : ''}</p>
             </GlassCard>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {bookings.map((booking, i) => {
                 const st = statusConfig[booking.status] || statusConfig.pending;
                 const user = booking.user as User;
@@ -150,17 +150,17 @@ export function AdminBookingsPage() {
                 return (
                   <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.02 }}>
-                    <GlassCard variant="premium" className="p-4">
-                      <div className="flex items-start justify-between gap-3">
+                    <GlassCard variant="premium" className="p-3">
+                      <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-semibold text-white bg-white/5 border border-glass-border px-2.5 py-0.5 rounded-lg">{booking.seatLabel}</span>
+                            <span className="text-[11px] font-semibold text-white bg-white/5 border border-glass-border px-2 py-0.5 rounded-md">{booking.seatLabel}</span>
                             <Badge text={st.text} color={st.color} size="sm" />
                             <span className="text-xs text-white/30">
                               {new Date(booking.date).toLocaleDateString('ru-RU')} в {booking.time}
                             </span>
                           </div>
-                          <div className="mt-2.5 text-xs text-white/50 space-y-1">
+                          <div className="mt-2 text-[11px] text-white/50 space-y-0.5">
                             <p className="font-semibold text-white">👤 {user?.name || '—'} • {booking.phone}</p>
                             <p className="text-accent-gold font-medium">💨 {(booking as any).hookahMix || '—'}</p>
                             <p>Крепость: <span className="font-semibold text-white">{(booking as any).hookahStrength === 'light' ? 'Лёгкий' : (booking as any).hookahStrength === 'strong' ? 'Крепкий' : 'Средний'}</span> • {(booking as any).hookahCount || 1} шт • Гостей: {booking.guestsCount} чел</p>
@@ -169,7 +169,7 @@ export function AdminBookingsPage() {
 
                           {/* Hookah progress bar */}
                           {hs && booking.status !== 'cancelled' && (
-                            <div className="flex items-center gap-2 mt-3">
+                            <div className="flex items-center gap-1.5 mt-2">
                               <div className="flex-1 h-1.5 rounded-full bg-glass-bg overflow-hidden border border-white/5">
                                 <div className="h-full rounded-full bg-accent-gold transition-all duration-500"
                                   style={{ width: `${hs.progressPercent}%` }} />
@@ -217,43 +217,43 @@ export function AdminBookingsPage() {
         </div>
 
         {/* Right Side: Stats and Hookah queue */}
-        <div className="space-y-4">
-          <GlassCard variant="premium" className="p-4 space-y-4">
-            <h3 className="text-sm font-display font-semibold text-white flex items-center gap-2 border-b border-glass-border/10 pb-2">
+        <div className="space-y-2">
+          <GlassCard variant="premium" className="p-3 space-y-2">
+            <h3 className="text-xs font-display font-semibold text-white flex items-center gap-1.5 border-b border-glass-border/10 pb-1.5">
               📊 Сводка заказов
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-glass-bg border border-glass-border text-center">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2 rounded-lg bg-glass-bg border border-glass-border text-center">
                 <p className="text-2xl font-bold text-yellow-400">{pendingCount}</p>
                 <p className="text-[10px] text-white/40">Ожидают</p>
               </div>
-              <div className="p-3 rounded-xl bg-glass-bg border border-glass-border text-center">
-                <p className="text-2xl font-bold text-orange-400">{preparingCount}</p>
+              <div className="p-2 rounded-lg bg-glass-bg border border-glass-border text-center">
+                <p className="text-lg font-bold text-orange-400">{preparingCount}</p>
                 <p className="text-[10px] text-white/40">Готовятся</p>
               </div>
-              <div className="p-3 rounded-xl bg-glass-bg border border-glass-border text-center">
-                <p className="text-2xl font-bold text-green-400">{readyCount}</p>
+              <div className="p-2 rounded-lg bg-glass-bg border border-glass-border text-center">
+                <p className="text-lg font-bold text-green-400">{readyCount}</p>
                 <p className="text-[10px] text-white/40">Готовы</p>
               </div>
-              <div className="p-3 rounded-xl bg-glass-bg border border-glass-border text-center">
-                <p className="text-2xl font-bold text-white">{totalCount}</p>
+              <div className="p-2 rounded-lg bg-glass-bg border border-glass-border text-center">
+                <p className="text-lg font-bold text-white">{totalCount}</p>
                 <p className="text-[10px] text-white/40">Всего сегодня</p>
               </div>
             </div>
           </GlassCard>
 
           {/* Active Hookah cooking board */}
-          <GlassCard variant="premium" className="p-4">
-            <h3 className="text-sm font-display font-semibold text-white flex items-center gap-2 mb-3 border-b border-glass-border/10 pb-2">
-              <Flame className="w-4 h-4 text-orange-400 animate-pulse" /> Очередь приготовления
+          <GlassCard variant="premium" className="p-3">
+            <h3 className="text-xs font-display font-semibold text-white flex items-center gap-1.5 mb-2 border-b border-glass-border/10 pb-1.5">
+              <Flame className="w-3.5 h-3.5 text-orange-400 animate-pulse" /> Очередь приготовления
             </h3>
-            <div className="space-y-3 max-h-80 overflow-y-auto scrollbar-hide pr-1">
+            <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide pr-1">
               {activeBookings.map(b => {
                 const hs = hookahStatuses[b._id];
                 if (!hs) return null;
                 const u = b.user as User;
                 return (
-                  <div key={b._id} className="p-2.5 rounded-xl bg-glass-bg border border-glass-border/30 space-y-1">
+                  <div key={b._id} className="p-2 rounded-lg bg-glass-bg border border-glass-border/30 space-y-0.5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-white">{b.seatLabel} • {u?.name}</span>
                       <span className={`text-[10px] font-bold ${hookahStatusColors[hs.hookahStatus]}`}>

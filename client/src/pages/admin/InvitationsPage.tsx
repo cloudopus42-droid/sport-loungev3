@@ -229,15 +229,15 @@ export function AdminInvitationsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <motion.div
         className="flex items-center justify-between"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h1 className="text-2xl font-display font-bold text-white">Приглашения</h1>
-          <p className="text-sm text-white/40 mt-0.5">Управление приглашениями на мероприятия</p>
+          <h1 className="text-lg font-display font-bold text-white">Приглашения</h1>
+          <p className="text-xs text-white/40 mt-0">Управление приглашениями на мероприятия</p>
         </div>
         <GlowButton onClick={openCreate}>
           <Plus className="w-4 h-4" />
@@ -247,7 +247,7 @@ export function AdminInvitationsPage() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
@@ -262,7 +262,7 @@ export function AdminInvitationsPage() {
         title={editingInvitation ? 'Редактировать приглашение' : 'Создать приглашение'}
         size="lg"
       >
-        <form onSubmit={handleSave} className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-2">
           <FileUploader onFileSelect={setFile} accept="image/*" />
 
           <div>
@@ -275,7 +275,7 @@ export function AdminInvitationsPage() {
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Описание мероприятия..." className="glass-input min-h-[80px] resize-none" rows={3} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Дата</label>
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="glass-input" required />
@@ -290,7 +290,7 @@ export function AdminInvitationsPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <GlowButton variant="secondary" type="button" onClick={() => { setModalOpen(false); resetForm(); }}>Отмена</GlowButton>
             <GlowButton type="submit" loading={saving}>{editingInvitation ? 'Сохранить' : 'Создать'}</GlowButton>
           </div>

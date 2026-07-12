@@ -154,17 +154,17 @@ export function SmartFeaturesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <motion.div
         className="flex items-center justify-between"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h1 className="text-2xl font-display font-bold text-white">
+          <h1 className="text-lg font-display font-bold text-white">
             Smart <span className="text-accent-gold">Features</span>
           </h1>
-          <p className="text-sm text-white/40 mt-0.5">Управление функциями</p>
+          <p className="text-xs text-white/40 mt-0">Управление функциями</p>
         </div>
         <GlowButton variant="secondary" onClick={fetchFeatures}>
           <RefreshCw className="w-4 h-4" />
@@ -173,14 +173,14 @@ export function SmartFeaturesPage() {
       </motion.div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ) : features.length === 0 ? (
         <motion.div
-          className="flex flex-col items-center justify-center py-20 text-white/40"
+          className="flex flex-col items-center justify-center py-12 text-white/40"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -188,26 +188,26 @@ export function SmartFeaturesPage() {
           <p className="text-sm">Нет доступных функций</p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <AnimatePresence>
             {features.map((feature, index) => (
               <motion.div
                 key={feature.id}
-                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-colors"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-white font-semibold text-base">{feature.name}</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-semibold text-sm">{feature.name}</h3>
                   <ToggleSwitch
                     enabled={feature.enabled}
                     loading={togglingIds.has(feature.id)}
                     onChange={() => handleToggle(feature)}
                   />
                 </div>
-                <p className="text-white/50 text-sm mb-3 line-clamp-2">
+                <p className="text-white/50 text-xs mb-2 line-clamp-2">
                   {feature.description}
                 </p>
                 <div className="flex items-center justify-between">

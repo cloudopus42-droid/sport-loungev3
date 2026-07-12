@@ -211,15 +211,15 @@ export function PromosPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <motion.div
         className="flex items-center justify-between"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h1 className="text-2xl font-display font-bold text-white">Акции</h1>
-          <p className="text-sm text-white/40 mt-0.5">Управление промо-акциями</p>
+          <h1 className="text-lg font-display font-bold text-white">Акции</h1>
+          <p className="text-xs text-white/40 mt-0">Управление промо-акциями</p>
         </div>
         <GlowButton onClick={openCreate}>
           <Plus className="w-4 h-4" />
@@ -229,7 +229,7 @@ export function PromosPage() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
@@ -244,11 +244,11 @@ export function PromosPage() {
         title={editingPromo ? 'Редактировать акцию' : 'Создать акцию'}
         size="lg"
       >
-        <form onSubmit={handleSave} className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-2">
           <FileUploader onFileSelect={setFile} accept="image/*" />
 
           <div>
-            <label className="block text-xs text-white/50 mb-1.5 font-medium">Название</label>
+            <label className="block text-[10px] text-white/50 mb-1 font-medium">Название</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Счастливые часы" className="glass-input" required />
           </div>
 
@@ -257,24 +257,24 @@ export function PromosPage() {
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Описание акции..." className="glass-input min-h-[80px] resize-none" rows={3} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Скидка (%)</label>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Скидка (%)</label>
               <input type="number" min={1} max={100} value={discount} onChange={(e) => setDiscount(Number(e.target.value))} className="glass-input" required />
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Начало</label>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Начало</label>
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="glass-input" required />
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Окончание</label>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Окончание</label>
               <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="glass-input" required />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Цвет</label>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Цвет</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -303,7 +303,7 @@ export function PromosPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <GlowButton variant="secondary" type="button" onClick={() => { setModalOpen(false); resetForm(); }}>Отмена</GlowButton>
             <GlowButton type="submit" loading={saving}>{editingPromo ? 'Сохранить' : 'Создать'}</GlowButton>
           </div>

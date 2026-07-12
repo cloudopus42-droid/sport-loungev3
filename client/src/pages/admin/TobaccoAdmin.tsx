@@ -69,13 +69,13 @@ export function TobaccoAdmin() {
   const [activeTab, setActiveTab] = useState<Tab>('items');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl font-display font-bold text-white">Управление табаками</h1>
-        <p className="text-sm text-white/40 mt-0.5">Учёт остатков и заявки на пополнение</p>
+        <h1 className="text-lg font-display font-bold text-white">Управление табаками</h1>
+        <p className="text-xs text-white/40 mt-0">Учёт остатков и заявки на пополнение</p>
       </motion.div>
 
       <TabBar tabs={tabs} active={activeTab} onSelect={setActiveTab} />
@@ -99,12 +99,12 @@ export function TobaccoAdmin() {
 
 function TabBar({ tabs, active, onSelect }: { tabs: { key: Tab; label: string; icon: React.ReactNode }[]; active: Tab; onSelect: (k: Tab) => void }) {
   return (
-    <div className="flex gap-1 rounded-2xl bg-glass-bg border border-glass-border p-1 overflow-x-auto">
+    <div className="flex gap-1 rounded-xl bg-glass-bg border border-glass-border p-1 overflow-x-auto">
       {tabs.map((t) => (
         <button
           key={t.key}
           onClick={() => onSelect(t.key)}
-          className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+          className={`relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
             active === t.key ? 'text-black' : 'text-white/50 hover:text-white/80'
           }`}
         >
@@ -240,26 +240,26 @@ function TobaccoItemsPanel() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-white/40">{items.length} позиций</p>
+        <p className="text-xs text-white/40">{items.length} позиций</p>
         <GlowButton onClick={openCreate} size="sm">
           <Plus className="w-4 h-4" /> Добавить
         </GlowButton>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-2">
           {items.map((item) => (
             <div
               key={item._id}
-              className="flex items-center gap-4 p-4 rounded-2xl bg-glass-bg border border-glass-border hover:border-accent-gold/30 transition-all"
+              className="flex items-center gap-3 p-3 rounded-xl bg-glass-bg border border-glass-border hover:border-accent-gold/30 transition-all"
             >
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-dark-surface flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg overflow-hidden bg-dark-surface flex-shrink-0">
                 {item.image_url ? (
                   <img src={item.image_url} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -310,9 +310,9 @@ function TobaccoItemsPanel() {
       )}
 
       <Modal isOpen={modalOpen} onClose={() => { setModalOpen(false); resetForm(); }} title={editingItem ? 'Редактировать' : 'Добавить табак'} size="lg">
-        <form onSubmit={handleSave} className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-2">
           {!editingItem && <FileUploader onFileSelect={setFile} accept="image/*" />}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="block text-xs text-white/50 mb-1.5 font-medium">Название</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="glass-input" required />
@@ -330,9 +330,9 @@ function TobaccoItemsPanel() {
             <label className="block text-xs text-white/50 mb-1.5 font-medium">Описание</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="glass-input min-h-[60px] resize-none" rows={2} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Цена</label>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Цена</label>
               <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="glass-input" min="0" step="0.01" />
             </div>
             <div>
@@ -355,7 +355,7 @@ function TobaccoItemsPanel() {
             </button>
             <span className="text-xs text-white/40">{autoReorder ? 'Включено' : 'Выключено'}</span>
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <GlowButton variant="secondary" type="button" onClick={() => { setModalOpen(false); resetForm(); }}>Отмена</GlowButton>
             <GlowButton type="submit" loading={saving}>{editingItem ? 'Сохранить' : 'Добавить'}</GlowButton>
           </div>
@@ -435,25 +435,25 @@ function StockPanel() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-white/40">Управление остатками на складе</p>
+        <p className="text-xs text-white/40">Управление остатками на складе</p>
         <GlowButton variant="secondary" size="sm" onClick={fetchStock}>
           <RefreshCw className="w-4 h-4" /> Обновить
         </GlowButton>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-glass-border">
+        <div className="overflow-x-auto rounded-xl border border-glass-border">
           <table className="w-full">
             <thead>
               <tr className="border-b border-glass-border bg-glass-bg">
                 {['Название', 'Бренд', 'Граммовка', 'Текущий остаток', 'Мин. порог', 'Автозаказ', 'Действия'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white/60 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="px-3 py-2 text-left text-[10px] font-semibold text-white/60 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -470,10 +470,10 @@ function StockPanel() {
                       isLow ? 'bg-accent-gold/5' : 'hover:bg-accent-gold/3'
                     }`}
                   >
-                    <td className="px-4 py-3 text-sm text-white/80 font-medium">{item.name}</td>
-                    <td className="px-4 py-3 text-sm text-white/50">{item.brand || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-white/60">{item.weight_grams ? `${item.weight_grams} г` : '—'}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2 text-sm text-white/80 font-medium">{item.name}</td>
+                    <td className="px-3 py-2 text-sm text-white/50">{item.brand || '—'}</td>
+                    <td className="px-3 py-2 text-sm text-white/60">{item.weight_grams ? `${item.weight_grams} г` : '—'}</td>
+                    <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
                         <motion.button
                           className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-accent-gold transition-colors"
@@ -503,15 +503,15 @@ function StockPanel() {
                         {isLow && <span className="text-[10px] text-red-400 font-medium">Мало</span>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-white/60">{item.min_stock_threshold ?? 5}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2 text-sm text-white/60">{item.min_stock_threshold ?? 5}</td>
+                    <td className="px-3 py-2">
                       {item.auto_reorder_enabled ? (
                         <Badge text="Да" color="green" size="sm" />
                       ) : (
                         <Badge text="Нет" color="gray" size="sm" />
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <GlowButton
                         size="sm"
                         variant="primary"
@@ -526,7 +526,7 @@ function StockPanel() {
                 );
               })}
               {items.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-12 text-center text-white/40">Нет данных</td></tr>
+                <tr><td colSpan={7} className="px-3 py-8 text-center text-white/40">Нет данных</td></tr>
               )}
             </tbody>
           </table>
@@ -627,9 +627,9 @@ function RestockPanel() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-1.5">
           <Filter className="w-4 h-4 text-white/30" />
           {filterOptions.map((opt) => (
             <button
@@ -658,30 +658,30 @@ function RestockPanel() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {filtered.map((req) => {
             const isPending = req.status === 'pending';
 
             return (
               <div
                 key={req._id}
-                className={`p-4 rounded-2xl border transition-all ${
+                className={`p-3 rounded-xl border transition-all ${
                   isPending
                     ? 'bg-accent-gold/5 border-accent-gold/30'
                     : 'bg-glass-bg border-glass-border'
                 }`}
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-white truncate">{req.tobacco_name || 'Неизвестный табак'}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-medium text-white truncate">{req.tobacco_name || 'Неизвестный табак'}</p>
                       <Badge text={statusLabels[req.status]} color={statusColors[req.status]} size="sm" />
                     </div>
-                    <div className="flex items-center gap-3 mt-1">
+                    <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs text-white/50">
                         <span className="text-accent-gold font-medium">{req.quantity}</span> г
                       </span>
@@ -736,8 +736,8 @@ function RestockPanel() {
             );
           })}
           {filtered.length === 0 && (
-            <div className="flex flex-col items-center gap-2 py-16 text-white/30">
-              <ClipboardList className="w-8 h-8" />
+            <div className="flex flex-col items-center gap-1.5 py-10 text-white/30">
+              <ClipboardList className="w-6 h-6" />
               <p className="text-sm">Нет заявок</p>
             </div>
           )}
@@ -745,9 +745,9 @@ function RestockPanel() {
       )}
 
       <Modal isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)} title="Новая заявка на пополнение" size="md">
-        <form onSubmit={createRequest} className="space-y-4">
+        <form onSubmit={createRequest} className="space-y-2">
           <div>
-            <label className="block text-xs text-white/50 mb-1.5 font-medium">Табак</label>
+            <label className="block text-[10px] text-white/50 mb-1 font-medium">Табак</label>
             <select
               value={newTobaccoId}
               onChange={(e) => setNewTobaccoId(e.target.value)}
@@ -770,7 +770,7 @@ function RestockPanel() {
             <label className="block text-xs text-white/50 mb-1.5 font-medium">Комментарий</label>
             <textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} className="glass-input min-h-[60px] resize-none" rows={2} />
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <GlowButton variant="secondary" type="button" onClick={() => setCreateModalOpen(false)}>Отмена</GlowButton>
             <GlowButton type="submit">Создать заявку</GlowButton>
           </div>

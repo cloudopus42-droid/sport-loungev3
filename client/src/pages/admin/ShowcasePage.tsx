@@ -139,20 +139,20 @@ export function AdminShowcasePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-display font-bold text-white">Витрина</h1>
-          <p className="text-sm text-white/40">Карточки на главной странице</p>
+          <h1 className="text-lg font-display font-bold text-white">Витрина</h1>
+          <p className="text-xs text-white/40">Карточки на главной странице</p>
         </div>
         <GlowButton size="sm" onClick={() => { cancelForm(); setShowForm(true); setForm({ ...emptyForm, order: items.length }); }}>
           <Plus className="w-4 h-4" /> Добавить
         </GlowButton>
       </div>
 
-      <GlassCard variant="premium" className="p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-white">Настройки витрины на главной</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <GlassCard variant="premium" className="p-3 space-y-2">
+        <h3 className="text-xs font-semibold text-white">Настройки витрины на главной</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <label className="flex items-center gap-2 text-sm text-white/70">
             <input
               type="checkbox"
@@ -193,8 +193,8 @@ export function AdminShowcasePage() {
 
       {/* Form */}
       {(showForm || editing !== null) && (
-        <GlassCard variant="premium" className="p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-white">
+        <GlassCard variant="premium" className="p-3 space-y-2">
+          <h3 className="text-xs font-semibold text-white">
             {editing ? 'Редактировать карточку' : 'Новая карточка'}
           </h3>
 
@@ -206,8 +206,8 @@ export function AdminShowcasePage() {
           <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
             placeholder="Описание" className="glass-input text-sm min-h-[80px]" />
 
-          <div className="flex items-center gap-4">
-            <label className="text-xs text-white/50 font-medium">Порядок:</label>
+          <div className="flex items-center gap-3">
+            <label className="text-[10px] text-white/50 font-medium">Порядок:</label>
             <input type="number" min={0} value={form.order}
               onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
               className="glass-input text-sm w-24" />
@@ -224,15 +224,15 @@ export function AdminShowcasePage() {
 
       {/* Grid */}
       {loading ? (
-        <div className="flex justify-center py-10">
+        <div className="flex justify-center py-8">
           <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
         </div>
       ) : items.length === 0 ? (
-        <GlassCard variant="premium" className="p-8 text-center">
+        <GlassCard variant="premium" className="p-6 text-center">
           <p className="text-sm text-white/40">Нет карточек витрины</p>
         </GlassCard>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {sorted.map((item, index) => (
             <motion.div
               key={item.id}

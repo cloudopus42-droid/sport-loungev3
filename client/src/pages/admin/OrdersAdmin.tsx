@@ -181,15 +181,15 @@ export function OrdersAdmin() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-3">
       
       {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/5 pb-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white font-display uppercase">
+          <h1 className="text-lg font-bold tracking-tight text-white font-display uppercase">
             Очередь заказов кальянов
           </h1>
-          <p className="text-xs text-white/50">Панель управления кальянного мастера (Sport Lounge)</p>
+          <p className="text-[10px] text-white/50">Панель управления кальянного мастера (Sport Lounge)</p>
         </div>
 
         <div className="flex gap-2 flex-wrap">
@@ -226,13 +226,13 @@ export function OrdersAdmin() {
       </div>
 
       {orders.filter(o => o.status !== 'done').length === 0 ? (
-        <div className="py-20 text-center space-y-2">
-          <Flame className="w-10 h-10 text-white/20 mx-auto" />
+        <div className="py-12 text-center space-y-1">
+          <Flame className="w-8 h-8 text-white/20 mx-auto" />
           <h3 className="text-base font-semibold text-white/40 uppercase">Заказов пока нет</h3>
           <p className="text-xs text-white/30">Все кальяны успешно раскурены и поданы!</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {orders.filter(o => o.status !== 'done').length > 0 && (
             <div className="flex items-center gap-2 px-1">
               <input
@@ -261,15 +261,15 @@ export function OrdersAdmin() {
                 <motion.div
                   key={order.id}
                   layoutId={order.id}
-                  className={`mafia-card p-5 border-l-4 ${
+                  className={`mafia-card p-4 border-l-4 ${
                     timerInfo.delayed 
                       ? 'border-l-red-600 border-red-950/20 bg-red-950/5' 
                       : 'border-l-accent-gold'
                   }`}
                 >
-                  <div className="flex flex-col md:flex-row justify-between gap-4">
-                    {/* Position & Seat info */}
-                    <div className="flex gap-4 items-start">
+                    <div className="flex flex-col md:flex-row justify-between gap-3">
+                      {/* Position & Seat info */}
+                      <div className="flex gap-3 items-start">
                       {/* Checkbox */}
                       <div className="pt-1.5">
                         <input
@@ -301,10 +301,10 @@ export function OrdersAdmin() {
                         </div>
                       )}
 
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-bold text-white/30">#{idx + 1}</span>
-                          <h3 className="text-lg font-bold text-white font-display uppercase tracking-wide">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono font-bold text-white/30">#{idx + 1}</span>
+                          <h3 className="text-sm font-bold text-white font-display uppercase tracking-wide">
                             {order.seatLabel}
                           </h3>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${statusColors[order.status] || 'bg-white/5 text-white'}`}>
@@ -337,7 +337,7 @@ export function OrdersAdmin() {
                           Пожелания: {order.notes ? <strong className="text-white/90">"{order.notes}"</strong> : <em className="text-white/30">нет</em>}
                         </p>
 
-                        <div className="flex items-center gap-4 text-[10px] text-white/40 font-mono pt-1">
+                        <div className="flex items-center gap-3 text-[10px] text-white/40 font-mono pt-0.5">
                           <span>Заказчик: {order.user?.name || 'Гость'}</span>
                           <span>•</span>
                           <span>Контакты: {order.user?.phone || 'Не указаны'}</span>
@@ -346,10 +346,10 @@ export function OrdersAdmin() {
                     </div>
 
                     {/* Timer and Controls */}
-                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center gap-4 justify-between min-w-[260px]">
+                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center gap-3 justify-between min-w-[240px]">
                       
                       {/* Timer Display */}
-                      <div className={`p-3 rounded-xl border text-center font-mono ${
+                      <div className={`p-2 rounded-lg border text-center font-mono ${
                         timerInfo.delayed
                           ? 'bg-red-500/10 text-red-400 border-red-500/30 font-bold'
                           : 'bg-white/5 text-white/70 border-white/10'
@@ -357,16 +357,16 @@ export function OrdersAdmin() {
                         <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider mb-0.5">
                           <Clock className="w-3.5 h-3.5" /> Таймер
                         </div>
-                        <span className="text-xl font-bold">{timerInfo.text}</span>
+                        <span className="text-lg font-bold">{timerInfo.text}</span>
                       </div>
 
                       {/* Status and Action Buttons */}
                       <div className="flex-1 flex flex-col gap-2">
                         <div className="flex gap-1">
-                          {order.status === 'accepted' && (
-                            <button
-                              onClick={() => handleUpdateStatus(order.id, 'preparing')}
-                              className="flex-1 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
+                           {order.status === 'accepted' && (
+                             <button
+                               onClick={() => handleUpdateStatus(order.id, 'preparing')}
+                               className="flex-1 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
                             >
                               <Play className="w-3 h-3 fill-current" /> Начать
                             </button>
@@ -374,7 +374,7 @@ export function OrdersAdmin() {
                           {order.status === 'preparing' && (
                             <button
                               onClick={() => handleUpdateStatus(order.id, 'roasting')}
-                              className="flex-1 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
+                              className="flex-1 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
                             >
                               <Flame className="w-3 h-3" /> Угли
                             </button>
@@ -382,7 +382,7 @@ export function OrdersAdmin() {
                           {order.status === 'roasting' && (
                             <button
                               onClick={() => handleUpdateStatus(order.id, 'delivering')}
-                              className="flex-1 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
+                              className="flex-1 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
                             >
                               <Send className="w-3 h-3" /> Нести
                             </button>
@@ -390,7 +390,7 @@ export function OrdersAdmin() {
                           {order.status === 'delivering' && (
                             <button
                               onClick={() => handleUpdateStatus(order.id, 'done')}
-                              className="flex-1 py-2 rounded-lg bg-accent-gold text-black font-extrabold text-xs uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
+                              className="flex-1 py-1.5 rounded-lg bg-accent-gold text-black font-extrabold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1 transition-all"
                             >
                               <Check className="w-3.5 h-3.5 stroke-[3]" /> Подано
                             </button>

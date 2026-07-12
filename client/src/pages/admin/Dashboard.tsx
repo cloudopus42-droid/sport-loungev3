@@ -211,7 +211,7 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-3 pb-8">
       
       {/* Header Panel */}
       <motion.div
@@ -233,14 +233,14 @@ export function Dashboard() {
       </motion.div>
 
       {/* Main Grid: Finance & Live shisha queue */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         
         {/* Left 2 Columns: Financial Chart & Active Orders Queue */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-3">
           
           {/* Executive Analytics Finance Chart */}
-          <GlassCard variant="premium" className="p-6 overflow-hidden relative">
-            <div className="flex justify-between items-center mb-4">
+          <GlassCard variant="premium" className="p-4 overflow-hidden relative">
+            <div className="flex justify-between items-center mb-3">
               <div>
                 <h3 className="text-sm font-semibold text-white/90">Статистика выручки</h3>
                 <p className="text-[10px] text-white/35">Движение выручки за текущий цикл</p>
@@ -306,8 +306,8 @@ export function Dashboard() {
           </GlassCard>
 
           {/* Active Shisha Queue Panel */}
-          <GlassCard variant="premium" className="p-5">
-            <div className="flex justify-between items-center mb-4">
+          <GlassCard variant="premium" className="p-4">
+            <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-semibold text-white/95 flex items-center gap-1.5">
                 <PlusIcon className="w-4 h-4 text-accent-gold" />
                 <span>Очередь приготовления кальянов</span>
@@ -389,17 +389,17 @@ export function Dashboard() {
         </div>
 
         {/* Right 1 Column: KPIs & Live Online Activity */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           
           {/* KPI Cards */}
           {loading ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {Array.from({ length: 4 }).map((_, i) => (
                 <StatCardSkeleton key={i} />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {statKPIs.map((kpi, idx) => (
                 <motion.div
                   key={kpi.label}
@@ -407,7 +407,7 @@ export function Dashboard() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.1 }}
                 >
-                  <GlassCard className="p-4 flex flex-col justify-between hover:border-accent-gold/25 transition-all group border-glass-border/30 liquid-glass bg-liquid-glass">
+                  <GlassCard className="p-3 flex flex-col justify-between hover:border-accent-gold/25 transition-all group border-glass-border/30 liquid-glass bg-liquid-glass">
                     <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 border border-accent-gold/20">
                       <kpi.icon className="w-4 h-4 text-accent-gold" />
                     </div>
@@ -424,8 +424,8 @@ export function Dashboard() {
           )}
 
           {/* Live Online Activity Card */}
-          <GlassCard variant="premium" className="p-5">
-            <div className="flex justify-between items-center mb-3 border-b border-glass-border/10 pb-3">
+          <GlassCard variant="premium" className="p-4">
+            <div className="flex justify-between items-center mb-2 border-b border-glass-border/10 pb-2">
               <h3 className="text-sm font-semibold text-white/95 flex items-center gap-2">
                 <UserIcon className="w-4 h-4 text-accent-gold" />
                 <span>Активность онлайн</span>
@@ -436,14 +436,14 @@ export function Dashboard() {
               </span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-white/50">Активных вкладок / сессий:</span>
                 <span className="text-sm font-bold text-white">{onlineCount}</span>
               </div>
 
               {/* List of registered users online */}
-              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+              <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
                 <p className="text-[11px] uppercase tracking-wider text-white/30 font-bold">Зарегистрированные пользователи:</p>
                 {onlineUsers.length === 0 ? (
                   <p className="text-xs text-white/20 italic">Нет авторизованных гостей в сети</p>
@@ -460,18 +460,18 @@ export function Dashboard() {
           </GlassCard>
 
           {/* System notification log */}
-          <GlassCard variant="premium" className="p-5">
-            <div className="flex justify-between items-center mb-3 border-b border-glass-border/10 pb-3">
+          <GlassCard variant="premium" className="p-4">
+            <div className="flex justify-between items-center mb-2 border-b border-glass-border/10 pb-2">
               <h3 className="text-sm font-semibold text-white/95">События</h3>
             </div>
 
-            <div className="space-y-3.5">
+            <div className="space-y-2">
               {[
                 { title: 'Поступил новый заказ кальяна', time: 'Недавно' },
                 { title: 'Бот поддержки обработал запрос', time: '10 мин назад' },
                 { title: 'Успешно обновлена витрина товаров', time: '1 день назад' },
               ].map((feed, idx) => (
-                <div key={idx} className="flex items-center justify-between gap-3 border-b border-glass-border/5 pb-2.5 last:border-b-0 last:pb-0">
+                <div key={idx} className="flex items-center justify-between gap-2 border-b border-glass-border/5 pb-2 last:border-b-0 last:pb-0">
                   <div className="flex gap-2 items-center">
                     <div className="w-6 h-6 rounded-full bg-white/5 border border-glass-border/20 flex items-center justify-center flex-shrink-0">
                       <BellIcon className="w-3.5 h-3.5 text-accent-gold" />
@@ -490,12 +490,12 @@ export function Dashboard() {
       </div>
 
       {/* BI Analytics Section */}
-      <GlassCard variant="premium" className="p-6">
-        <div className="flex items-center gap-2 mb-4 border-b border-glass-border/10 pb-3">
+      <GlassCard variant="premium" className="p-4">
+        <div className="flex items-center gap-2 mb-3 border-b border-glass-border/10 pb-2">
           <BarChart3 className="w-5 h-5 text-accent-gold" />
           <h3 className="text-md font-display font-semibold text-white">BI Аналитика</h3>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           {(() => {
             const active = allBookings.filter((b: any) => b.status !== 'cancelled');
             const now = new Date();
@@ -532,13 +532,13 @@ export function Dashboard() {
       </GlassCard>
 
       {/* NEW section: Hookah Taste Choices Analytics (Breakdown panel) */}
-      <GlassCard variant="premium" className="p-6">
-        <h3 className="text-md font-display font-semibold text-white tracking-wide flex items-center gap-2 mb-4 border-b border-glass-border/10 pb-3">
+      <GlassCard variant="premium" className="p-4">
+        <h3 className="text-md font-display font-semibold text-white tracking-wide flex items-center gap-2 mb-3 border-b border-glass-border/10 pb-2">
           <Award className="w-5 h-5 text-accent-gold" />
           <span>Аналитика вкусовых предпочтений гостей</span>
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           
           {/* Top Mixes Rankings */}
           <div className="space-y-3">
@@ -578,7 +578,7 @@ export function Dashboard() {
             ) : !tasteStats ? (
               <p className="text-xs text-white/20 italic">Нет данных</p>
             ) : (
-              <div className="space-y-3">
+      <div className="space-y-2">
                 {[
                   { label: 'Легкий (light)', value: tasteStats.strengths.light, color: 'bg-green-400' },
                   { label: 'Средний (medium)', value: tasteStats.strengths.medium, color: 'bg-orange-400' },
@@ -605,7 +605,7 @@ export function Dashboard() {
           {/* User Favorite Mixes leaderboard */}
           <div className="space-y-3">
             <h4 className="text-xs uppercase tracking-wider font-bold text-white/35">Активные гости и их предпочтения</h4>
-            <div className="max-h-52 overflow-y-auto pr-1">
+            <div className="max-h-40 overflow-y-auto pr-1">
               <table className="w-full text-[11px] text-left">
                 <thead>
                   <tr className="text-white/30 border-b border-glass-border/10 font-bold tracking-wider">

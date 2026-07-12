@@ -116,37 +116,37 @@ export function UsersAdmin() {
   const formatDate = (d: string) => new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#0D0F13] flex items-center justify-center border border-glass-border">
-            <Users className="w-5 h-5 text-[#FFBF00]" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[#0D0F13] flex items-center justify-center border border-glass-border">
+            <Users className="w-4 h-4 text-[#FFBF00]" />
           </div>
           <div>
-            <h1 className="text-xl font-display font-bold text-white">Клиенты</h1>
-            <p className="text-xs text-white/40">Управление пользователями и персональными ценами</p>
+            <h1 className="text-base font-display font-bold text-white">Клиенты</h1>
+            <p className="text-[10px] text-white/40">Управление пользователями и персональными ценами</p>
           </div>
         </div>
       </div>
 
       {/* Search & Filters */}
-      <GlassCard className="p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <GlassCard className="p-3">
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
             <input
               type="text"
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Поиск по имени, email или телефону..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0D0F13] border border-glass-border text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#FFBF00]/50 transition-colors"
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#0D0F13] border border-glass-border text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-[#FFBF00]/50 transition-colors"
             />
           </div>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-4 py-2.5 rounded-xl bg-[#0D0F13] border border-glass-border text-white text-sm focus:outline-none focus:border-[#FFBF00]/50 appearance-none cursor-pointer"
+            className="px-3 py-2 rounded-lg bg-[#0D0F13] border border-glass-border text-white text-xs focus:outline-none focus:border-[#FFBF00]/50 appearance-none cursor-pointer"
           >
             <option value="">Все роли</option>
             <option value="user">Клиенты</option>
@@ -156,14 +156,14 @@ export function UsersAdmin() {
       </GlassCard>
 
       {/* Users List */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-6 h-6 border-2 border-[#FFBF00] border-t-transparent rounded-full animate-spin" />
+          <div className="flex justify-center py-8">
+            <div className="w-5 h-5 border-2 border-[#FFBF00] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : users.length === 0 ? (
-          <GlassCard className="p-8 text-center">
-            <Users className="w-12 h-12 text-white/10 mx-auto mb-3" />
+          <GlassCard className="p-6 text-center">
+            <Users className="w-10 h-10 text-white/10 mx-auto mb-2" />
             <p className="text-white/40 text-sm">Клиенты не найдены</p>
           </GlassCard>
         ) : (
@@ -175,10 +175,10 @@ export function UsersAdmin() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
             >
-              <GlassCard className="p-4">
-                <div className="flex items-center gap-4">
+              <GlassCard className="p-3">
+                <div className="flex items-center gap-3">
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-[#0D0F13] border border-glass-border flex items-center justify-center text-sm font-bold text-[#FFBF00] flex-shrink-0 overflow-hidden">
+                  <div className="w-8 h-8 rounded-full bg-[#0D0F13] border border-glass-border flex items-center justify-center text-xs font-bold text-[#FFBF00] flex-shrink-0 overflow-hidden">
                     {user.avatar ? (
                       <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
@@ -188,8 +188,8 @@ export function UsersAdmin() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-white truncate">{user.name || 'Без имени'}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-medium text-white truncate">{user.name || 'Без имени'}</span>
                       {user.role === 'admin' && (
                         <span className="inline-flex items-center rounded-full font-medium border whitespace-nowrap px-1.5 py-0 text-[10px] bg-[#FFBF00]/10 text-[#FFBF00] border-[#FFBF00]/20">
                           <Shield className="w-2.5 h-2.5 mr-0.5" /> ADMIN
@@ -201,7 +201,7 @@ export function UsersAdmin() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/40 truncate">{user.email}</p>
+                    <p className="text-[10px] text-white/40 truncate">{user.email}</p>
                   </div>
 
                   {/* Price (inline editable) */}
@@ -275,9 +275,9 @@ export function UsersAdmin() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between p-5 border-b border-[#FFBF00]/10">
+              <div className="flex items-center justify-between p-4 border-b border-[#FFBF00]/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#0D0F13] border border-[#FFBF00]/20 flex items-center justify-center text-sm font-bold text-[#FFBF00] overflow-hidden">
+                  <div className="w-8 h-8 rounded-full bg-[#0D0F13] border border-[#FFBF00]/20 flex items-center justify-center text-xs font-bold text-[#FFBF00] overflow-hidden">
                     {selectedUser.user.avatar ? (
                       <img src={selectedUser.user.avatar} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -298,7 +298,7 @@ export function UsersAdmin() {
               </div>
 
               {/* Modal Body */}
-              <div className="p-5 space-y-5">
+              <div className="p-4 space-y-4">
                 {/* Personal Price */}
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-white/50 uppercase tracking-wider">Персональная цена</label>
@@ -369,7 +369,7 @@ export function UsersAdmin() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-5 border-t border-[#FFBF00]/10 flex gap-3">
+              <div className="p-4 border-t border-[#FFBF00]/10 flex gap-2">
                 <button
                   onClick={() => toggleBlock(selectedUser.user.id, selectedUser.user.isBlocked)}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all cursor-pointer ${
