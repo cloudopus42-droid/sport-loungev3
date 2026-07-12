@@ -9,6 +9,7 @@ import {
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { Badge } from '@/components/ui/Badge';
+import { TabSwitcher } from '@/components/ui/TabSwitcher';
 import { showToast } from '@/components/NotificationToast';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
@@ -975,28 +976,15 @@ export function ProfilePage() {
         </h3>
 
         {/* Tab Selection */}
-        <div className="flex gap-2 border-b border-glass-border/10 pb-3 mb-4 select-none">
-          <button 
-            onClick={() => setActiveTab('visits')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-              activeTab === 'visits'
-                ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45 shadow-[0_0_12px_rgba(0,242,254,0.15)]'
-                : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Бронирования и визиты
-          </button>
-          <button 
-            onClick={() => setActiveTab('mixes')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-              activeTab === 'mixes'
-                ? 'bg-accent-gold-bright/15 text-accent-gold-bright border-accent-gold-bright/45'
-                : 'bg-glass-bg border-glass-border/30 text-white/50 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Мои миксы 💨
-          </button>
-        </div>
+        <TabSwitcher<'visits' | 'mixes'>
+          tabs={[
+            { id: 'visits', label: 'Бронирования и визиты' },
+            { id: 'mixes', label: 'Мои миксы 💨' },
+          ]}
+          active={activeTab}
+          onSelect={setActiveTab}
+          variant="minimal"
+        />
 
         {loadingBookings ? (
           <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" /></div>

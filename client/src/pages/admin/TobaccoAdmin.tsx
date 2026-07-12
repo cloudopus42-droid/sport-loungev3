@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FileUploader } from '@/components/FileUploader';
 import { showToast } from '@/components/NotificationToast';
 import { TOBACCO_BRANDS, getFlavorsForBrand, getBrandNames } from '@/data/tobaccoBrands';
+import { TabSwitcher } from '@/components/ui/TabSwitcher';
 import api from '@/lib/api';
 
 type Tab = 'items' | 'stock' | 'restock';
@@ -46,10 +47,10 @@ interface RestockRequestItem {
   updated_at: string;
 }
 
-const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-  { key: 'items', label: 'Табаки', icon: <Package className="w-4 h-4" /> },
-  { key: 'stock', label: 'Склад', icon: <Settings className="w-4 h-4" /> },
-  { key: 'restock', label: 'Заявки на пополнение', icon: <ClipboardList className="w-4 h-4" /> },
+const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: 'items', label: 'Табаки', icon: <Package className="w-4 h-4" /> },
+  { id: 'stock', label: 'Склад', icon: <Settings className="w-4 h-4" /> },
+  { id: 'restock', label: 'Заявки на пополнение', icon: <ClipboardList className="w-4 h-4" /> },
 ];
 
 const statusColors: Record<string, 'gold' | 'green' | 'red' | 'gray'> = {
@@ -79,7 +80,12 @@ export function TobaccoAdmin() {
         <p className="text-xs text-white/40 mt-0">Учёт остатков и заявки на пополнение</p>
       </motion.div>
 
-      <TabBar tabs={tabs} active={activeTab} onSelect={setActiveTab} />
+      <TabSwitcher<Tab>
+        tabs={tabs}
+        active={activeTab}
+        onSelect={setActiveTab}
+        variant="minimal"
+      />
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -94,34 +100,6 @@ export function TobaccoAdmin() {
           {activeTab === 'restock' && <RestockPanel />}
         </motion.div>
       </AnimatePresence>
-    </div>
-  );
-}
-
-function TabBar({ tabs, active, onSelect }: { tabs: { key: Tab; label: string; icon: React.ReactNode }[]; active: Tab; onSelect: (k: Tab) => void }) {
-  return (
-    <div className="flex gap-1 rounded-xl bg-glass-bg border border-glass-border p-1 overflow-x-auto">
-      {tabs.map((t) => (
-        <button
-          key={t.key}
-          onClick={() => onSelect(t.key)}
-          className={`relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-            active === t.key ? 'text-black' : 'text-white/50 hover:text-white/80'
-          }`}
-        >
-          {active === t.key && (
-            <motion.div
-              layoutId="tab-indicator"
-              className="absolute inset-0 bg-accent-gold/20 rounded-xl"
-              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-            />
-          )}
-          <span className="relative z-10 flex items-center gap-2">
-            {t.icon}
-            {t.label}
-          </span>
-        </button>
-      ))}
     </div>
   );
 }

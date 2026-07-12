@@ -14,6 +14,7 @@ import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
 import { SmokeEffect } from '@/components/ui/SmokeEffect';
+import { TabSwitcher } from '@/components/ui/TabSwitcher';
 
 type Flavor = {
   id: string;
@@ -352,26 +353,14 @@ export function BookingPage() {
           </p>
         </div>
 
-        <div className="liquid-glass bg-liquid-glass rounded-2xl p-1 flex gap-1">
-          {([
-            { id: 'order' as const, label: 'Параметры заказа', icon: ShoppingCart },
-            { id: 'mixologist' as const, label: 'ИИ-Миксолог', icon: Bot },
-          ]).map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => switchTab(id)}
-              className={`relative flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-[0.1em] transition-all ${
-                activeTab === id
-                  ? 'bg-accent-gold text-[#0b0807] shadow-[0_4px_16px_rgba(255,191,0,0.25)]'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {label}
-            </button>
-          ))}
-        </div>
+        <TabSwitcher<OrderTab>
+          tabs={[
+            { id: 'order', label: 'Параметры заказа', icon: <ShoppingCart className="w-3.5 h-3.5" /> },
+            { id: 'mixologist', label: 'ИИ-Миксолог', icon: <Bot className="w-3.5 h-3.5" /> },
+          ]}
+          active={activeTab}
+          onSelect={switchTab}
+        />
 
         <AnimatePresence mode="wait">
           {activeTab === 'order' ? (
