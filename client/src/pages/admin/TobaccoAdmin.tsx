@@ -113,6 +113,7 @@ function TobaccoItemsPanel() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [migrationNeeded, setMigrationNeeded] = useState(false);
 
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
@@ -130,7 +131,10 @@ function TobaccoItemsPanel() {
   const fetchItems = useCallback(async () => {
     try {
       const data = await api('/api/tobacco');
-      setItems(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setItems(list);
+      // Detect if migration is needed: items exist but lack inventory fields
+      setMigrationNeeded(list.length > 0 && list[0]?.stock_quantity === undefined && !('min_stock_threshold' in (list[0] || {})));
     } catch {
       showToast('Ошибка загрузки', 'error');
     } finally {
@@ -223,6 +227,12 @@ function TobaccoItemsPanel() {
 
   return (
     <div className="space-y-2">
+      {migrationNeeded && (
+        <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs">
+          ⚠️ База данных нуждается в миграции. Некоторые колонки (остатки, вес, пороги) отсутствуют.
+          Управление остатками пока ограничено. Обратитесь к администратору для запуска миграции.
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <p className="text-xs text-white/40">{items.length} позиций</p>
         <GlowButton onClick={openCreate} size="sm">

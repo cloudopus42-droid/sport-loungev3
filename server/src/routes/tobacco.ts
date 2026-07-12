@@ -71,16 +71,13 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
       .order('name');
 
     if (error) {
-      if (error.message?.includes('stock_quantity') || error.message?.includes('does not exist')) {
-        const { data: fallback, error: fbErr } = await supabase
-          .from('mixes')
-          .select('id, name, manufacturer, description, flavors, strength, status, created_at')
-          .order('name');
-        if (fbErr) { res.status(500).json({ error: fbErr.message }); return; }
-        res.json((fallback || []).map(mapItem));
-        return;
-      }
-      res.status(500).json({ error: error.message });
+      // Any column-missing error → graceful fallback
+      const { data: fallback, error: fbErr } = await supabase
+        .from('mixes')
+        .select('id, name, manufacturer, description, flavors, strength, status, created_at')
+        .order('name');
+      if (fbErr) { res.status(500).json({ error: fbErr.message }); return; }
+      res.json((fallback || []).map(mapItem));
       return;
     }
     res.json((data || []).map(mapItem));
@@ -252,21 +249,18 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
       .single();
 
     if (error) {
-      if (error.message?.includes('does not exist')) {
-        const base = { name: data.name, description: data.description || '', status: data.status || 'active' };
-        const { data: fb, error: fbErr } = await supabase
-          .from('mixes')
-          .insert(base)
-          .select()
-          .single();
-        if (fbErr || !fb) {
-          res.status(500).json({ error: 'Не удалось создать: ' + fbErr?.message });
-          return;
-        }
-        res.status(201).json(fb);
+      // Fallback: insert only base columns that always exist
+      const base = { name: data.name, description: data.description || '', status: data.status || 'active' };
+      const { data: fb, error: fbErr } = await supabase
+        .from('mixes')
+        .insert(base)
+        .select()
+        .single();
+      if (fbErr || !fb) {
+        res.status(500).json({ error: 'Не удалось создать: ' + (fbErr?.message || error.message) });
         return;
       }
-      res.status(500).json({ error: 'Не удалось создать: ' + error.message });
+      res.status(201).json(fb);
       return;
     }
     res.status(201).json(item);
@@ -316,27 +310,24 @@ router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, re
       .single();
 
     if (error) {
-      if (error.message?.includes('does not exist')) {
-        const safeUpdate: Record<string, unknown> = {};
-        const safeKeys = ['name', 'description', 'status'];
-        for (const k of safeKeys) {
-          if (updateData[k] !== undefined) safeUpdate[k] = updateData[k];
-        }
-        safeUpdate.updated_at = updateData.updated_at;
-        const { data: fb, error: fbErr } = await supabase
-          .from('mixes')
-          .update(safeUpdate)
-          .eq('id', req.params.id)
-          .select()
-          .single();
-        if (fbErr || !fb) {
-          res.status(404).json({ error: 'Не найдено' });
-          return;
-        }
-        res.json(fb);
+      // Fallback: update only base columns that always exist
+      const safeUpdate: Record<string, unknown> = {};
+      const safeKeys = ['name', 'description', 'status'];
+      for (const k of safeKeys) {
+        if (updateData[k] !== undefined) safeUpdate[k] = updateData[k];
+      }
+      safeUpdate.updated_at = updateData.updated_at;
+      const { data: fb, error: fbErr } = await supabase
+        .from('mixes')
+        .update(safeUpdate)
+        .eq('id', req.params.id)
+        .select()
+        .single();
+      if (fbErr || !fb) {
+        res.status(404).json({ error: 'Не найдено' });
         return;
       }
-      res.status(404).json({ error: 'Не найдено' });
+      res.json(fb);
       return;
     }
     res.json(item);
@@ -414,11 +405,7 @@ router.put('/:id/stock', auth, isAdmin, async (req: Request, res: Response, next
       .eq('id', req.params.id);
 
     if (updateError) {
-      if (updateError.message?.includes('does not exist')) {
-        res.status(400).json({ error: 'Управление остатками недоступно: выполните миграцию БД' });
-        return;
-      }
-      res.status(500).json({ error: updateError.message });
+      res.status(400).json({ error: 'Управление остатками недоступно: колонка stock_quantity не существует. Выполните миграцию БД.' });
       return;
     }
     res.json({ success: true });
@@ -446,7 +433,10 @@ router.put('/:id/threshold', auth, isAdmin, async (req: Request, res: Response, 
       .update(updateData)
       .eq('id', req.params.id);
 
-    if (updateError) { res.status(500).json({ error: updateError.message }); return; }
+    if (updateError) {
+      res.status(400).json({ error: 'Управление порогами недоступно: колонка min_stock_threshold не существует. Выполните миграцию БД.' });
+      return;
+    }
     res.json({ success: true });
   } catch (e) { next(e); }
 });
