@@ -1,0 +1,21 @@
+name: design-agent
+description: >
+  Autonomous design structure agent with embedded ui-ux-pro-max and frontend-design intelligence.
+  Validates design system consistency, enforces visual standards, and prevents templated UI.
+  MUST be invoked before any UI/design work and before deploy.
+version: 1.0.0
+triggers:
+  - design
+  - ui
+  - ux
+  - visual
+  - style
+  - color
+  - typography
+  - layout
+  - component design
+  - landing page
+  - redesign
+  - new page
+always_run: true
+priority: 90

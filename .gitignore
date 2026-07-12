@@ -40,6 +40,7 @@ github-token.txt
 # Scratch scripts
 *.ps1
 !scripts/pre-deploy.ps1
+!scripts/design-qa.ps1
 
 # Session summary (auto-generated)
 .summary.md

@@ -13,6 +13,9 @@
 - Validate input at system boundaries
 - **ALWAYS run QA before deploy**: `.\scripts\pre-deploy.ps1 -AutoFix` — NEVER push if DEPLOY BLOCKED
 - **NEVER skip QA** even for "small" changes — the script runs in <30 seconds
+- **ALWAYS run design QA before UI work**: `.\scripts\design-qa.ps1 -Verbose`
+- **Use design tokens only** — no rogue colors, fonts, radii, or glass values
+- **One signature element per page** — spend boldness in ONE place, cut decoration
 
 ## Agent Comms (SendMessage-First Coordination)
 
