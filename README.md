@@ -1,6 +1,6 @@
 # 🌿 SPORT LOUNGE — Premium Hookah Lounge Platform
 
-Modern full-stack web application for a premium hookah lounge — Instagram-style feed, admin panel, real-time notifications, and more.
+Modern full-stack web application for a premium hookah loung, admin panel, real-time notifications, and more.
 
 ## Tech Stack
 
