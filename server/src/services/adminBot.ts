@@ -69,14 +69,22 @@ async function callTelegramApi(method: string, body: any, timeoutMs = 10000): Pr
 }
 
 async function getUpdates(offset: number, timeout = 30): Promise<any[]> {
+  const url = `${TELEGRAM_API}/getUpdates?offset=${offset}&timeout=${timeout}`;
   try {
-    const res = await fetch(`${TELEGRAM_API}/getUpdates?offset=${offset}&timeout=${timeout}`, {
+    const res = await fetch(url, {
       signal: AbortSignal.timeout((timeout + 5) * 1000),
     });
     const data = await res.json() as any;
     if (data && data.ok) return data.result || [];
     return [];
-  } catch {
+  } catch (err: any) {
+    // Proxy fallback
+    try {
+      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout((timeout + 15) * 1000) });
+      const data = await res.json() as any;
+      if (data && data.ok) return data.result || [];
+    } catch {}
     return [];
   }
 }
@@ -89,10 +97,10 @@ async function isAdminUser(telegramId: number, username?: string): Promise<boole
   }
   const { data } = await supabase
     .from('users')
-    .select('id')
+    .select('role')
     .eq('telegram_id', telegramId)
     .maybeSingle();
-  return !!data;
+  return !!data && data.role === 'admin';
 }
 
 async function ensureAdminChatId(chatId: number) {

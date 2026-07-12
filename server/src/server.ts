@@ -45,7 +45,7 @@ async function bootstrap(): Promise<void> {
     // Start automated Telegram support bot
     if (process.env.SUPPORT_BOT_ENABLED === 'true' || config.isProduction) {
       try {
-        startSupportBot();
+        cleanupSupportBot = startSupportBot();
       } catch (err: any) {
         console.error('❌ Failed to start support bot:', err.message);
       }
@@ -54,7 +54,9 @@ async function bootstrap(): Promise<void> {
     }
 
     // Start admin bot for order management
-    startAdminBot().catch((err: any) => {
+    startAdminBot().then((cleanup) => {
+      cleanupAdminBot = cleanup;
+    }).catch((err: any) => {
       console.error('❌ Failed to start admin bot:', err.message);
     });
 
@@ -83,8 +85,14 @@ async function bootstrap(): Promise<void> {
   });
 
   // 4. Graceful shutdown
+  let cleanupSupportBot: (() => void) | undefined;
+  let cleanupAdminBot: (() => void) | undefined | null;
+
   const shutdown = async (signal: string) => {
     console.log(`\n${signal} received. Shutting down gracefully...`);
+
+    if (cleanupSupportBot) cleanupSupportBot();
+    if (cleanupAdminBot) cleanupAdminBot();
 
     server.close(() => {
       console.log('🔒 HTTP server closed');

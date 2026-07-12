@@ -1,17 +1,9 @@
 import { config } from '../config/env';
+import { ZONE_LABELS } from '../config/zones';
 import { adminNotifyNewOrder, adminNotifyMasterCall } from './adminBot';
 
 const ORDER_BOT_TOKEN = process.env.ORDER_BOT_TOKEN || ''; // SPORT LOUNGE BOT (@hookahversebot) - Заказы
 const MANAGER_BOT_TOKEN = process.env.MANAGER_BOT_TOKEN || ''; // Menedher_bot (@llsportsmanager_bot) - Вызовы мастера
-
-const zoneLabels: Record<string, string> = {
-  hall: '🖥 Общий зал',
-  vip: '👑 VIP PS',
-  ps: '🎮 PlayStation (2эт)',
-  room: '🎮 PS + ПК',
-  pro: '⚡ PRO 600Hz',
-  oled: '✨ OLED 4K',
-};
 
 function escapeMarkdown(text: string): string {
   if (!text) return '';
@@ -57,8 +49,9 @@ async function sendTelegramMessage(token: string, chatId: string, text: string):
 }
 
 export async function sendOrderNotification(order: any, userName: string, phone: string, mixDetails: any) {
-  const chatId = config.telegramChatId || '5652912760';
-  const zoneName = zoneLabels[order.seat_zone] || order.seat_zone || 'Общий зал';
+  const chatId = config.telegramChatId;
+  if (!chatId) { console.warn('⚠️ No TELEGRAM_CHAT_ID configured'); return false; }
+  const zoneName = ZONE_LABELS[order.seat_zone] || order.seat_zone || 'Общий зал';
   const promisedTime = new Date(order.promised_delivery_time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
   const message = [
@@ -90,8 +83,9 @@ export async function sendOrderNotification(order: any, userName: string, phone:
 }
 
 export async function sendMasterCallNotification(order: any, phone: string) {
-  const chatId = config.telegramChatId || '5652912760';
-  const zoneName = zoneLabels[order.seat_zone] || order.seat_zone || 'Общий зал';
+  const chatId = config.telegramChatId;
+  if (!chatId) { console.warn('⚠️ No TELEGRAM_CHAT_ID configured'); return false; }
+  const zoneName = ZONE_LABELS[order.seat_zone] || order.seat_zone || 'Общий зал';
 
   const message = [
     '🚨 *ВЫЗОВ КАЛЬЯННОГО МАЭСТРО\\!*',
@@ -115,8 +109,9 @@ export async function sendMasterCallNotification(order: any, phone: string) {
 }
 
 export async function sendDelayNotification(order: any, delayMinutes: number) {
-  const chatId = config.telegramChatId || '5652912760';
-  const zoneName = zoneLabels[order.seat_zone] || order.seat_zone || 'Общий зал';
+  const chatId = config.telegramChatId;
+  if (!chatId) { console.warn('⚠️ No TELEGRAM_CHAT_ID configured'); return false; }
+  const zoneName = ZONE_LABELS[order.seat_zone] || order.seat_zone || 'Общий зал';
 
   const message = [
     '⚠️ *ТРЕВОГА: ЗАДЕРЖКА ЗАКАЗА\\!*',

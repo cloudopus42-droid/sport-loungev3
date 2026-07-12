@@ -1,4 +1,5 @@
 import { config } from '../config/env';
+import { ZONE_LABELS } from '../config/zones';
 
 const TELEGRAM_API = `${config.telegramApiBaseUrl}/bot${config.telegramToken}`;
 
@@ -16,15 +17,6 @@ interface BookingInfo {
   hookahCount?: number;
   comment?: string;
 }
-
-const zoneLabels: Record<string, string> = {
-  hall: '🖥 Общий зал',
-  vip: '👑 VIP PS',
-  ps: '🎮 PlayStation (2эт)',
-  room: '🎮 PS + ПК',
-  pro: '⚡ PRO 600Hz',
-  oled: '✨ OLED 4K',
-};
 
 interface QueuedNotification {
   id: string;
@@ -79,7 +71,7 @@ async function processQueue() {
 // Internal sender
 async function executeTelegramSend(booking: BookingInfo): Promise<boolean> {
   const chatId = config.telegramChatId;
-  const zoneName = zoneLabels[booking.seatZone] || booking.seatZone;
+  const zoneName = ZONE_LABELS[booking.seatZone] || booking.seatZone;
   const strengthLabels: Record<string, string> = {
     light: 'Лёгкий',
     medium: 'Средний',

@@ -1,8 +1,9 @@
 import { config } from '../config/env';
 
 const SUPPORT_BOT_TOKEN = process.env.SUPPORT_BOT_TOKEN || '';
+const MANAGER_BOT_TOKEN = process.env.MANAGER_BOT_TOKEN || '';
 const TELEGRAM_API_SUPPORT = `https://api.telegram.org/bot${SUPPORT_BOT_TOKEN}`;
-const TELEGRAM_API_MAIN = `${config.telegramApiBaseUrl}/bot${config.telegramToken}`;
+const TELEGRAM_API_MANAGER = `https://api.telegram.org/bot${MANAGER_BOT_TOKEN}`;
 
 interface ChatHistoryItem {
   role: 'user' | 'assistant';
@@ -10,7 +11,29 @@ interface ChatHistoryItem {
 }
 
 const chatHistories: Record<number, ChatHistoryItem[]> = {};
+const chatLastActive: Record<number, number> = {};
 let serverStartTime = Date.now();
+
+const MAX_CHAT_HISTORY = 50;
+const CHAT_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+function evictStaleChats() {
+  const now = Date.now();
+  const staleIds = Object.keys(chatLastActive)
+    .map(Number)
+    .filter(id => now - chatLastActive[id] > CHAT_TTL_MS);
+  for (const id of staleIds) {
+    delete chatHistories[id];
+    delete chatLastActive[id];
+  }
+  // Also enforce max chat count
+  const allIds = Object.keys(chatHistories).map(Number).sort((a, b) => chatLastActive[a] - chatLastActive[b]);
+  while (allIds.length > MAX_CHAT_HISTORY) {
+    const oldest = allIds.shift()!;
+    delete chatHistories[oldest];
+    delete chatLastActive[oldest];
+  }
+}
 
 const supportKeyboard = {
   inline_keyboard: [
@@ -44,6 +67,7 @@ function addToHistory(chatId: number, role: 'user' | 'assistant', content: strin
   if (chatHistories[chatId].length > 10) {
     chatHistories[chatId].shift();
   }
+  chatLastActive[chatId] = Date.now();
 }
 
 function escapeHtml(text: string): string {
@@ -118,7 +142,8 @@ async function getUpdates(offset: number, timeout = 30): Promise<any[]> {
 }
 
 async function notifyOwner(user: any, lastMessage: string) {
-  const chatId = config.telegramChatId || '5652912760';
+  const chatId = config.telegramChatId;
+  if (!chatId) return;
   const name = [user.first_name, user.last_name].filter(Boolean).join(' ');
   const profileLink = `tg://user?id=${user.id}`;
   
@@ -133,34 +158,23 @@ async function notifyOwner(user: any, lastMessage: string) {
     `🔗 <a href="${profileLink}">Открыть чат с пользователем</a>`
   ].join('\n');
 
-  // Try via main bot
-  if (config.telegramToken) {
+  // Send via manager bot (support+master bot)
+  if (MANAGER_BOT_TOKEN) {
     try {
-      await fetch(`${TELEGRAM_API_MAIN}/sendMessage`, {
+      await fetch(`${TELEGRAM_API_MANAGER}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
           text,
           parse_mode: 'HTML'
-        })
+        }),
+        signal: AbortSignal.timeout(4000)
       });
-      console.log('✅ Owner notified via main bot');
+      console.log('✅ Owner notified via manager bot');
     } catch (err: any) {
-      console.error('⚠️ Failed to notify owner via main bot:', err.message);
+      console.error('⚠️ Failed to notify owner via manager bot:', err.message);
     }
-  }
-
-  // Try via support bot
-  try {
-    await callTelegramApi('sendMessage', {
-      chat_id: chatId,
-      text,
-      parse_mode: 'HTML'
-    });
-    console.log('✅ Owner notified via support bot');
-  } catch (err: any) {
-    console.warn('⚠️ Failed to notify owner via support bot (owner may need to start it):', err.message);
   }
 }
 
@@ -395,6 +409,8 @@ export function startSupportBot() {
   let offset = 0;
   let isPolling = true;
 
+  let evictionCounter = 0;
+
   // Polling loop
   const poll = async () => {
     while (isPolling) {
@@ -403,6 +419,10 @@ export function startSupportBot() {
         for (const update of updates) {
           offset = update.update_id + 1;
           await handleUpdate(update);
+        }
+        // Evict stale chats every ~5 minutes (every 12 polls at 25s each)
+        if (++evictionCounter % 12 === 0) {
+          evictStaleChats();
         }
       } catch (err: any) {
         if (err.name === 'TimeoutError' || err.message?.includes('timeout') || err.message?.includes('Abort')) {

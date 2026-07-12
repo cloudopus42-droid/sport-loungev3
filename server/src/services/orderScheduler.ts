@@ -2,6 +2,8 @@ import { supabase } from '../config/supabase';
 import { sendDelayNotification } from './ordersTelegram';
 import { getIO } from '../socket';
 
+const alertedOrders = new Set<string>();
+
 export function startOrderScheduler() {
   console.log('⏳ Hookah Order Delay Scheduler started.');
   
@@ -9,11 +11,11 @@ export function startOrderScheduler() {
     try {
       const now = new Date().toISOString();
       
-      // Select orders not done where promised delivery time is in the past
       const { data: delayedOrders, error } = await supabase
         .from('orders')
         .select('*')
         .neq('status', 'done')
+        .neq('status', 'cancelled')
         .lt('promised_delivery_time', now);
         
       if (error) {
@@ -21,14 +23,16 @@ export function startOrderScheduler() {
         return;
       }
       
-      if (!delayedOrders || delayedOrders.length === 0) return;
+      if (!delayedOrders || delayedOrders.length === 0) {
+        // Clean up alerts for completed/cancelled orders
+        alertedOrders.clear();
+        return;
+      }
       
       for (const order of delayedOrders) {
         const currentPromised = new Date(order.promised_delivery_time).getTime();
-        // Add 2 minutes
         const newPromised = new Date(currentPromised + 2 * 60 * 1000).toISOString();
         
-        // Update DB
         const { data: updated, error: updateErr } = await supabase
           .from('orders')
           .update({ promised_delivery_time: newPromised })
@@ -41,17 +45,19 @@ export function startOrderScheduler() {
           continue;
         }
         
-        // Calculate how much late it is from the original creation time
-        const originalCreated = new Date(order.created_at).getTime();
-        const promisedInitial = originalCreated + 15 * 60 * 1000;
-        const delayMs = Date.now() - promisedInitial;
-        const delayMinutes = Math.max(1, Math.ceil(delayMs / 1000 / 60));
-        
-        // Send alarm to Telegram
-        sendDelayNotification(updated, delayMinutes)
-          .catch(tgErr => console.warn('⚠️ [Scheduler] TG Delay alert fail:', tgErr.message));
+        // Send Telegram alert only ONCE per order (not every 30s)
+        if (!alertedOrders.has(order.id)) {
+          alertedOrders.add(order.id);
           
-        // Broadcast via Sockets
+          const originalCreated = new Date(order.created_at).getTime();
+          const promisedInitial = originalCreated + 15 * 60 * 1000;
+          const delayMs = Date.now() - promisedInitial;
+          const delayMinutes = Math.max(1, Math.ceil(delayMs / 1000 / 60));
+          
+          sendDelayNotification(updated, delayMinutes)
+            .catch(tgErr => console.warn('⚠️ [Scheduler] TG Delay alert fail:', tgErr.message));
+        }
+          
         try {
           const io = getIO();
           io.emit('order:updated', {
@@ -73,5 +79,5 @@ export function startOrderScheduler() {
     } catch (schedErr: any) {
       console.error('⚠️ [Scheduler] Unhandled error in background delay checker:', schedErr.message);
     }
-  }, 30000); // Check every 30 seconds
+  }, 30000);
 }
