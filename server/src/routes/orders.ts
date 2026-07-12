@@ -98,7 +98,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     }
 
     // Fire-and-forget: status history
-    supabase.from('order_status_history').insert({ order_id: order.id, status: 'accepted' }).then();
+    void supabase.from('order_status_history').insert({ order_id: order.id, status: 'accepted' });
 
     // Auto-decrement tobacco stock and check for restock
     if (data.mix_id) {
@@ -110,15 +110,15 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 
       if (mix) {
         const newStock = Math.max(0, (mix.stock_quantity || 0) - 1);
-        supabase.from('mixes').update({ stock_quantity: newStock, updated_at: new Date().toISOString() }).eq('id', data.mix_id).then();
+        void supabase.from('mixes').update({ stock_quantity: newStock, updated_at: new Date().toISOString() }).eq('id', data.mix_id);
 
         if (newStock <= (mix.min_stock_threshold ?? 5) && mix.auto_reorder_enabled) {
-          supabase.from('restock_requests').insert({
+          void supabase.from('restock_requests').insert({
             tobacco_id: data.mix_id,
             tobacco_name: mix.name,
             quantity: Math.max(10, (mix.min_stock_threshold ?? 5) * 2),
             status: 'pending',
-          }).then();
+          });
         }
       }
     }
@@ -129,7 +129,7 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
       sendOrderNotification(order, userProfile.name, userProfile.phone || 'Не указан', mixDetails).catch(() => {});
     }
 
-    try { getIO().emit('order:created', mapOrderToFrontend(order)); } catch {}
+    try { getIO().emit('order:created', mapOrderToFrontend(order)); } catch (e) { console.warn('⚠️ Socket emit order:created failed:', e); }
 
     res.status(201).json(mapOrderToFrontend(order));
   } catch (err) {
@@ -629,7 +629,7 @@ router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: N
     try {
       const io = getIO();
       io.emit('order:deleted', { id: req.params.id });
-    } catch {}
+    } catch (e) { console.warn('⚠️ Socket emit order:deleted failed:', e); }
 
     res.json({ success: true, message: 'Заказ удалён' });
   } catch (err) {

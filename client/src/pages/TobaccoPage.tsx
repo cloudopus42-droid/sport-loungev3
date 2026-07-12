@@ -182,10 +182,10 @@ export function TobaccoPage() {
                           <p className="text-xs text-white/80 font-medium truncate">{item.flavor || item.name}</p>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             {item.weight_grams && (
-                              <span className="text-[9px] text-white/25">{item.weight_grams}г</span>
+                              <span className="text-[10px] text-white/25">{item.weight_grams}г</span>
                             )}
                             {item.price != null && item.price > 0 && (
-                              <span className="text-[9px] text-accent-gold/60">{item.price} ₽</span>
+                              <span className="text-[10px] text-accent-gold/60">{item.price} ₽</span>
                             )}
                           </div>
                         </div>

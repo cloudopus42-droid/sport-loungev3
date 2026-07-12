@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import api from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import type { User, AuthResponse } from '@/types';
@@ -138,22 +138,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     supabase.auth.signOut().catch(() => {});
   }, []);
 
+  const contextValue = useMemo(() => ({
+    user,
+    token,
+    isAuthenticated,
+    isAdmin,
+    loading,
+    login,
+    register,
+    logout,
+    loginWithGoogle,
+    handleGoogleCallback,
+    setUser,
+  }), [user, token, isAuthenticated, isAdmin, loading, login, register, logout, loginWithGoogle, handleGoogleCallback, setUser]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated,
-        isAdmin,
-        loading,
-        login,
-        register,
-        logout,
-        loginWithGoogle,
-        handleGoogleCallback,
-        setUser,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

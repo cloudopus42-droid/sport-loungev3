@@ -201,7 +201,7 @@ export function AdminBookingsPage() {
                                 showToast('Заказ удалён', 'success');
                               } catch { showToast('Ошибка при удалении', 'error'); }
                             }}
-                            className="p-2 rounded-lg bg-red-600/10 border border-red-500/20 hover:bg-red-600/20 text-red-500 transition-all"
+                            className="p-2.5 rounded-lg bg-red-600/10 border border-red-500/20 hover:bg-red-600/20 text-red-500 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
                             title="Удалить заказ"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -265,7 +265,7 @@ export function AdminBookingsPage() {
                         animate={{ width: `${hs.progressPercent}%` }} transition={{ duration: 0.5 }} />
                     </div>
                     {hs.minutesLeft > 0 && (
-                      <p className="text-[9px] text-white/30 font-medium">{hs.minutesLeft} мин до готовности</p>
+                      <p className="text-[10px] text-white/30 font-medium">{hs.minutesLeft} мин до готовности</p>
                     )}
                   </div>
                 );

@@ -171,7 +171,9 @@ router.delete(
       try {
         const io = getIO();
         ids.forEach((id: string) => io.emit('post-deleted', { postId: id }));
-      } catch (_) {}
+      } catch (socketErr) {
+        console.warn('⚠️ Socket emit post-deleted failed:', socketErr);
+      }
 
       res.json({ message: 'Посты удалены', deletedCount: ids.length });
     } catch (error) {
@@ -215,7 +217,9 @@ router.delete(
       try {
         const io = getIO();
         io.emit('post-deleted', { postId: req.params.id });
-      } catch (_) {}
+      } catch (socketErr) {
+        console.warn('⚠️ Socket emit post-deleted failed:', socketErr);
+      }
 
       res.json({ message: 'Пост удалён' });
     } catch (error) {

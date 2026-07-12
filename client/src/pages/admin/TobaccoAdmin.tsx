@@ -279,14 +279,14 @@ function TobaccoItemsPanel() {
               </div>
               <div className="flex items-center gap-1">
                 <motion.button
-                  className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors"
+                  className="p-2.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   onClick={() => openEdit(item)}
                   whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                 >
                   <Edit2 className="w-4 h-4" />
                 </motion.button>
                 <motion.button
-                  className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  className="p-2.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   onClick={() => { setDeleteTarget(item._id); setDeleteDialogOpen(true); }}
                   whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                 >
@@ -675,7 +675,7 @@ function RestockPanel() {
             >
               {opt.label}
               {counts[opt.key] > 0 && (
-                <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] ${
+                <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${
                   filter === opt.key ? 'bg-accent-gold/20' : 'bg-white/10'
                 }`}>
                   {counts[opt.key]}

@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useEffect, useState, useMemo, type ReactNode } from 'react';
 import { type Socket } from 'socket.io-client';
 import { connectSocket, disconnectSocket } from '@/lib/socket';
 
@@ -42,8 +42,10 @@ export function SocketProvider({ children }: SocketProviderProps) {
     };
   }, []);
 
+  const contextValue = useMemo(() => ({ socket, isConnected }), [socket, isConnected]);
+
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={contextValue}>
       {children}
     </SocketContext.Provider>
   );

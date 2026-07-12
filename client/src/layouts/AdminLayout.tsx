@@ -213,7 +213,7 @@ export function AdminLayout() {
               <ChevronLeftIcon className={clsx('w-4 h-4 transition-transform duration-300', collapsed && 'rotate-180')} />
             </motion.button>
             <button
-              className="lg:hidden p-1 text-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg"
+              className="lg:hidden p-2.5 text-white/40 hover:text-white focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:outline-none rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
               onClick={() => setSidebarOpen(false)}
               aria-label="Закрыть панель"
             >
@@ -406,6 +406,7 @@ export function AdminLayout() {
       {/* Mobile bottom tab bar */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-dark-surface/90 backdrop-blur-xl border-t border-glass-border"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         aria-label="Быстрая навигация"
       >
         <div className="max-w-lg mx-auto flex items-center justify-around px-1 py-1">
@@ -440,7 +441,7 @@ export function AdminLayout() {
                       )}
                     </div>
                     <span className={clsx(
-                      'text-[9px] font-heading font-semibold tracking-tight',
+                      'text-[10px] font-heading font-semibold tracking-tight',
                       isActive ? 'text-accent-gold' : 'text-white/40'
                     )}>
                       {tab.label}

@@ -12,10 +12,10 @@ interface ModalProps {
 }
 
 const sizeClasses = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-2xl',
-  xl: 'max-w-4xl',
+  sm: 'max-w-md max-w-[calc(100vw-2rem)]',
+  md: 'max-w-lg max-w-[calc(100vw-2rem)]',
+  lg: 'max-w-2xl max-w-[calc(100vw-2rem)]',
+  xl: 'max-w-4xl max-w-[calc(100vw-2rem)]',
 };
 
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
@@ -45,10 +45,10 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border">
-              <h2 className="text-lg font-display font-semibold text-white">{title}</h2>
+            <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-glass-border">
+              <h2 className="text-base sm:text-lg font-display font-semibold text-white">{title}</h2>
               <motion.button
-                className="p-1.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-gold/40 transition-colors"
+                className="p-2.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-gold/40 transition-colors"
                 onClick={onClose}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -58,7 +58,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             </div>
 
             {/* Body */}
-            <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
+            <div className="px-4 py-4 sm:px-6 sm:py-5 max-h-[85vh] overflow-y-auto">
               {children}
             </div>
           </motion.div>

@@ -322,10 +322,10 @@ export function MainLayout() {
               aria-label="Навигация"
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">Навигация</span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Навигация</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-white/40 hover:text-white transition-colors"
+                  className="p-3 text-white/40 hover:text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Закрыть меню"
                 >
                   <CloseIcon className="w-4 h-4" />
@@ -396,9 +396,9 @@ export function MainLayout() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="font-mono text-[11px] text-white/60 truncate">{user?.name}</p>
-                      <p className="font-mono text-[9px] text-white/30 truncate">{user?.email}</p>
+                      <p className="font-mono text-[10px] text-white/30 truncate">{user?.email}</p>
                     </div>
-                    <button onClick={handleLogout} className="p-1.5 text-white/20 hover:text-red-400 transition-colors" aria-label="Выйти">
+                    <button onClick={handleLogout} className="p-3 text-white/20 hover:text-red-400 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Выйти">
                       <LogOut className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -434,6 +434,7 @@ export function MainLayout() {
       {/* Mobile bottom navigation — minimal pill */}
       <nav
         className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 lg:hidden w-auto"
+        style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
         aria-label="Мобильная навигация"
       >
         <motion.div
@@ -463,7 +464,7 @@ export function MainLayout() {
                     >
                       <Icon className="w-4 h-4" />
                       <span className={clsx(
-                        'font-mono text-[8px] uppercase tracking-wider',
+                        'font-mono text-[9px] uppercase tracking-wider',
                         isActive ? 'text-white' : 'text-white/30'
                       )}>
                         {tab.label}

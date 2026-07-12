@@ -128,6 +128,7 @@ export function FeedPage() {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (newImagePreview) URL.revokeObjectURL(newImagePreview);
       setNewImage(file);
       setNewImagePreview(URL.createObjectURL(file));
     }
@@ -163,7 +164,7 @@ export function FeedPage() {
                 {newImagePreview ? (
                   <div className="relative">
                     <img src={newImagePreview} className="w-full h-48 object-cover rounded-xl" alt="" />
-                    <button type="button" onClick={() => { setNewImage(null); setNewImagePreview(''); }}
+                    <button type="button" onClick={() => { if (newImagePreview) URL.revokeObjectURL(newImagePreview); setNewImage(null); setNewImagePreview(''); }}
                       className="absolute top-2 right-2 p-1 rounded-full bg-dark-bg/80 text-white/60 hover:text-white">
                       <X className="w-4 h-4" />
                     </button>
@@ -202,7 +203,7 @@ export function FeedPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">{author?.name || 'Аноним'}</p>
-                  <p className="text-[10px] text-white/30">{new Date(post.createdAt).toLocaleDateString('ru-RU')}</p>
+                  <p className="text-[11px] text-white/30">{new Date(post.createdAt).toLocaleDateString('ru-RU')}</p>
                 </div>
               </div>
 
@@ -260,7 +261,7 @@ export function FeedPage() {
                             onKeyDown={(e) => e.key === 'Enter' && submitComment(post._id)}
                           />
                           <motion.button onClick={() => submitComment(post._id)}
-                            className="p-2 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-colors"
+                            className="p-3 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                             whileTap={{ scale: 0.9 }}>
                             <Send className="w-3.5 h-3.5" />
                           </motion.button>

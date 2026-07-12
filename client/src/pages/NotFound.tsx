@@ -27,7 +27,7 @@ export function NotFound() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-dark-bg">
-      <div className="fixed top-0 right-0 w-[400px] h-[400px] bg-[#FFBF00] opacity-[0.02] blur-[120px] rounded-full pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-[#FFBF00] opacity-[0.02] blur-[120px] rounded-full pointer-events-none" />
       {dots.map((d, i) => <SmokeDot key={i} {...d} />)}
 
       <motion.div

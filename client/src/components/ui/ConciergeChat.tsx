@@ -70,9 +70,9 @@ export function ConciergeChat() {
   if (!conciergeEnabled) return null;
 
   return (
-    <div className="fixed right-0 z-[45] bottom-[88px] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2">
+    <div className="fixed right-0 z-[45] bottom-[88px] pb-[env(safe-area-inset-bottom)] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2">
       <motion.div
-        animate={{ width: isOpen ? 360 : 28 }}
+        animate={{ width: isOpen ? 'min(360px, 85vw)' : 28 }}
         transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
         className="relative h-[440px] lg:h-[520px]"
       >
@@ -116,7 +116,7 @@ export function ConciergeChat() {
                     <div className="text-[11px] font-display font-bold text-white tracking-wider uppercase flex items-center gap-1">
                       Консьерж <Sparkles className="w-2.5 h-2.5 text-accent-gold" />
                     </div>
-                    <div className="text-[8px] text-green-400/80 font-semibold flex items-center gap-1">
+                    <div className="text-[10px] text-green-400/80 font-semibold flex items-center gap-1">
                       <span className="w-1 h-1 bg-green-400 rounded-full animate-pulse" /> На связи 24/7
                     </div>
                   </div>

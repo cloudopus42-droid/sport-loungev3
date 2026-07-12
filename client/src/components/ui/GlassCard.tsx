@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
@@ -20,7 +21,7 @@ interface GlassCardProps {
   hoverable?: boolean;
 }
 
-export function GlassCard({
+export const GlassCard = memo(function GlassCard({
   children, className, animate = true, onClick, variant = 'default', hoverable = false,
 }: GlassCardProps) {
   const prefersReducedMotion = useReducedMotion();
@@ -42,4 +43,4 @@ export function GlassCard({
       {children}
     </motion.div>
   );
-}
+});

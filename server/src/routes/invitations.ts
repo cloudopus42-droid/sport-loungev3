@@ -215,7 +215,9 @@ router.put(
       try {
         const io = getIO();
         io.emit('invitation:published', mapInvitationToFrontend(invitation));
-      } catch (_) {}
+      } catch (socketErr) {
+        console.warn('⚠️ Socket emit invitation:published failed:', socketErr);
+      }
 
       res.json(mapInvitationToFrontend(invitation));
     } catch (error) {

@@ -94,18 +94,22 @@ async function apiImpl<T = any>(endpoint: string, options: ApiOptions = {}): Pro
   }
 
   const text = await res.text();
-  if (!text) return undefined as T;
-  const json = JSON.parse(text);
-  const normalized = normalizeKeys(json) as T;
+  if (!text) return undefined as unknown as T;
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Invalid JSON response from ${endpoint}`);
+  }
+  const normalized = normalizeKeys(json) as Record<string, unknown>;
   // Auto-unwrap paginated responses for backwards compatibility
-  if (normalized && typeof normalized === 'object' && 'data' in (normalized as any) && 'pagination' in (normalized as any)) {
-    const p = normalized as any;
+  if (normalized && typeof normalized === 'object' && 'data' in normalized && 'pagination' in normalized) {
+    const p = normalized as { data: unknown[]; pagination: { page: number; [k: string]: unknown } };
     if (Array.isArray(p.data) && p.pagination?.page) {
-      (p.data as any)._pagination = p.pagination;
-      return p.data as T;
+      return Object.assign(p.data, { _pagination: p.pagination }) as T;
     }
   }
-  return normalized;
+  return normalized as T;
 }
 
 const api: ApiFunction = Object.assign(apiImpl, {

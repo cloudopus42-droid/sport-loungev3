@@ -51,14 +51,14 @@ export function AdminLogsPage() {
     <div className="space-y-3 pb-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-lg font-display font-semibold text-white tracking-wide">Журнал действий</h1>
-        <p className="text-[10px] text-white/40 mt-0">Логирование административных операций</p>
+        <p className="text-[11px] text-white/40 mt-0">Логирование административных операций</p>
       </motion.div>
 
       <GlassCard variant="premium" className="p-0 overflow-hidden border-glass-border/40">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
-              <tr className="border-b border-glass-border/10 text-[9px] uppercase tracking-wider">
+              <tr className="border-b border-glass-border/10 text-[10px] uppercase tracking-wider">
                 <th className="py-2 px-3 font-bold text-accent-gold">Время</th>
                 <th className="py-2 px-3 font-bold text-accent-gold">Пользователь</th>
                 <th className="py-2 px-3 font-bold text-accent-gold">Действие</th>
@@ -87,7 +87,7 @@ export function AdminLogsPage() {
                       {log.details ? JSON.stringify(log.details) : '—'}
                     </td>
                     <td className="py-2 px-3">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold border ${levelColors[log.level] || levelColors.info}`}>
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${levelColors[log.level] || levelColors.info}`}>
                         {log.level}
                       </span>
                     </td>

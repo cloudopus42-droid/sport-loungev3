@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import clsx from 'clsx';
@@ -23,7 +24,7 @@ const sizeStyles = {
   lg: 'px-8 py-3 text-base rounded',
 };
 
-export function GlowButton({
+export const GlowButton = memo(function GlowButton({
   children,
   variant = 'primary',
   size = 'md',
@@ -53,4 +54,4 @@ export function GlowButton({
       {children}
     </motion.button>
   );
-}
+});

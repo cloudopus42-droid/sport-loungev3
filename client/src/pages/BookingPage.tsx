@@ -108,7 +108,7 @@ export function BookingPage() {
   const [activeTab, setActiveTab] = useState<OrderTab>('order');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('asap');
   const [customTime, setCustomTime] = useState('19:00');
-  const timerIntervalRef = useRef<any>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fetchOrderStatusRef = useRef<AbortController | null>(null);
 
   // AI Mixologist extra settings
@@ -337,8 +337,8 @@ export function BookingPage() {
   return (
     <div className="relative min-h-screen bg-dark-bg text-white overflow-hidden">
       <SmokeEffect />
-      <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-accent-gold opacity-[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
-      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#8D6B3D] opacity-[0.02] blur-[130px] rounded-full pointer-events-none z-0" />
+      <div className="fixed top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-accent-gold opacity-[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
+      <div className="fixed bottom-0 left-0 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-[#8D6B3D] opacity-[0.02] blur-[130px] rounded-full pointer-events-none z-0" />
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 space-y-5 pb-24">
         <div className="text-center lg:text-left">
@@ -460,7 +460,7 @@ export function BookingPage() {
                       >
                         <Icon className={`w-4 h-4 mb-1 ${sel ? 'text-accent-gold' : 'text-white/20'}`} />
                         <span>{period.label}</span>
-                        <span className={`text-[9px] mt-0.5 ${sel ? 'text-accent-gold/60' : 'text-white/15'}`}>{period.desc}</span>
+                        <span className={`text-[10px] mt-0.5 ${sel ? 'text-accent-gold/60' : 'text-white/15'}`}>{period.desc}</span>
                       </button>
                     );
                   })}
@@ -718,7 +718,7 @@ export function BookingPage() {
                                   Заказать
                                 </button>
                                 <button type="button" onClick={() => handleDeleteUserMix(mix.id)}
-                                  className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all self-end"
+                                  className="p-2.5 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all self-end min-h-[44px] min-w-[44px] flex items-center justify-center"
                                   aria-label="Удалить рецепт"
                                 >
                                   <Trash2 className="w-3 h-3" />
@@ -755,7 +755,7 @@ export function BookingPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-[#0D0F13] border border-[rgba(255,191,0,0.15)] rounded-[16px] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.55)] relative overflow-hidden"
+              className="w-full max-w-md max-w-[calc(100vw-2rem)] bg-[#0D0F13] border border-[rgba(255,191,0,0.15)] rounded-[16px] p-4 sm:p-6 shadow-[0_24px_64px_rgba(0,0,0,0.55)] relative overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#FFBF00] to-transparent" />
               <h3 className="text-lg font-bold text-white mb-1 font-heading">Детали заказа</h3>

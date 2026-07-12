@@ -711,7 +711,7 @@ export function ProfilePage() {
               )}
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-glass-bg border border-glass-border flex items-center justify-center text-white/40 hover:text-accent-gold hover:border-accent-gold/40 transition-colors shadow-lg"
+                className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-glass-bg border border-glass-border flex items-center justify-center text-white/40 hover:text-accent-gold hover:border-accent-gold/40 transition-colors shadow-lg min-h-[44px] min-w-[44px]"
                 title="Загрузить аватар"
               >
                 <Camera className="w-3.5 h-3.5" />

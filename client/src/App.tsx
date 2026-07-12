@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { FeatureProvider } from '@/contexts/FeatureContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MainLayout } from '@/layouts/MainLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 
@@ -45,6 +46,7 @@ export default function App() {
     <AuthProvider>
       <SocketProvider>
         <FeatureProvider>
+          <ErrorBoundary>
           <Suspense fallback={
             <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center text-white font-sans">
               <div className="w-10 h-10 rounded-xl bg-accent-gold flex items-center justify-center mb-4">
@@ -94,6 +96,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
           </Suspense>
+          </ErrorBoundary>
 
           <Toaster position="top-right" toastOptions={{ duration: 4000, style: {
             background: '#12121A', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.08)',

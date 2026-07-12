@@ -285,7 +285,7 @@ export function OrdersAdmin() {
                           <button
                             onClick={() => moveOrder(idx, 'up')}
                             disabled={idx === 0}
-                            className="p-1 rounded hover:bg-white/5 text-white/40 hover:text-white transition-all disabled:opacity-20"
+                            className="p-2 rounded hover:bg-white/5 text-white/40 hover:text-white transition-all disabled:opacity-20 min-h-[44px] min-w-[44px] flex items-center justify-center"
                             title="Вверх в очереди"
                           >
                             <ChevronUp className="w-4 h-4" />
@@ -293,7 +293,7 @@ export function OrdersAdmin() {
                           <button
                             onClick={() => moveOrder(idx, 'down')}
                             disabled={idx === orders.length - 1}
-                            className="p-1 rounded hover:bg-white/5 text-white/40 hover:text-white transition-all disabled:opacity-20"
+                            className="p-2 rounded hover:bg-white/5 text-white/40 hover:text-white transition-all disabled:opacity-20 min-h-[44px] min-w-[44px] flex items-center justify-center"
                             title="Вниз в очереди"
                           >
                             <ChevronDown className="w-4 h-4" />
@@ -346,7 +346,7 @@ export function OrdersAdmin() {
                     </div>
 
                     {/* Timer and Controls */}
-                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center gap-3 justify-between min-w-[240px]">
+                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center gap-3 justify-between min-w-0">
                       
                       {/* Timer Display */}
                       <div className={`p-2 rounded-lg border text-center font-mono ${

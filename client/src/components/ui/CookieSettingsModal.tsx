@@ -48,7 +48,7 @@ export function CookieSettingsModal({ consent, onSave, onClose }: Props) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-white">{cat.label}</span>
                     {cat.required && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent-gold-bright/10 text-accent-gold-bright font-medium">обязательно</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-gold-bright/10 text-accent-gold-bright font-medium">обязательно</span>
                     )}
                   </div>
                   <p className="text-[11px] text-white/40 mt-0.5">{cat.description}</p>

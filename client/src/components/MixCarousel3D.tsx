@@ -155,7 +155,7 @@ export function MixCarousel3D({ items, onItemClick, autoPlay = true, autoPlayInt
 
               {isActive && (
                 <div className="absolute top-4 left-4 z-10">
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-accent-gold/20 border border-accent-gold/30 text-[9px] font-bold text-accent-gold uppercase tracking-wider">
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-accent-gold/20 border border-accent-gold/30 text-[10px] font-bold text-accent-gold uppercase tracking-wider">
                     Актуально
                   </span>
                 </div>

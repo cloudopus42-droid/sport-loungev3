@@ -371,7 +371,7 @@ export function Dashboard() {
                             </button>
                             <button
                               onClick={() => cancelOrder(order.id)}
-                              className="p-1.5 rounded-full border border-red-500/30 hover:bg-red-500/20 text-red-400 transition-all"
+                              className="p-2.5 rounded-full border border-red-500/30 hover:bg-red-500/20 text-red-400 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
                               title="Отменить заказ"
                             >
                               <XCircle className="w-3.5 h-3.5" />
