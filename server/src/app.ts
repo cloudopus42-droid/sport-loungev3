@@ -118,9 +118,18 @@ app.use('/api/ai', aiRoutes);
 const flavorsRouter = Router();
 flavorsRouter.get('/', async (_req, res, next) => {
   try {
-    const { data, error } = await supabase.from('mixes').select('id, name, flavor, is_active, price').eq('is_active', true).order('name');
+    const { data, error } = await supabase.from('mixes').select('id, name, flavor, is_active, price, emoji, category, color, strength').eq('is_active', true).order('name');
     if (error) { res.json([]); return; }
-    res.json((data || []).map((m: any) => ({ id: m.id, name: m.flavor || m.name, category: 'Основные', is_active: m.is_active !== false, price_value: m.price })));
+    res.json((data || []).map((m: any) => ({
+      id: m.id,
+      name: m.flavor || m.name,
+      category: m.category || 'Основные',
+      emoji: m.emoji || '',
+      color: m.color || '',
+      is_active: m.is_active !== false,
+      price_value: m.price,
+      strength: m.strength || 5,
+    })));
   } catch (e) { next(e); }
 });
 app.use('/api/flavors', flavorsRouter);

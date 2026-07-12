@@ -10,12 +10,16 @@ function mapMixToFrontend(m: any) {
   if (!m) return null;
   return {
     id: m.id,
+    _id: m.id,
     name: m.name,
     manufacturer: m.manufacturer,
     description: m.description,
     flavors: m.flavors || [],
     strength: m.strength,
     status: m.status,
+    emoji: m.emoji || '',
+    category: m.category || 'Основные',
+    color: m.color || '',
     createdAt: m.created_at,
   };
 }
@@ -162,6 +166,9 @@ router.post(
           flavors: data.flavors || [],
           strength: data.strength || 5,
           status: data.status || 'active',
+          emoji: data.emoji || '',
+          category: data.category || 'Основные',
+          color: data.color || '',
         })
         .select()
         .single();

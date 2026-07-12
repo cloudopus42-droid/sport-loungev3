@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, Clock, Sparkles,
   Bot, ThumbsUp, ShoppingCart, ChevronRight,
-  Leaf, Zap, Bookmark, Trash2, Flame, ChefHat, Timer
+  Leaf, Zap, Bookmark, Trash2, Flame, Timer, Sun, Moon, Sunrise
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,6 +23,7 @@ type Flavor = {
   color?: string;
   is_active: boolean;
   price_value?: number;
+  strength?: number;
 };
 
 const bookingFormSchema = z.object({
@@ -61,20 +62,15 @@ const AI_MOODS = [
   { id: 'classic', label: 'Классика', emoji: '🏆', desc: 'Проверенные временем вкусы' },
 ];
 
-const BOWL_OPTIONS = [
-  { id: 'clay', label: 'Глиняная', emoji: '🏺' },
-  { id: 'phunnel', label: 'Phunnel', emoji: '🌀' },
-  { id: 'turkish', label: 'Турка', emoji: '☕' },
-  { id: 'fruit', label: 'Фруктовая', emoji: '🍊' },
+type TimePeriod = 'asap' | 'morning' | 'afternoon' | 'evening' | 'night' | 'custom';
+const TIME_PERIODS: { id: TimePeriod; label: string; icon: typeof Sun; desc: string; hours?: string }[] = [
+  { id: 'asap', label: 'Как можно скорее', icon: Zap, desc: '~15 мин' },
+  { id: 'morning', label: 'Утро', icon: Sunrise, desc: '08:00–12:00', hours: '09:00' },
+  { id: 'afternoon', label: 'День', icon: Sun, desc: '12:00–17:00', hours: '14:00' },
+  { id: 'evening', label: 'Вечер', icon: Flame, desc: '17:00–22:00', hours: '19:00' },
+  { id: 'night', label: 'Ночь', icon: Moon, desc: '22:00–08:00', hours: '23:00' },
+  { id: 'custom', label: 'Выбрать время', icon: Timer, desc: 'Точное время' },
 ];
-
-const MASTER_OPTIONS = [
-  { id: 'any', label: 'Любой мастер' },
-  { id: 'senior', label: 'Старший мастер' },
-  { id: 'personal', label: 'Мой мастер' },
-];
-
-const TIME_SLOTS = ['Сейчас', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
 
 type OrderTab = 'order' | 'mixologist';
 
@@ -109,11 +105,14 @@ export function BookingPage() {
   const [userMixes, setUserMixes] = useState<any[]>([]);
   const [showSavedMixes, setShowSavedMixes] = useState(false);
   const [activeTab, setActiveTab] = useState<OrderTab>('order');
-  const [bowlType, setBowlType] = useState('phunnel');
-  const [masterPref, setMasterPref] = useState('any');
-  const [preferredTime, setPreferredTime] = useState('Сейчас');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('asap');
+  const [customTime, setCustomTime] = useState('19:00');
   const timerIntervalRef = useRef<any>(null);
   const fetchOrderStatusRef = useRef<AbortController | null>(null);
+
+  // AI Mixologist extra settings
+  const [aiStrength, setAiStrength] = useState<'light' | 'medium' | 'strong'>('medium');
+  const [aiDeliveryTime, setAiDeliveryTime] = useState('Сейчас');
 
   const aiRecommendations = useMemo(() => {
     if (aiMood.length === 0) return [];
@@ -162,6 +161,12 @@ export function BookingPage() {
     resolver: zodResolver(bookingFormSchema),
     defaultValues: { specialNotes: '' },
   });
+
+  const getPreferredTimeLabel = (): string => {
+    if (timePeriod === 'asap') return 'Сейчас';
+    if (timePeriod === 'custom') return customTime;
+    return TIME_PERIODS.find(p => p.id === timePeriod)?.hours || 'Сейчас';
+  };
 
   const fetchOrderStatus = (id: string) => {
     fetchOrderStatusRef.current?.abort();
@@ -249,9 +254,8 @@ export function BookingPage() {
         }
       }
       const orderStrength = selectedMix.strength === 3 ? 'light' : selectedMix.strength === 9 ? 'strong' : 'medium';
-      const bowlLabel = BOWL_OPTIONS.find(b => b.id === bowlType)?.label || bowlType;
-      const masterLabel = MASTER_OPTIONS.find(m => m.id === masterPref)?.label || masterPref;
-      finalNotes = `[S:${orderStrength}][Чаша:${bowlLabel}][Мастер:${masterLabel}][Время:${preferredTime}]${finalNotes ? ' ' + finalNotes : ''}`;
+      const timeLabel = getPreferredTimeLabel();
+      finalNotes = `[S:${orderStrength}][Время:${timeLabel}]${finalNotes ? ' ' + finalNotes : ''}`;
       const res = await api('/api/orders', { method: 'POST', body: {
         mix_id: isCustom ? null : selectedMix.id, notes: finalNotes,
         strength: orderStrength,
@@ -306,8 +310,8 @@ export function BookingPage() {
         name: `Микс: ${flavors.join(', ')}`,
         flavors,
         percentages: {},
-        strength,
-        notes: '',
+        strength: aiStrength,
+        notes: `Крепость: ${aiStrength}, Подача: ${aiDeliveryTime}`,
       }});
       const data = await api<any[]>('/api/mixes/user-mixes');
       if (data?.length) setUserMixes(data);
@@ -332,387 +336,427 @@ export function BookingPage() {
   return (
     <div className="relative min-h-screen bg-dark-bg text-white overflow-hidden">
       <SmokeEffect />
-      {/* Ambient glows */}
       <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-accent-gold opacity-[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#8D6B3D] opacity-[0.02] blur-[130px] rounded-full pointer-events-none z-0" />
 
-      {/* Single-column full-width form layout */}
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 space-y-5 pb-24">
-          
-          {/* Header */}
-          <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-gold/20 bg-accent-gold/5 text-[11px] font-semibold text-accent-gold uppercase tracking-[0.2em] mb-3">
-              <Sparkles className="w-3 h-3" /> Premium Hookah Experience
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight mb-1 font-heading">
-              Заказ & <span className="text-accent-gold">ИИ-Миксолог</span>
-            </h1>
-            <p className="text-white/40 text-xs max-w-md mx-auto lg:mx-0">
-              Соберите идеальный кальян или доверьтесь рекомендациям ИИ — всё на одной странице
-            </p>
+        <div className="text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-gold/20 bg-accent-gold/5 text-[11px] font-semibold text-accent-gold uppercase tracking-[0.2em] mb-3">
+            <Sparkles className="w-3 h-3" /> Premium Hookah Experience
           </div>
+          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight mb-1 font-heading">
+            Заказ & <span className="text-accent-gold">ИИ-Миксолог</span>
+          </h1>
+          <p className="text-white/40 text-xs max-w-md mx-auto lg:mx-0">
+            Соберите идеальный кальян или доверьтесь рекомендациям ИИ — всё на одной странице
+          </p>
+        </div>
 
-          {/* Tab navigation */}
-          <div className="liquid-glass bg-liquid-glass rounded-2xl p-1 flex gap-1">
-            {([
-              { id: 'order' as const, label: 'Параметры заказа', icon: ShoppingCart },
-              { id: 'mixologist' as const, label: 'ИИ-Миксолог', icon: Bot },
-            ]).map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => switchTab(id)}
-                className={`relative flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-[0.1em] transition-all ${
-                  activeTab === id
-                    ? 'bg-accent-gold text-[#0b0807] shadow-[0_4px_16px_rgba(255,191,0,0.25)]'
-                    : 'text-white/40 hover:text-white/70'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <AnimatePresence mode="wait">
-            {activeTab === 'order' ? (
-              <motion.div
-                key="order-tab"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-                className="space-y-5"
-              >
-          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Leaf className="w-3.5 h-3.5 text-accent-gold" />
-              <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Вкусы (до 4)</h3>
-              <span className="ml-auto text-[11px] text-white/30">{selectedFlavors.length}/4</span>
-            </div>
-            <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide mb-2">
-              {FLAVOR_CATS.map(cat => (
-                <button key={cat} onClick={() => setFlavorCategory(cat)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all border ${
-                    flavorCategory === cat
-                      ? 'bg-accent-gold text-[#0b0807] border-accent-gold/30'
-                      : 'text-white/40 bg-white/5 border-transparent hover:border-accent-gold/20'
-                  }`}>{cat}</button>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-1.5 max-h-[160px] overflow-y-auto scrollbar-hide pr-1">
-              {flavors
-                .filter(f => flavorCategory === 'Все' || f.category === flavorCategory)
-                .map(flavor => {
-                  const sel = selectedFlavors.includes(flavor.name);
-                  return (
-                    <motion.button key={flavor.name} whileTap={{ scale: 0.96 }}
-                      onClick={() => toggleFlavor(flavor.name)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all border ${
-                        sel
-                          ? 'bg-[rgba(255,191,0,0.08)] border-[rgba(255,191,0,0.25)] text-accent-gold'
-                          : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
-                      }`}
-                    >
-                      <span>{flavor.emoji}</span>
-                      <span className="truncate">{flavor.name}</span>
-                    </motion.button>
-                  );
-                })}
-            </div>
-          </div>
-
-          {/* Strength */}
-          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-3.5 h-3.5 text-accent-gold" />
-              <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Крепость</h3>
-            </div>
-            <div className="flex gap-2">
-              {([
-                { id: 'light' as const, label: 'Лёгкая', hint: 'Мягкий вкус', icon: '🕊️' },
-                { id: 'medium' as const, label: 'Средняя', hint: 'Золотая середина', icon: '⚖️' },
-                { id: 'strong' as const, label: 'Крепкая', hint: 'Насыщенный пар', icon: '💪' },
-              ]).map(s => (
-                <button key={s.id} type="button" onClick={() => setStrength(s.id)}
-                  className={`flex-1 flex flex-col items-center py-2 rounded-xl text-xs font-semibold transition-all border ${
-                    strength === s.id
-                      ? s.id === 'light' ? 'bg-[rgba(76,175,80,0.1)] border-[rgba(76,175,80,0.3)] text-[#4CAF50]'
-                        : s.id === 'medium' ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
-                        : 'bg-[rgba(244,67,54,0.1)] border-[rgba(244,67,54,0.3)] text-[#F44336]'
-                      : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
-                  }`}
-                >
-                  <span className="text-base leading-none mb-0.5">{s.icon}</span>
-                  <span>{s.label}</span>
-                  <span className={`${strength === s.id ? 'opacity-70' : 'opacity-0'} text-[11px] leading-none mt-0.5 hidden sm:inline`}>{s.hint}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Bowl */}
-          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Flame className="w-3.5 h-3.5 text-accent-gold" />
-              <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Чаша</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {BOWL_OPTIONS.map(b => (
-                <button key={b.id} type="button" onClick={() => setBowlType(b.id)}
-                  className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all border ${
-                    bowlType === b.id
-                      ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
-                      : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
-                  }`}
-                >
-                  <span className="mr-1">{b.emoji}</span>{b.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Master */}
-          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <ChefHat className="w-3.5 h-3.5 text-accent-gold" />
-              <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Мастер</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {MASTER_OPTIONS.map(m => (
-                <button key={m.id} type="button" onClick={() => setMasterPref(m.id)}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
-                    masterPref === m.id
-                      ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
-                      : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Time */}
-          <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Timer className="w-3.5 h-3.5 text-accent-gold" />
-              <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Время подачи</h3>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {TIME_SLOTS.map(t => (
-                <button key={t} type="button" onClick={() => setPreferredTime(t)}
-                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all border ${
-                    preferredTime === t
-                      ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
-                      : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Order Button */}
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleQuickOrder}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)] transition-all duration-300 flex items-center justify-center gap-2"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Заказать
-          </motion.button>
-
-          {/* Active Order Tracker (collapsible) */}
-          {activeOrder && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="liquid-glass bg-liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]"
+        <div className="liquid-glass bg-liquid-glass rounded-2xl p-1 flex gap-1">
+          {([
+            { id: 'order' as const, label: 'Параметры заказа', icon: ShoppingCart },
+            { id: 'mixologist' as const, label: 'ИИ-Миксолог', icon: Bot },
+          ]).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => switchTab(id)}
+              className={`relative flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-[0.1em] transition-all ${
+                activeTab === id
+                  ? 'bg-accent-gold text-[#0b0807] shadow-[0_4px_16px_rgba(255,191,0,0.25)]'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
             >
-              <button onClick={() => setShowOrderTracker(!showOrderTracker)}
-                className="flex items-center justify-between w-full mb-3"
-              >
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-accent-gold" />
-                  <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Статус заказа</h3>
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          {activeTab === 'order' ? (
+            <motion.div
+              key="order-tab"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+              className="space-y-5"
+            >
+              {/* Flavors */}
+              <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Leaf className="w-3.5 h-3.5 text-accent-gold" />
+                  <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Вкусы (до 4)</h3>
+                  <span className="ml-auto text-[11px] text-white/30">{selectedFlavors.length}/4</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono text-accent-gold">{timeText}</span>
-                  <ChevronRight className={`w-3 h-3 text-white/30 transition-transform ${showOrderTracker ? 'rotate-90' : ''}`} />
+                <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide mb-2">
+                  {FLAVOR_CATS.map(cat => (
+                    <button key={cat} onClick={() => setFlavorCategory(cat)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all border ${
+                        flavorCategory === cat
+                          ? 'bg-accent-gold text-[#0b0807] border-accent-gold/30'
+                          : 'text-white/40 bg-white/5 border-transparent hover:border-accent-gold/20'
+                      }`}>{cat}</button>
+                  ))}
                 </div>
-              </button>
-              {showOrderTracker && (
-                <div className="space-y-3 pl-3 relative">
-                  <div className="absolute left-[18px] top-8 bottom-4 w-px bg-gradient-to-b from-[#FFBF00] to-white/5" />
-                  {stages.map((stage, idx) => {
-                    const stagesList = stages.map(s => s.id);
-                    const currentIdx = stagesList.indexOf(activeOrder.status);
-                    const isCompleted = currentIdx > idx;
-                    const isActive = currentIdx === idx;
-                    return (
-                      <div key={stage.id} className={`flex items-start gap-3 relative ${isCompleted || isActive ? 'opacity-100' : 'opacity-20'}`}>
-                        <div className={`w-6 h-6 rounded-full border flex items-center justify-center z-10 ${
-                          isActive ? 'border-accent-gold text-accent-gold' : isCompleted ? 'border-accent-gold text-accent-gold' : 'border-white/10 text-white/20'
-                        }`}>
-                          {isCompleted ? <Check className="w-2.5 h-2.5 stroke-[3]" /> : <div className={`w-1 h-1 rounded-full ${isActive ? 'bg-accent-gold' : 'bg-transparent'}`} />}
-                        </div>
-                        <div className="pt-0.5">
-                          <h5 className={`text-xs uppercase tracking-wider font-bold ${isActive ? 'text-accent-gold' : 'text-white'}`}>{stage.label}</h5>
-                          <p className="text-[11px] text-white/30">{stage.desc}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <button onClick={handleCallMaster} disabled={masterCalled}
-                    className="mt-3 w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:bg-white/5 disabled:border-white/10 text-[11px] font-bold text-accent-gold disabled:text-white/20 uppercase tracking-[0.12em] transition-all"
-                  >
-                    {masterCalled ? 'Вызов отправлен' : 'Позвать мастера'}
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="mixologist-tab"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-                className="space-y-5"
-              >
-                <div className={`liquid-glass bg-liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Bot className="w-3.5 h-3.5 text-accent-gold" />
-                    <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-accent-gold">ИИ-Миксолог</h3>
-                  </div>
-                  <p className="text-[11px] text-white/30 mb-3">Расскажите, что вы любите — ИИ подберёт идеальный микс</p>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {AI_MOODS.map(mood => {
-                      const sel = aiMood.includes(mood.id);
+                <div className="grid grid-cols-2 gap-1.5 max-h-[160px] overflow-y-auto scrollbar-hide pr-1">
+                  {flavors
+                    .filter(f => flavorCategory === 'Все' || f.category === flavorCategory)
+                    .map(flavor => {
+                      const sel = selectedFlavors.includes(flavor.name);
                       return (
-                        <button key={mood.id} type="button" onClick={() => setAiMood(prev => prev.includes(mood.id) ? prev.filter(id => id !== mood.id) : [...prev, mood.id])}
-                          className={`px-2.5 py-1.5 rounded-lg text-[11px] transition-all border ${
-                            sel ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold' : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
+                        <motion.button key={flavor.name} whileTap={{ scale: 0.96 }}
+                          onClick={() => toggleFlavor(flavor.name)}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all border ${
+                            sel
+                              ? 'bg-[rgba(255,191,0,0.08)] border-[rgba(255,191,0,0.25)] text-accent-gold'
+                              : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
                           }`}
                         >
-                          <span className="mr-1">{mood.emoji}</span>{mood.label}
-                        </button>
+                          <span>{flavor.emoji || '🍂'}</span>
+                          <span className="truncate">{flavor.name}</span>
+                        </motion.button>
                       );
                     })}
+                </div>
+              </div>
+
+              {/* Strength */}
+              <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-3.5 h-3.5 text-accent-gold" />
+                  <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Крепость</h3>
+                </div>
+                <div className="flex gap-2">
+                  {([
+                    { id: 'light' as const, label: 'Лёгкая', hint: 'Мягкий вкус', icon: '🕊️' },
+                    { id: 'medium' as const, label: 'Средняя', hint: 'Золотая середина', icon: '⚖️' },
+                    { id: 'strong' as const, label: 'Крепкая', hint: 'Насыщенный пар', icon: '💪' },
+                  ]).map(s => (
+                    <button key={s.id} type="button" onClick={() => setStrength(s.id)}
+                      className={`flex-1 flex flex-col items-center py-2 rounded-xl text-xs font-semibold transition-all border ${
+                        strength === s.id
+                          ? s.id === 'light' ? 'bg-[rgba(76,175,80,0.1)] border-[rgba(76,175,80,0.3)] text-[#4CAF50]'
+                            : s.id === 'medium' ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
+                            : 'bg-[rgba(244,67,54,0.1)] border-[rgba(244,67,54,0.3)] text-[#F44336]'
+                          : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
+                      }`}
+                    >
+                      <span className="text-base leading-none mb-0.5">{s.icon}</span>
+                      <span>{s.label}</span>
+                      <span className={`${strength === s.id ? 'opacity-70' : 'opacity-0'} text-[11px] leading-none mt-0.5 hidden sm:inline`}>{s.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Delivery Time */}
+              <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Timer className="w-3.5 h-3.5 text-accent-gold" />
+                  <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Время подачи</h3>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5 mb-2">
+                  {TIME_PERIODS.map(period => {
+                    const Icon = period.icon;
+                    const sel = timePeriod === period.id;
+                    return (
+                      <button key={period.id} type="button" onClick={() => setTimePeriod(period.id)}
+                        className={`flex flex-col items-center py-2.5 px-1 rounded-xl text-[11px] font-semibold transition-all border ${
+                          sel
+                            ? 'bg-[rgba(255,191,0,0.08)] border-[rgba(255,191,0,0.25)] text-accent-gold'
+                            : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
+                        }`}
+                      >
+                        <Icon className={`w-4 h-4 mb-1 ${sel ? 'text-accent-gold' : 'text-white/20'}`} />
+                        <span>{period.label}</span>
+                        <span className={`text-[9px] mt-0.5 ${sel ? 'text-accent-gold/60' : 'text-white/15'}`}>{period.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {timePeriod === 'custom' && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="overflow-hidden">
+                    <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                      <input
+                        type="time"
+                        value={customTime}
+                        onChange={(e) => setCustomTime(e.target.value)}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-accent-gold focus:outline-none transition-colors [color-scheme:dark]"
+                      />
+                      <span className="text-[11px] text-white/30">точное время</span>
+                    </div>
+                  </motion.div>
+                )}
+                {timePeriod !== 'asap' && timePeriod !== 'custom' && (
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                    <input
+                      type="time"
+                      value={TIME_PERIODS.find(p => p.id === timePeriod)?.hours || '19:00'}
+                      onChange={(e) => {
+                        const period = TIME_PERIODS.find(p => p.id === timePeriod);
+                        if (period) period.hours = e.target.value;
+                      }}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-accent-gold focus:outline-none transition-colors [color-scheme:dark]"
+                    />
+                    <span className="text-[11px] text-white/30">точное время</span>
                   </div>
-                  {aiRecommendations.length > 0 && (
-                    <div className="p-3 rounded-xl bg-[rgba(255,191,0,0.03)] border border-[rgba(255,191,0,0.1)]">
-                      <p className="text-[11px] text-accent-gold font-semibold mb-2 flex items-center gap-1">
-                        <ThumbsUp className="w-3 h-3" /> Рекомендуемые вкусы
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {aiRecommendations.map(flavor => (
-                          <button key={flavor} type="button" onClick={() => toggleFlavor(flavor)}
-                            className={`px-2 py-1 rounded-lg text-[11px] border transition-all ${
-                              selectedFlavors.includes(flavor)
-                                ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.25)] text-accent-gold'
-                                : 'bg-white/[0.03] border-white/5 text-white/50 hover:border-[rgba(255,191,0,0.15)]'
-                            }`}
-                          >
-                            {flavor}
-                          </button>
-                        ))}
-                      </div>
+                )}
+              </div>
+
+              {/* Order Button */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleQuickOrder}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)] transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Заказать
+              </motion.button>
+
+              {/* Active Order Tracker */}
+              {activeOrder && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="liquid-glass bg-liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]"
+                >
+                  <button onClick={() => setShowOrderTracker(!showOrderTracker)}
+                    className="flex items-center justify-between w-full mb-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-accent-gold" />
+                      <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Статус заказа</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-accent-gold">{timeText}</span>
+                      <ChevronRight className={`w-3 h-3 text-white/30 transition-transform ${showOrderTracker ? 'rotate-90' : ''}`} />
+                    </div>
+                  </button>
+                  {showOrderTracker && (
+                    <div className="space-y-3 pl-3 relative">
+                      <div className="absolute left-[18px] top-8 bottom-4 w-px bg-gradient-to-b from-[#FFBF00] to-white/5" />
+                      {stages.map((stage, idx) => {
+                        const stagesList = stages.map(s => s.id);
+                        const currentIdx = stagesList.indexOf(activeOrder.status);
+                        const isCompleted = currentIdx > idx;
+                        const isActive = currentIdx === idx;
+                        return (
+                          <div key={stage.id} className={`flex items-start gap-3 relative ${isCompleted || isActive ? 'opacity-100' : 'opacity-20'}`}>
+                            <div className={`w-6 h-6 rounded-full border flex items-center justify-center z-10 ${
+                              isActive ? 'border-accent-gold text-accent-gold' : isCompleted ? 'border-accent-gold text-accent-gold' : 'border-white/10 text-white/20'
+                            }`}>
+                              {isCompleted ? <Check className="w-2.5 h-2.5 stroke-[3]" /> : <div className={`w-1 h-1 rounded-full ${isActive ? 'bg-accent-gold' : 'bg-transparent'}`} />}
+                            </div>
+                            <div className="pt-0.5">
+                              <h5 className={`text-xs uppercase tracking-wider font-bold ${isActive ? 'text-accent-gold' : 'text-white'}`}>{stage.label}</h5>
+                              <p className="text-[11px] text-white/30">{stage.desc}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button onClick={handleCallMaster} disabled={masterCalled}
+                        className="mt-3 w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:bg-white/5 disabled:border-white/10 text-[11px] font-bold text-accent-gold disabled:text-white/20 uppercase tracking-[0.12em] transition-all"
+                      >
+                        {masterCalled ? 'Вызов отправлен' : 'Позвать мастера'}
+                      </button>
                     </div>
                   )}
-                  {aiMood.length === 0 && (
-                    <p className="text-[11px] text-white/20 text-center py-2">Выберите настроение для рекомендации</p>
-                  )}
+                </motion.div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="mixologist-tab"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+              className="space-y-5"
+            >
+              <div className={`liquid-glass bg-liquid-glass rounded-2xl p-4 border ${aiMood.length > 0 ? 'border-[rgba(255,191,0,0.2)]' : ''}`}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Bot className="w-3.5 h-3.5 text-accent-gold" />
+                  <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-accent-gold">ИИ-Миксолог</h3>
                 </div>
-
-                {isAuthenticated && (selectedFlavors.length > 0 || aiRecommendations.length > 0) && (
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleSaveMix}
-                    disabled={savingMix || mixSaved}
-                    className="w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:opacity-40 text-[11px] font-bold text-accent-gold uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2"
-                  >
-                    <Bot className="w-3.5 h-3.5" />
-                    {mixSaved ? '✓ Сохранено' : savingMix ? 'Сохранение...' : 'Сохранить рецепт в профиль'}
-                  </motion.button>
-                )}
-
-                {isAuthenticated && userMixes.length > 0 && (
-                  <div className="liquid-glass bg-liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]">
-                    <button type="button" onClick={() => setShowSavedMixes(!showSavedMixes)}
-                      className="flex items-center justify-between w-full"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Bookmark className="w-3.5 h-3.5 text-accent-gold" />
-                        <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Мои рецепты</h3>
-                        <span className="text-[11px] text-white/30 ml-1">({userMixes.length})</span>
-                      </div>
-                      <ChevronRight className={`w-3 h-3 text-white/30 transition-transform ${showSavedMixes ? 'rotate-90' : ''}`} />
-                    </button>
-                    <AnimatePresence>
-                      {showSavedMixes && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
+                <p className="text-[11px] text-white/30 mb-3">Расскажите, что вы любите — ИИ подберёт идеальный микс</p>
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {AI_MOODS.map(mood => {
+                    const sel = aiMood.includes(mood.id);
+                    return (
+                      <button key={mood.id} type="button" onClick={() => setAiMood(prev => prev.includes(mood.id) ? prev.filter(id => id !== mood.id) : [...prev, mood.id])}
+                        className={`px-2.5 py-1.5 rounded-lg text-[11px] transition-all border ${
+                          sel ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold' : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
+                        }`}
+                      >
+                        <span className="mr-1">{mood.emoji}</span>{mood.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {aiRecommendations.length > 0 && (
+                  <div className="p-3 rounded-xl bg-[rgba(255,191,0,0.03)] border border-[rgba(255,191,0,0.1)]">
+                    <p className="text-[11px] text-accent-gold font-semibold mb-2 flex items-center gap-1">
+                      <ThumbsUp className="w-3 h-3" /> Рекомендуемые вкусы
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {aiRecommendations.map(flavor => (
+                        <button key={flavor} type="button" onClick={() => toggleFlavor(flavor)}
+                          className={`px-2 py-1 rounded-lg text-[11px] border transition-all ${
+                            selectedFlavors.includes(flavor)
+                              ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.25)] text-accent-gold'
+                              : 'bg-white/[0.03] border-white/5 text-white/50 hover:border-[rgba(255,191,0,0.15)]'
+                          }`}
                         >
-                          <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
-                            {userMixes.map(mix => (
-                              <div key={mix.id}
-                                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[rgba(255,191,0,0.15)] transition-all group"
-                              >
-                                <div className="w-8 h-8 rounded-lg bg-[rgba(255,191,0,0.08)] flex items-center justify-center flex-shrink-0">
-                                  <Flame className="w-3.5 h-3.5 text-accent-gold" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[11px] font-semibold text-white truncate">{mix.name}</p>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {Array.isArray(mix.flavors) && mix.flavors.slice(0, 3).map((f: string) => (
-                                      <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[11px] text-white/50">{f}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                                <div className="flex flex-col gap-1.5 flex-shrink-0">
-                                  <button type="button" onClick={() => handleOrderSavedMix(mix)}
-                                    className="px-3 py-1 rounded-lg bg-[rgba(255,191,0,0.12)] border border-[rgba(255,191,0,0.2)] text-accent-gold text-[11px] font-bold uppercase tracking-wider hover:bg-[rgba(255,191,0,0.2)] transition-all whitespace-nowrap"
-                                  >
-                                    Заказать
-                                  </button>
-                                  <button type="button" onClick={() => handleDeleteUserMix(mix.id)}
-                                    className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all self-end"
-                                    aria-label="Удалить рецепт"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          {flavor}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
+                {aiMood.length === 0 && (
+                  <p className="text-[11px] text-white/20 text-center py-2">Выберите настроение для рекомендации</p>
+                )}
+              </div>
 
+              {/* AI Mixologist: Strength + Delivery Time */}
+              {aiMood.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="liquid-glass bg-liquid-glass rounded-2xl p-4 space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="w-3.5 h-3.5 text-accent-gold" />
+                      <h4 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Крепость микса</h4>
+                    </div>
+                    <div className="flex gap-2">
+                      {([
+                        { id: 'light' as const, label: 'Лёгкая', icon: '🕊️' },
+                        { id: 'medium' as const, label: 'Средняя', icon: '⚖️' },
+                        { id: 'strong' as const, label: 'Крепкая', icon: '💪' },
+                      ]).map(s => (
+                        <button key={s.id} type="button" onClick={() => setAiStrength(s.id)}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                            aiStrength === s.id
+                              ? s.id === 'light' ? 'bg-[rgba(76,175,80,0.1)] border-[rgba(76,175,80,0.3)] text-[#4CAF50]'
+                                : s.id === 'medium' ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
+                                : 'bg-[rgba(244,67,54,0.1)] border-[rgba(244,67,54,0.3)] text-[#F44336]'
+                              : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
+                          }`}
+                        >
+                          <span>{s.icon}</span> {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Timer className="w-3.5 h-3.5 text-accent-gold" />
+                      <h4 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Когда принести</h4>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {['Сейчас', '15 мин', '30 мин', '1 час'].map(t => (
+                        <button key={t} type="button" onClick={() => setAiDeliveryTime(t)}
+                          className={`flex-1 py-2 rounded-xl text-[11px] font-semibold transition-all border ${
+                            aiDeliveryTime === t
+                              ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
+                              : 'bg-white/[0.02] border-transparent text-white/30 hover:border-white/10'
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {isAuthenticated && (selectedFlavors.length > 0 || aiRecommendations.length > 0) && (
                 <motion.button
-                  whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={handleQuickOrder}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25)] transition-all flex items-center justify-center gap-2"
+                  onClick={handleSaveMix}
+                  disabled={savingMix || mixSaved}
+                  className="w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:opacity-40 text-[11px] font-bold text-accent-gold uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2"
                 >
-                  <ShoppingCart className="w-4 h-4" />
-                  Оформить микс
+                  <Bot className="w-3.5 h-3.5" />
+                  {mixSaved ? '✓ Сохранено' : savingMix ? 'Сохранение...' : 'Сохранить рецепт в профиль'}
                 </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+              )}
+
+              {isAuthenticated && userMixes.length > 0 && (
+                <div className="liquid-glass bg-liquid-glass rounded-2xl p-4 border border-[rgba(255,191,0,0.08)]">
+                  <button type="button" onClick={() => setShowSavedMixes(!showSavedMixes)}
+                    className="flex items-center justify-between w-full"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bookmark className="w-3.5 h-3.5 text-accent-gold" />
+                      <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Мои рецепты</h3>
+                      <span className="text-[11px] text-white/30 ml-1">({userMixes.length})</span>
+                    </div>
+                    <ChevronRight className={`w-3 h-3 text-white/30 transition-transform ${showSavedMixes ? 'rotate-90' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {showSavedMixes && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-2 mt-3 pt-3 border-t border-white/5">
+                          {userMixes.map(mix => (
+                            <div key={mix.id}
+                              className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[rgba(255,191,0,0.15)] transition-all group"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-[rgba(255,191,0,0.08)] flex items-center justify-center flex-shrink-0">
+                                <Flame className="w-3.5 h-3.5 text-accent-gold" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-semibold text-white truncate">{mix.name}</p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {Array.isArray(mix.flavors) && mix.flavors.slice(0, 3).map((f: string) => (
+                                    <span key={f} className="px-1.5 py-0.5 rounded bg-white/5 text-[11px] text-white/50">{f}</span>
+                                  ))}
+                                </div>
+                                {mix.notes && (
+                                  <p className="text-[10px] text-white/25 mt-1 truncate">{mix.notes}</p>
+                                )}
+                              </div>
+                              <div className="flex flex-col gap-1.5 flex-shrink-0">
+                                <button type="button" onClick={() => handleOrderSavedMix(mix)}
+                                  className="px-3 py-1 rounded-lg bg-[rgba(255,191,0,0.12)] border border-[rgba(255,191,0,0.2)] text-accent-gold text-[11px] font-bold uppercase tracking-wider hover:bg-[rgba(255,191,0,0.2)] transition-all whitespace-nowrap"
+                                >
+                                  Заказать
+                                </button>
+                                <button type="button" onClick={() => handleDeleteUserMix(mix.id)}
+                                  className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all self-end"
+                                  aria-label="Удалить рецепт"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleQuickOrder}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25)] transition-all flex items-center justify-center gap-2"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Оформить микс
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Order Confirmation Modal */}
       <AnimatePresence>

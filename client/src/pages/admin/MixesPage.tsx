@@ -28,6 +28,9 @@ export function MixesPage() {
   const [flavors, setFlavors] = useState<string[]>([]);
   const [strength, setStrength] = useState(5);
   const [status, setStatus] = useState<'active' | 'inactive'>('active');
+  const [emoji, setEmoji] = useState('');
+  const [category, setCategory] = useState('Основные');
+  const [color, setColor] = useState('');
 
   const fetchMixes = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -61,6 +64,9 @@ export function MixesPage() {
     setFlavors(mix.flavors);
     setStrength(mix.strength);
     setStatus(mix.status);
+    setEmoji((mix as any).emoji || '');
+    setCategory((mix as any).category || 'Основные');
+    setColor((mix as any).color || '');
     setModalOpen(true);
   };
 
@@ -68,7 +74,7 @@ export function MixesPage() {
     e.preventDefault();
     setSaving(true);
 
-    const payload = { name, manufacturer, description, flavors, strength, status };
+    const payload = { name, manufacturer, description, flavors, strength, status, emoji, category, color };
 
     try {
       if (editingMix) {
@@ -112,6 +118,9 @@ export function MixesPage() {
     setFlavorsInput('');
     setStrength(5);
     setStatus('active');
+    setEmoji('');
+    setCategory('Основные');
+    setColor('');
     setEditingMix(null);
   };
 
@@ -255,6 +264,29 @@ export function MixesPage() {
           <div>
             <label className="block text-xs text-white/50 mb-1.5 font-medium">Описание</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Описание микса..." className="glass-input min-h-[80px] resize-none" rows={3} />
+          </div>
+
+          {/* Flavor display config */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Эмодзи</label>
+              <input type="text" value={emoji} onChange={(e) => setEmoji(e.target.value)} placeholder="🍏" className="glass-input" maxLength={4} />
+            </div>
+            <div>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Категория</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className="glass-input">
+                {['Фрукты', 'Ягоды', 'Десерт', 'Пряные', 'Свежие', 'Авторские', 'Основные'].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Цвет</label>
+              <div className="flex gap-1.5">
+                <input type="color" value={color || '#FFBF00'} onChange={(e) => setColor(e.target.value)} className="w-8 h-8 rounded-lg border border-white/10 bg-transparent cursor-pointer" />
+                <input type="text" value={color} onChange={(e) => setColor(e.target.value)} placeholder="#FFBF00" className="glass-input flex-1" />
+              </div>
+            </div>
           </div>
 
           {/* Flavors tag input */}

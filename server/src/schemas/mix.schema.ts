@@ -17,6 +17,9 @@ export const createMixSchema = z.object({
     .optional()
     .default(5),
   status: z.enum(['active', 'inactive']).optional().default('active'),
+  emoji: z.string().optional().default(''),
+  category: z.string().optional().default('Основные'),
+  color: z.string().optional().default(''),
 });
 
 export type CreateMixInput = z.infer<typeof createMixSchema>;

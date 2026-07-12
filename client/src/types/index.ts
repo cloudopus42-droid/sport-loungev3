@@ -31,6 +31,9 @@ export interface Mix {
   flavors: string[];
   strength: number;
   status: 'active' | 'inactive';
+  emoji?: string;
+  category?: string;
+  color?: string;
   createdAt: string;
 }
 
