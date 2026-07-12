@@ -11,6 +11,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Badge } from '@/components/ui/Badge';
 import { FileUploader } from '@/components/FileUploader';
 import { showToast } from '@/components/NotificationToast';
+import { TOBACCO_BRANDS, getFlavorsForBrand, getBrandNames } from '@/data/tobaccoBrands';
 import api from '@/lib/api';
 
 type Tab = 'items' | 'stock' | 'restock';
@@ -144,6 +145,9 @@ function TobaccoItemsPanel() {
   const [minStockThreshold, setMinStockThreshold] = useState(5);
   const [autoReorder, setAutoReorder] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+
+  const brandNames = getBrandNames();
+  const availableFlavors = brand ? getFlavorsForBrand(brand) : [];
 
   const fetchItems = useCallback(async () => {
     try {
@@ -314,21 +318,61 @@ function TobaccoItemsPanel() {
           {!editingItem && <FileUploader onFileSelect={setFile} accept="image/*" />}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Название</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="glass-input" required />
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Бренд *</label>
+              <select
+                value={brand}
+                onChange={(e) => {
+                  setBrand(e.target.value);
+                  setFlavor('');
+                  if (e.target.value && flavor) {
+                    setName(`${e.target.value} - ${flavor}`);
+                  } else {
+                    setName('');
+                  }
+                }}
+                className="glass-input w-full"
+                required
+              >
+                <option value="">Выберите бренд...</option>
+                {brandNames.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Бренд</label>
-              <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} className="glass-input" />
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Вкус *</label>
+              <select
+                value={flavor}
+                onChange={(e) => {
+                  setFlavor(e.target.value);
+                  if (brand && e.target.value) {
+                    setName(`${brand} - ${e.target.value}`);
+                  }
+                }}
+                className="glass-input w-full"
+                required
+                disabled={!brand}
+              >
+                <option value="">{brand ? 'Выберите вкус...' : 'Сначала выберите бренд'}</option>
+                {availableFlavors.map((f) => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
             </div>
           </div>
           <div>
-            <label className="block text-xs text-white/50 mb-1.5 font-medium">Вкус</label>
-            <input type="text" value={flavor} onChange={(e) => setFlavor(e.target.value)} className="glass-input" />
+            <label className="block text-[10px] text-white/50 mb-1 font-medium">Название</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={brand && flavor ? `${brand} - ${flavor}` : 'Заполнится автоматически'}
+              className="glass-input"
+            />
           </div>
           <div>
-            <label className="block text-xs text-white/50 mb-1.5 font-medium">Описание</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="glass-input min-h-[60px] resize-none" rows={2} />
+            <label className="block text-[10px] text-white/50 mb-1 font-medium">Описание</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="glass-input min-h-[50px] resize-none" rows={2} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
@@ -336,11 +380,11 @@ function TobaccoItemsPanel() {
               <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="glass-input" min="0" step="0.01" />
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Граммовка</label>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Граммовка</label>
               <input type="number" value={weightGrams} onChange={(e) => setWeightGrams(Number(e.target.value))} className="glass-input" min="0" step="1" />
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1.5 font-medium">Мин. порог остатка</label>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Мин. порог остатка</label>
               <input type="number" value={minStockThreshold} onChange={(e) => setMinStockThreshold(Number(e.target.value))} className="glass-input" min="0" />
             </div>
           </div>
