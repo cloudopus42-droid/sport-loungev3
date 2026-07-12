@@ -66,7 +66,7 @@ export function AdminBookingsPage() {
           const data = await api(`/api/bookings/${b._id}/hookah-status`, { signal: ac.signal });
           if (ac.signal.aborted) return;
           results[b._id] = data;
-        } catch {}
+        } catch (e) { console.warn('Silent catch:', e); }
       }
       setHookahStatuses(results);
     };

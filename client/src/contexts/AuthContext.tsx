@@ -46,7 +46,7 @@ function getInitialUser(): User | null {
       const parsed = JSON.parse(saved);
       return normalizeUser(parsed);
     }
-  } catch {}
+  } catch (e) { console.warn('Silent catch:', e); }
   return null;
 }
 

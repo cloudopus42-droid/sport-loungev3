@@ -84,7 +84,7 @@ async function getUpdates(offset: number, timeout = 30): Promise<any[]> {
       const res = await fetch(proxyUrl, { signal: AbortSignal.timeout((timeout + 15) * 1000) });
       const data = await res.json() as any;
       if (data && data.ok) return data.result || [];
-    } catch {}
+    } catch (e) { console.warn('Silent catch:', e); }
     return [];
   }
 }

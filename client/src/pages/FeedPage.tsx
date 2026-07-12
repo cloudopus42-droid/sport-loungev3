@@ -78,7 +78,7 @@ export function FeedPage() {
     try {
       const data = await api(`/api/posts/${postId}/like`, { method: 'POST' });
       setPosts((prev) => prev.map((p) => p._id === postId ? { ...p, likes: data.likes, likedBy: data.likedBy } : p));
-    } catch {}
+    } catch (e) { console.warn('Silent catch:', e); }
   };
 
   const toggleComments = async (postId: string) => {
@@ -91,7 +91,7 @@ export function FeedPage() {
         try {
           const data = await api(`/api/posts/${postId}/comments`);
           setCommentsData((prev) => ({ ...prev, [postId]: data }));
-        } catch {}
+        } catch (e) { console.warn('Silent catch:', e); }
       }
     }
     setExpandedComments(newSet);

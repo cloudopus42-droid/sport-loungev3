@@ -136,7 +136,7 @@ export function OrdersAdmin() {
       try {
         await api.delete(`/api/orders/${id}`);
         success++;
-      } catch {}
+      } catch (e) { console.warn('Silent catch:', e); }
     }
     setOrders(prev => prev.filter(o => !selectedIds.has(o.id)));
     setSelectedIds(new Set());

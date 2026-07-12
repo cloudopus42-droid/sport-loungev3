@@ -304,9 +304,9 @@ router.post('/reviews', auth, async (req: Request, res: Response, next: NextFunc
         transactions.push({
           user_id: userId, points_delta: achAward, description: 'Ачивка: Элитный Член Клуба', type: 'earn'
         });
-        supabase.from('achievement_unlocks').insert({
+        void supabase.from('achievement_unlocks').insert({
           user_id: userId, achievement_id: achResult.data.id
-        }).then();
+        });
       }
     }
 

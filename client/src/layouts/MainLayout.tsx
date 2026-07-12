@@ -81,7 +81,7 @@ export function MainLayout() {
           if (notifiedList.includes(data.id)) return;
           notifiedList.push(data.id);
           localStorage.setItem('notified_bookings', JSON.stringify(notifiedList));
-        } catch {}
+        } catch (e) { console.warn('Silent catch:', e); }
         showToast('Ваш кальян готов! Приятного покура! 💨', 'success');
         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
           new Notification('SPORT LOUNGE', { body: 'Ваш кальян готов! Приятного покура! 💨', icon: '/icon-192.png' });
@@ -124,7 +124,7 @@ export function MainLayout() {
       const o = localStorage.getItem('glass_opacity') || '0.72';
       document.documentElement.style.setProperty('--glass-blur', `${b}px`);
       document.documentElement.style.setProperty('--glass-opacity', o);
-    } catch {}
+    } catch (e) { console.warn('Silent catch:', e); }
   }, []);
 
   useEffect(() => {
@@ -250,7 +250,7 @@ export function MainLayout() {
                       className="w-5 h-5 rounded-full object-cover border border-white/10 group-hover:border-white/30 transition-all"
                     />
                   ) : (
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-white/60 text-[8px] font-bold">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-white/60 text-[9px] font-bold">
                       {user?.name?.[0]?.toUpperCase() || 'U'}
                     </div>
                   )}

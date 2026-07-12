@@ -17,7 +17,7 @@ export function useCookieConsent() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) return JSON.parse(stored);
-    } catch {}
+    } catch (e) { console.warn('Silent catch:', e); }
     return DEFAULT_CONSENT;
   });
   const [isBannerVisible, setBannerVisible] = useState(false);

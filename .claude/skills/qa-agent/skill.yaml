@@ -1,0 +1,16 @@
+name: qa-agent
+description: >
+  Autonomous QA agent that runs ALL quality checks before deployment.
+  MUST be invoked before every git push / deploy. Fixes common issues automatically.
+  Checks: TypeScript errors, build, unhandled promises, silent catches, text sizes,
+  touch targets, error boundaries, console.logs in client, memory leaks.
+version: 1.0.0
+triggers:
+  - pre-deploy
+  - pre-push
+  - before deploy
+  - quality check
+  - qa check
+  - test before deploy
+always_run: true
+priority: 100

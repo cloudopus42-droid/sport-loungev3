@@ -295,7 +295,7 @@ export function ProfilePage() {
 
       const savedOpacity = localStorage.getItem('glass_opacity');
       if (savedOpacity) setOpacityVal(Number(savedOpacity));
-    } catch {}
+    } catch (e) { console.warn('Silent catch:', e); }
   }, []);
 
   const fetchBookingsRef = useRef<AbortController | null>(null);

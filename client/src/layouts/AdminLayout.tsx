@@ -77,9 +77,9 @@ export function AdminLayout() {
       mql = window.matchMedia('(min-width: 1024px)');
       handler(mql);
       mql.addEventListener('change', handler);
-    } catch {}
+    } catch (e) { console.warn('Silent catch:', e); }
     return () => {
-      try { mql?.removeEventListener('change', handler); } catch {}
+      try { mql?.removeEventListener('change', handler); } catch (e) { console.warn('Silent catch:', e); }
     };
   }, []);
 
