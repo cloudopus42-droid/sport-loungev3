@@ -512,6 +512,42 @@ CREATE TABLE IF NOT EXISTS restock_requests (
 DROP TABLE IF EXISTS seat_configs CASCADE;
 
 -- ══════════════════════════════════════════════════════
+-- ГАРАНТИРОВАННОЕ ДОБАВЛЕНИЕ КОЛОНОК
+-- (если таблицы были созданы ранее без этих колонок)
+-- ══════════════════════════════════════════════════════
+
+ALTER TABLE stories ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
+ALTER TABLE stories ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS strength VARCHAR(20) DEFAULT 'medium';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS hookah_mix TEXT DEFAULT '';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS seat_zone VARCHAR(50);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS seat_number VARCHAR(20);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_price INTEGER;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_note TEXT;
+
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS brand VARCHAR(255) DEFAULT '';
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS flavor VARCHAR(255) DEFAULT '';
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS stock_quantity INTEGER DEFAULT 0;
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS unit VARCHAR(20) DEFAULT 'gram';
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS min_stock_threshold INTEGER DEFAULT 5;
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS auto_reorder_enabled BOOLEAN DEFAULT false;
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS weight_grams INTEGER DEFAULT 50;
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS emoji VARCHAR(10) DEFAULT '';
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS category VARCHAR(50) DEFAULT 'Основные';
+ALTER TABLE mixes ADD COLUMN IF NOT EXISTS color VARCHAR(20) DEFAULT '';
+
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS mix_id UUID REFERENCES mixes(id) ON DELETE SET NULL;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS rating INTEGER;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS text TEXT DEFAULT '';
+
+-- ══════════════════════════════════════════════════════
 -- PERFORMANCE INDEXES
 -- ══════════════════════════════════════════════════════
 
