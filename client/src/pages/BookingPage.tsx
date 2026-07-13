@@ -224,6 +224,10 @@ export function BookingPage() {
   };
 
   const onOrderSubmit = async (data: BookingFormValues) => {
+    if (selectedFlavors.length === 0) {
+      showToast('Выберите хотя бы один вкус', 'error');
+      return;
+    }
     if (!selectedMix) return;
     setLoading(true);
     try {
@@ -309,6 +313,10 @@ export function BookingPage() {
 
   const handleQuickOrder = () => {
     if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/order'); return; }
+    if (selectedFlavors.length === 0) {
+      showToast('Выберите хотя бы один вкус', 'error');
+      return;
+    }
     setSelectedMix({
       id: 'custom-quick',
       name: selectedFlavors.length > 0 ? `Микс: ${selectedFlavors.join(', ')}` : 'Авторский микс',
@@ -485,13 +493,18 @@ export function BookingPage() {
 
               {/* Order Button */}
               <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: selectedFlavors.length === 0 ? 1 : 1.01 }}
+                whileTap={{ scale: selectedFlavors.length === 0 ? 1 : 0.98 }}
                 onClick={handleQuickOrder}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black text-xs font-bold uppercase tracking-[0.12em] shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)] transition-all duration-300 flex items-center justify-center gap-2"
+                disabled={selectedFlavors.length === 0}
+                className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.12em] transition-all duration-300 flex items-center justify-center gap-2 ${
+                  selectedFlavors.length === 0
+                    ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                    : 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)]'
+                }`}
               >
                 <ShoppingCart className="w-4 h-4" />
-                Заказать
+                {selectedFlavors.length === 0 ? 'Выберите вкус' : 'Заказать'}
               </motion.button>
 
               {/* Active Order Tracker */}
