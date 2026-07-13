@@ -21,7 +21,7 @@ type Flavor = {
   id: string;
   name: string;
   category: string;
-  icon?: string;
+  emoji?: string;
   color?: string;
   is_active: boolean;
   price_value?: number;
@@ -33,27 +33,6 @@ const bookingFormSchema = z.object({
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
-
-const FALLBACK_FLAVORS: Flavor[] = [
-  { id: '1', name: 'Двойное яблоко', category: 'Фрукты', icon: 'apple', color: '#4CAF50', is_active: true },
-  { id: '2', name: 'Манго-Маракуйя', category: 'Фрукты', icon: 'mango', color: '#FF9800', is_active: true },
-  { id: '3', name: 'Персик-Лайм', category: 'Фрукты', icon: 'peach', color: '#FFB07C', is_active: true },
-  { id: '4', name: 'Грейпфрут-Мята', category: 'Фрукты', icon: 'citrus', color: '#FF6B52', is_active: true },
-  { id: '5', name: 'Клубника-Мята', category: 'Ягоды', icon: 'strawberry', color: '#E91E63', is_active: true },
-  { id: '6', name: 'Черника-Ежевика', category: 'Ягоды', icon: 'berry', color: '#673AB7', is_active: true },
-  { id: '7', name: 'Малина-Личи', category: 'Ягоды', icon: 'berry', color: '#D32F2F', is_active: true },
-  { id: '8', name: 'Арбуз-Дыня', category: 'Фрукты', icon: 'watermelon', color: '#4CAF50', is_active: true },
-  { id: '9', name: 'Банан-Шоколад', category: 'Десерт', icon: 'banana', color: '#795548', is_active: true },
-  { id: '10', name: 'Кокос-Ваниль', category: 'Десерт', icon: 'coconut', color: '#D7CCC8', is_active: true },
-  { id: '11', name: 'Лимон-Имбирь', category: 'Пряные', icon: 'lemon', color: '#FFEB3B', is_active: true },
-  { id: '12', name: 'Мята-Айс', category: 'Свежие', icon: 'ice', color: '#00BCD4', is_active: true },
-  { id: '13', name: 'Кактус-Фрост', category: 'Свежие', icon: 'cactus', color: '#009688', is_active: true },
-  { id: '14', name: 'Виноград-Ягоды', category: 'Ягоды', icon: 'grape', color: '#9C27B0', is_active: true },
-  { id: '15', name: 'Sport Mix (авторский)', category: 'Авторские', icon: 'fire', color: '#FF5722', is_active: true },
-  { id: '16', name: 'Lounge Premium', category: 'Авторские', icon: 'diamond', color: '#FFBF00', is_active: true },
-];
-
-const FLAVOR_CATS = ['Все', 'Фрукты', 'Ягоды', 'Десерт', 'Пряные', 'Свежие', 'Авторские'];
 
 const AI_MOODS = [
   { id: 'sweet', label: 'Сладкий', icon: 'honey', desc: 'Фруктовые и десертные ноты' },
@@ -89,7 +68,7 @@ export function BookingPage() {
   const { isAuthenticated } = useAuth();
   const { socket } = useSocket();
 
-  const [flavors, setFlavors] = useState<Flavor[]>(FALLBACK_FLAVORS);
+  const [flavors, setFlavors] = useState<Flavor[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
   const [selectedMix, setSelectedMix] = useState<any | null>(null);
@@ -108,6 +87,11 @@ export function BookingPage() {
   const [showSavedMixes, setShowSavedMixes] = useState(false);
   const [activeTab, setActiveTab] = useState<OrderTab>('order');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('asap');
+
+  const flavorCategories = useMemo(() => {
+    const cats = new Set(flavors.map(f => f.category).filter(Boolean));
+    return ['Все', ...Array.from(cats).sort()];
+  }, [flavors]);
   const [customTime, setCustomTime] = useState('19:00');
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fetchOrderStatusRef = useRef<AbortController | null>(null);
@@ -189,7 +173,7 @@ export function BookingPage() {
       .then((data) => {
         if (data?.length) {
           const active = data.filter(f => f.is_active !== false);
-          setFlavors(active.length > 0 ? active : FALLBACK_FLAVORS);
+          setFlavors(active);
         }
       })
       .catch(() => {});
@@ -381,7 +365,7 @@ export function BookingPage() {
                   <span className="ml-auto text-[11px] text-white/30">{selectedFlavors.length}/4</span>
                 </div>
                 <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide mb-2">
-                  {FLAVOR_CATS.map(cat => (
+                  {flavorCategories.map(cat => (
                     <button key={cat} onClick={() => setFlavorCategory(cat)}
                       className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all border ${
                         flavorCategory === cat
@@ -391,7 +375,11 @@ export function BookingPage() {
                   ))}
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 max-h-[160px] overflow-y-auto scrollbar-hide pr-1">
-                  {flavors
+                  {flavors.length === 0 ? (
+                    <div className="col-span-2 text-center py-6 text-white/30 text-xs">
+                      Вкусы пока не добавлены
+                    </div>
+                  ) : flavors
                     .filter(f => flavorCategory === 'Все' || f.category === flavorCategory)
                     .map(flavor => {
                       const sel = selectedFlavors.includes(flavor.name);
@@ -404,7 +392,7 @@ export function BookingPage() {
                               : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
                           }`}
                         >
-                          <PremiumIcon name={flavor.icon || 'leaf'} size={16} />
+                          <span className="text-base leading-none">{flavor.emoji || '🍂'}</span>
                           <span className="truncate">{flavor.name}</span>
                         </motion.button>
                       );

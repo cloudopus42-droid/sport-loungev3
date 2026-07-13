@@ -16,8 +16,9 @@ function mapItem(item: any) {
 
 const createTobaccoSchema = z.object({
   name: z.string().min(1),
-  brand: z.string().optional(),
-  flavor: z.string().optional(),
+  brand: z.string().min(1, 'Бренд обязателен'),
+  flavor: z.string().min(1, 'Вкус обязателен'),
+  emoji: z.string().optional(),
   description: z.string().optional(),
   image_url: z.string().optional(),
   price: z.coerce.number().optional(),
@@ -36,27 +37,28 @@ router.get('/flavors', async (_req: Request, res: Response, next: NextFunction) 
   try {
     const { data, error } = await supabase
       .from('mixes')
-      .select('id, name, flavor, is_active, price')
+      .select('id, name, flavor, category, emoji, is_active, price')
       .eq('is_active', true)
       .order('name');
 
     if (error) {
       const { data: fallback, error: fbErr } = await supabase
         .from('mixes')
-        .select('id, name, flavors, is_active, price')
+        .select('id, name, flavors, category, emoji, is_active, price')
         .eq('is_active', true)
         .order('name');
       if (fbErr) { res.json([]); return; }
       const flattened = (fallback || []).flatMap((m: any) => {
         const arr = Array.isArray(m.flavors) ? m.flavors : [m.flavors].filter(Boolean);
-        return arr.map((f: string) => ({ id: `${m.id}-${f}`, name: f, category: 'Основные', is_active: true, price_value: m.price }));
+        return arr.map((f: string) => ({ id: `${m.id}-${f}`, name: f, category: m.category || 'Основные', emoji: m.emoji || null, is_active: true, price_value: m.price }));
       });
       res.json(flattened);
       return;
     }
 
     const flavors = (data || []).map((m: any) => ({
-      id: m.id, name: m.flavor || m.name, category: 'Основные',
+      id: m.id, name: m.flavor || m.name, category: m.category || 'Основные',
+      emoji: m.emoji || null,
       is_active: m.is_active !== false, price_value: m.price,
     }));
     res.json(flavors);
@@ -228,6 +230,7 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
     const extra = {
       brand: data.brand || null,
       flavor: data.flavor || null,
+      emoji: data.emoji || null,
       image_url: imageUrl || null,
       price: data.price || 0,
       stock_quantity: data.stock_quantity,
@@ -275,6 +278,7 @@ router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, re
     if (data.name !== undefined) updateData.name = data.name;
     if (data.brand !== undefined) updateData.brand = data.brand || null;
     if (data.flavor !== undefined) updateData.flavor = data.flavor || null;
+    if (data.emoji !== undefined) updateData.emoji = data.emoji || null;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.price !== undefined) updateData.price = data.price;
     if (data.stock_quantity !== undefined) updateData.stock_quantity = data.stock_quantity;

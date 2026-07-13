@@ -118,12 +118,14 @@ function TobaccoItemsPanel() {
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [flavor, setFlavor] = useState('');
+  const [emoji, setEmoji] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [weightGrams, setWeightGrams] = useState(50);
   const [minStockThreshold, setMinStockThreshold] = useState(5);
   const [autoReorder, setAutoReorder] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const brandNames = getBrandNames();
   const availableFlavors = brand ? getFlavorsForBrand(brand) : [];
@@ -152,6 +154,7 @@ function TobaccoItemsPanel() {
     setName('');
     setBrand('');
     setFlavor('');
+    setEmoji('');
     setDescription('');
     setPrice('');
     setWeightGrams(50);
@@ -159,6 +162,7 @@ function TobaccoItemsPanel() {
     setAutoReorder(false);
     setFile(null);
     setEditingItem(null);
+    setValidationErrors([]);
   };
 
   const openCreate = () => { resetForm(); setModalOpen(true); };
@@ -168,6 +172,7 @@ function TobaccoItemsPanel() {
     setName(item.name);
     setBrand(item.brand || '');
     setFlavor(item.flavor || '');
+    setEmoji((item as any).emoji || '');
     setDescription(item.description || '');
     setPrice(item.price?.toString() || '');
     setWeightGrams(item.weight_grams ?? 50);
@@ -178,9 +183,24 @@ function TobaccoItemsPanel() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    const errors: string[] = [];
+    if (!brand?.trim()) errors.push('Выберите бренд');
+    if (!flavor?.trim()) errors.push('Выберите вкус');
+    if (!name?.trim() && brand && flavor) setName(`${brand} - ${flavor}`);
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      showToast(errors[0], 'error');
+      return;
+    }
+    setValidationErrors([]);
+
     setSaving(true);
     const payload: Record<string, unknown> = {
-      name, brand, flavor, description,
+      name: name || `${brand} - ${flavor}`,
+      brand, flavor, emoji, description,
       price: price ? Number(price) : 0,
       weight_grams: weightGrams,
       min_stock_threshold: minStockThreshold,
@@ -303,8 +323,13 @@ function TobaccoItemsPanel() {
 
       <Modal isOpen={modalOpen} onClose={() => { setModalOpen(false); resetForm(); }} title={editingItem ? 'Редактировать' : 'Добавить табак'} size="lg">
         <form onSubmit={handleSave} className="space-y-2">
+          {validationErrors.length > 0 && (
+            <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+              {validationErrors.map((err, i) => <div key={i}>{err}</div>)}
+            </div>
+          )}
           {!editingItem && <FileUploader onFileSelect={setFile} accept="image/*" />}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-[10px] text-white/50 mb-1 font-medium">Бренд *</label>
               <select
@@ -346,6 +371,17 @@ function TobaccoItemsPanel() {
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className="block text-[10px] text-white/50 mb-1 font-medium">Эмодзи</label>
+              <input
+                type="text"
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                placeholder="🍏"
+                className="glass-input"
+                maxLength={4}
+              />
             </div>
           </div>
           <div>
