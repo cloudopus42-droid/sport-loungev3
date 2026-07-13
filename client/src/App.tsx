@@ -47,6 +47,16 @@ export default function App() {
       <SocketProvider>
         <FeatureProvider>
           <ErrorBoundary>
+          {/* SVG refraction filter for Liquid Glass (Chromium) */}
+          <svg width="0" height="0" style={{ position: 'absolute' }}>
+            <defs>
+              <filter id="liquid-refraction" x="-10%" y="-10%" width="120%" height="120%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.012 0.012" numOctaves="3" seed="5" result="noise" />
+                <feGaussianBlur in="noise" stdDeviation="3" result="blurred" />
+                <feDisplacementMap in="SourceGraphic" in2="blurred" scale="80" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+            </defs>
+          </svg>
           <Suspense fallback={
             <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center text-white font-sans">
               <div className="w-10 h-10 rounded-xl bg-accent-gold flex items-center justify-center mb-4">
