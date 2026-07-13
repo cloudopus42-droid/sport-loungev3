@@ -12,7 +12,8 @@
     "build": "tsc && cp -r src/migrations dist/migrations",
     "start": "node dist/server.js",
     "seed": "tsx src/seed.ts",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
@@ -44,12 +45,14 @@
     "@types/supertest": "^7.2.0",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
     "jest": "^30.4.2",
     "nodemon": "^3.1.9",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "ws": "^8.20.1"
   }
 }
