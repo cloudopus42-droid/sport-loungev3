@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Edit2, Trash2, Package, ClipboardList, Settings,
   ChevronUp, ChevronDown, CheckCircle2, XCircle,
-  Filter, RefreshCw,
+  Filter, RefreshCw, Search,
 } from 'lucide-react';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { Modal } from '@/components/ui/Modal';
@@ -161,6 +161,7 @@ function TobaccoItemsPanel() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [migrationNeeded, setMigrationNeeded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
@@ -176,6 +177,16 @@ function TobaccoItemsPanel() {
 
   const brandNames = getBrandNames();
   const availableFlavors = brand ? getFlavorsForBrand(brand) : [];
+
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    const q = searchQuery.toLowerCase();
+    return items.filter(item =>
+      item.name.toLowerCase().includes(q) ||
+      (item.brand && item.brand.toLowerCase().includes(q)) ||
+      (item.flavor && item.flavor.toLowerCase().includes(q))
+    );
+  }, [items, searchQuery]);
 
   const fetchItems = useCallback(async () => {
     try {
@@ -296,8 +307,20 @@ function TobaccoItemsPanel() {
           Управление остатками пока ограничено. Обратитесь к администратору для запуска миграции.
         </div>
       )}
-      <div className="flex justify-between items-center">
-        <p className="text-xs text-white/40">{items.length} позиций</p>
+      <div className="flex justify-between items-center gap-2">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск..."
+            className="glass-input pl-8 py-1.5 text-xs w-full"
+          />
+        </div>
+        <p className="text-xs text-white/40 flex-shrink-0">
+          {filteredItems.length}{searchQuery ? ` из ${items.length}` : ''} позиций
+        </p>
         <GlowButton onClick={openCreate} size="sm">
           <Plus className="w-4 h-4" /> Добавить
         </GlowButton>
@@ -309,7 +332,7 @@ function TobaccoItemsPanel() {
         </div>
       ) : (
         <div className="grid gap-2">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <div
               key={item._id}
               className="flex items-center gap-3 p-3 rounded-xl bg-glass-bg border border-glass-border hover:border-accent-gold/30 transition-all"
@@ -358,8 +381,10 @@ function TobaccoItemsPanel() {
               </div>
             </div>
           ))}
-          {items.length === 0 && (
-            <div className="text-center py-16 text-white/30 text-sm">Нет товаров</div>
+          {filteredItems.length === 0 && (
+            <div className="text-center py-16 text-white/30 text-sm">
+              {searchQuery ? 'Ничего не найдено' : 'Нет товаров'}
+            </div>
           )}
         </div>
       )}
@@ -394,6 +419,11 @@ function TobaccoItemsPanel() {
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
+              {brand && (
+                <p className="text-[10px] text-accent-gold/60 mt-1">
+                  {getFlavorsForBrand(brand).length} вкусов
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-[10px] text-white/50 mb-1 font-medium">Вкус *</label>

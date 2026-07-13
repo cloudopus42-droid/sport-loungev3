@@ -16,9 +16,21 @@ interface Particle {
   maxLife: number;
 }
 
+interface SmokeHaze {
+  x: number;
+  y: number;
+  size: number;
+  speedX: number;
+  speedY: number;
+  opacity: number;
+  life: number;
+  maxLife: number;
+}
+
 export function AshParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particles = useRef<Particle[]>([]);
+  const smokeHazes = useRef<SmokeHaze[]>([]);
   const animFrame = useRef<number>(0);
 
   useEffect(() => {
@@ -54,12 +66,35 @@ export function AshParticles() {
       };
     };
 
+    const createSmokeHaze = (): SmokeHaze => {
+      const size = Math.random() * 300 + 150;
+      const maxLife = Math.random() * 1200 + 800;
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size,
+        speedX: (Math.random() - 0.5) * 0.15,
+        speedY: -(Math.random() * 0.08 + 0.02),
+        opacity: Math.random() * 0.03 + 0.01,
+        life: 0,
+        maxLife,
+      };
+    };
+
     // Seed initial particles spread across screen
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < 70; i++) {
       const p = createParticle();
       p.y = Math.random() * canvas.height;
       p.life = Math.random() * p.maxLife;
       particles.current.push(p);
+    }
+
+    // Seed initial smoke hazes
+    for (let i = 0; i < 8; i++) {
+      const h = createSmokeHaze();
+      h.y = Math.random() * canvas.height;
+      h.life = Math.random() * h.maxLife;
+      smokeHazes.current.push(h);
     }
 
     const drawParticle = (p: Particle) => {
@@ -103,11 +138,58 @@ export function AshParticles() {
       ctx.restore();
     };
 
+    const drawSmokeHaze = (h: SmokeHaze) => {
+      const lifeRatio = h.life / h.maxLife;
+      const fade = lifeRatio < 0.15
+        ? lifeRatio / 0.15
+        : lifeRatio > 0.8
+          ? (1 - lifeRatio) / 0.2
+          : 1;
+      const alpha = h.opacity * fade;
+      if (alpha <= 0) return;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Soft smoke haze — large radial gradient blob
+      const gradient = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, h.size);
+      gradient.addColorStop(0, 'rgba(160, 150, 135, 0.4)');
+      gradient.addColorStop(0.3, 'rgba(140, 130, 115, 0.2)');
+      gradient.addColorStop(0.6, 'rgba(120, 110, 100, 0.08)');
+      gradient.addColorStop(1, 'rgba(100, 90, 80, 0)');
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(h.x, h.y, h.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    };
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Draw smoke hazes first (behind particles)
+      if (smokeHazes.current.length < 12 && Math.random() < 0.02) {
+        smokeHazes.current.push(createSmokeHaze());
+      }
+
+      for (let i = smokeHazes.current.length - 1; i >= 0; i--) {
+        const h = smokeHazes.current[i];
+
+        h.x += h.speedX;
+        h.y += h.speedY;
+        h.life++;
+
+        drawSmokeHaze(h);
+
+        if (h.life >= h.maxLife) {
+          smokeHazes.current.splice(i, 1);
+        }
+      }
+
       // Spawn new particles
-      if (particles.current.length < 45 && Math.random() < 0.12) {
+      if (particles.current.length < 80 && Math.random() < 0.15) {
         particles.current.push(createParticle());
       }
 
