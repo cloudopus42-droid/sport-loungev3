@@ -16,6 +16,7 @@ import api from '@/lib/api';
 import { showToast } from '@/components/NotificationToast';
 import { SmokeEffect } from '@/components/ui/SmokeEffect';
 import { TabSwitcher } from '@/components/ui/TabSwitcher';
+import { ZONES, SEATS, type Seat, type ZoneId } from '@/config/seats';
 
 type Flavor = {
   id: string;
@@ -87,6 +88,8 @@ export function BookingPage() {
   const [showSavedMixes, setShowSavedMixes] = useState(false);
   const [activeTab, setActiveTab] = useState<OrderTab>('order');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('asap');
+  const [selectedZone, setSelectedZone] = useState<ZoneId | ''>('');
+  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
 
   const flavorCategories = useMemo(() => {
     const cats = new Set(flavors.map(f => f.category).filter(Boolean));
@@ -101,17 +104,22 @@ export function BookingPage() {
   const [aiDeliveryTime, setAiDeliveryTime] = useState('Сейчас');
 
   const aiRecommendations = useMemo(() => {
-    if (aiMood.length === 0) return [];
-    const moodFlavorMap: Record<string, string[]> = {
-      sweet: ['Манго-Маракуйя', 'Персик-Лайм', 'Клубника-Мята', 'Банан-Шоколад', 'Кокос-Ваниль'],
-      strong: ['Двойное яблоко', 'Sport Mix (авторский)', 'Грейпфрут-Мята', 'Lounge Premium'],
-      fresh: ['Мята-Айс', 'Ледяной грейпфрут', 'Кактус-Фрост', 'Грейпфрут-Мята', 'Лимон-Имбирь'],
-      berry: ['Клубника-Мята', 'Черника-Ежевика', 'Малина-Личи', 'Виноград-Ягоды'],
-      exotic: ['Манго-Маракуйя', 'Кактус-Фрост', 'Арбуз-Дыня', 'Кокос-Ваниль'],
-      classic: ['Двойное яблоко', 'Мята-Айс', 'Виноград-Ягоды', 'Lounge Premium'],
+    if (aiMood.length === 0 || flavors.length === 0) return [];
+    const moodCategoryMap: Record<string, string[]> = {
+      sweet: ['Фрукты', 'Десерт'],
+      strong: ['Авторские', 'Пряные'],
+      fresh: ['Свежие', 'Мятные'],
+      berry: ['Ягоды'],
+      exotic: ['Фрукты', 'Экзотические'],
+      classic: ['Авторские', 'Классические'],
     };
-    return [...new Set(aiMood.flatMap(m => moodFlavorMap[m] || []))].slice(0, 6);
-  }, [aiMood]);
+    const matchingCategories = new Set(aiMood.flatMap(m => moodCategoryMap[m] || []));
+    const matching = flavors.filter(f => matchingCategories.has(f.category));
+    if (matching.length === 0) {
+      return flavors.slice(0, 6);
+    }
+    return [...new Set(matching.map(f => f.name))].slice(0, 6);
+  }, [aiMood, flavors]);
 
   const location = useLocation();
 
@@ -228,6 +236,10 @@ export function BookingPage() {
       showToast('Выберите хотя бы один вкус', 'error');
       return;
     }
+    if (!selectedSeat) {
+      showToast('Выберите ваше место', 'error');
+      return;
+    }
     if (!selectedMix) return;
     setLoading(true);
     try {
@@ -250,12 +262,17 @@ export function BookingPage() {
         mix_id: isCustom ? null : selectedMix.id, notes: finalNotes,
         strength: orderStrength,
         hookah_mix: selectedMix.description || '',
+        seat_id: selectedSeat.id,
+        seat_label: selectedSeat.label,
+        seat_zone: selectedSeat.zone,
       }});
       setActiveOrder(res);
       localStorage.setItem('current_order_id', res.id);
       setShowConfirmModal(false);
       setShowOrderTracker(true);
       reset();
+      setSelectedSeat(null);
+      setSelectedZone('');
       showToast('Заказ успешно принят!', 'success');
     } catch (err) { showToast('Не удалось оформить заказ', 'error'); }
     finally { setLoading(false); }
@@ -315,6 +332,10 @@ export function BookingPage() {
     if (!isAuthenticated) { showToast('Авторизуйтесь для оформления заказа', 'error'); navigate('/login?redirect=/order'); return; }
     if (selectedFlavors.length === 0) {
       showToast('Выберите хотя бы один вкус', 'error');
+      return;
+    }
+    if (!selectedSeat) {
+      showToast('Выберите ваше место', 'error');
       return;
     }
     setSelectedMix({
@@ -491,20 +512,60 @@ export function BookingPage() {
                 )}
               </div>
 
+              {/* Seat Selection */}
+              <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-accent-gold text-sm">🪑</span>
+                  <h3 className="text-xs uppercase tracking-[0.15em] font-semibold text-white/70">Ваше место *</h3>
+                  {selectedSeat && (
+                    <span className="ml-auto text-[11px] text-accent-gold font-semibold">{selectedSeat.label}</span>
+                  )}
+                </div>
+                <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide mb-2">
+                  {ZONES.map(zone => (
+                    <button key={zone.id} type="button" onClick={() => { setSelectedZone(zone.id as ZoneId); setSelectedSeat(null); }}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all border flex items-center gap-1 ${
+                        selectedZone === zone.id
+                          ? 'bg-accent-gold text-[#0b0807] border-accent-gold/30'
+                          : 'text-white/40 bg-white/5 border-transparent hover:border-accent-gold/20'
+                      }`}>
+                      <span>{zone.icon}</span> {zone.label}
+                    </button>
+                  ))}
+                </div>
+                {selectedZone && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-[120px] overflow-y-auto scrollbar-hide pr-1">
+                    {SEATS.filter(s => s.zone === selectedZone).map(seat => (
+                      <button key={seat.id} type="button" onClick={() => setSelectedSeat(seat)}
+                        className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all border text-center ${
+                          selectedSeat?.id === seat.id
+                            ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
+                            : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
+                        }`}>
+                        {seat.label.split('—')[1]?.trim() || seat.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {!selectedZone && (
+                  <p className="text-[11px] text-white/20 text-center py-2">Выберите зону</p>
+                )}
+              </div>
+
               {/* Order Button */}
               <motion.button
-                whileHover={{ scale: selectedFlavors.length === 0 ? 1 : 1.01 }}
-                whileTap={{ scale: selectedFlavors.length === 0 ? 1 : 0.98 }}
+                whileHover={{ scale: (!selectedSeat || selectedFlavors.length === 0) ? 1 : 1.01 }}
+                whileTap={{ scale: (!selectedSeat || selectedFlavors.length === 0) ? 1 : 0.98 }}
                 onClick={handleQuickOrder}
-                disabled={selectedFlavors.length === 0}
+                disabled={!selectedSeat || selectedFlavors.length === 0}
                 className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.12em] transition-all duration-300 flex items-center justify-center gap-2 ${
-                  selectedFlavors.length === 0
+                  !selectedSeat || selectedFlavors.length === 0
                     ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
                     : 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)]'
                 }`}
               >
                 <ShoppingCart className="w-4 h-4" />
-                {selectedFlavors.length === 0 ? 'Выберите вкус' : 'Заказать'}
+                {!selectedSeat ? 'Выберите место' : selectedFlavors.length === 0 ? 'Выберите вкус' : 'Заказать'}
               </motion.button>
 
               {/* Active Order Tracker */}

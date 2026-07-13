@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Play, Check, Flame, ChevronUp, ChevronDown, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Clock, Play, Check, Flame, ChevronUp, ChevronDown, RefreshCw, Send, Trash2, Filter } from 'lucide-react';
 import { showToast } from '@/components/NotificationToast';
 import { useSocket } from '@/hooks/useSocket';
 import api from '@/lib/api';
+import { ZONES } from '@/config/seats';
 
 export function OrdersAdmin() {
   const { socket } = useSocket();
@@ -11,7 +12,14 @@ export function OrdersAdmin() {
   const [loading, setLoading] = useState(false);
   const [manualReorder, setManualReorder] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [zoneFilter, setZoneFilter] = useState<string>('all');
   const fetchQueueRef = useRef<AbortController | null>(null);
+
+  const filteredOrders = useMemo(() => {
+    const active = orders.filter(o => o.status !== 'done');
+    if (zoneFilter === 'all') return active;
+    return active.filter(o => o.seatZone === zoneFilter);
+  }, [orders, zoneFilter]);
 
   // Load orders queue on mount
   useEffect(() => {
@@ -94,26 +102,29 @@ export function OrdersAdmin() {
   };
 
   // Reordering controls
-  const moveOrder = async (index: number, direction: 'up' | 'down') => {
+  const moveOrder = async (filteredIdx: number, direction: 'up' | 'down') => {
     if (!manualReorder) return;
-    const targetIdx = direction === 'up' ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= orders.length) return;
+    const targetIdx = direction === 'up' ? filteredIdx - 1 : filteredIdx + 1;
+    if (targetIdx < 0 || targetIdx >= filteredOrders.length) return;
+
+    const orderId = filteredOrders[filteredIdx].id;
+    const targetId = filteredOrders[targetIdx].id;
 
     const newQueue = [...orders];
-    // Swap items
-    const temp = newQueue[index];
-    newQueue[index] = newQueue[targetIdx];
-    newQueue[targetIdx] = temp;
+    const fromIdx = newQueue.findIndex(o => o.id === orderId);
+    const toIdx = newQueue.findIndex(o => o.id === targetId);
+    if (fromIdx === -1 || toIdx === -1) return;
 
-    // Local update
+    const temp = newQueue[fromIdx];
+    newQueue[fromIdx] = newQueue[toIdx];
+    newQueue[toIdx] = temp;
+
     setOrders(newQueue);
 
-    // Save to server
     try {
       const ids = newQueue.map(o => o.id);
       await api('/api/orders/reorder', { method: 'PUT', body: { ids } });
-      showToast('Очередь заказов успешно сохранена.', 'success');
-    } catch (err: any) {
+    } catch {
       showToast('Ошибка при изменении порядка очереди', 'error');
     }
   };
@@ -152,11 +163,10 @@ export function OrdersAdmin() {
   };
 
   const toggleSelectAll = () => {
-    const active = orders.filter(o => o.status !== 'done');
-    if (selectedIds.size === active.length) {
+    if (selectedIds.size === filteredOrders.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(active.map(o => o.id)));
+      setSelectedIds(new Set(filteredOrders.map(o => o.id)));
     }
   };
 
@@ -225,7 +235,7 @@ export function OrdersAdmin() {
         </div>
       </div>
 
-      {orders.filter(o => o.status !== 'done').length === 0 ? (
+      {filteredOrders.length === 0 ? (
         <div className="py-12 text-center space-y-1">
           <Flame className="w-8 h-8 text-white/20 mx-auto" />
           <h3 className="text-base font-semibold text-white/40 uppercase">Заказов пока нет</h3>
@@ -233,19 +243,45 @@ export function OrdersAdmin() {
         </div>
       ) : (
         <div className="space-y-2">
-          {orders.filter(o => o.status !== 'done').length > 0 && (
+          {/* Zone Filter */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+            <Filter className="w-3 h-3 text-white/30 flex-shrink-0" />
+            <button onClick={() => setZoneFilter('all')}
+              className={`px-2 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all border ${
+                zoneFilter === 'all'
+                  ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/30'
+                  : 'bg-white/5 text-white/40 border-transparent hover:border-white/10'
+              }`}>
+              Все ({orders.filter(o => o.status !== 'done').length})
+            </button>
+            {ZONES.map(z => {
+              const count = orders.filter(o => o.status !== 'done' && o.seatZone === z.id).length;
+              if (count === 0) return null;
+              return (
+                <button key={z.id} onClick={() => setZoneFilter(z.id)}
+                  className={`px-2 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all border flex items-center gap-1 ${
+                    zoneFilter === z.id
+                      ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/30'
+                      : 'bg-white/5 text-white/40 border-transparent hover:border-white/10'
+                  }`}>
+                  <span>{z.icon}</span> {z.label} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          {filteredOrders.length > 0 && (
             <div className="flex items-center gap-2 px-1">
               <input
                 type="checkbox"
-                checked={selectedIds.size > 0 && selectedIds.size === orders.filter(o => o.status !== 'done').length}
+                checked={selectedIds.size > 0 && selectedIds.size === filteredOrders.length}
                 onChange={toggleSelectAll}
                 className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
               />
-              <span className="text-xs text-white/40">Выбрать все</span>
+              <span className="text-xs text-white/40">Выбрать все ({filteredOrders.length})</span>
             </div>
           )}
-          {orders
-            .filter(o => o.status !== 'done')
+          {filteredOrders
             .map((order, idx) => {
               const timerInfo = getRemainingTimeText(order.promisedDeliveryTime, order.status);
               const statusColors: Record<string, string> = {
@@ -302,14 +338,19 @@ export function OrdersAdmin() {
                       )}
 
                       <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-mono font-bold text-white/30">#{idx + 1}</span>
                           <h3 className="text-sm font-bold text-white font-display uppercase tracking-wide">
-                            {order.seatLabel}
+                            {order.seatLabel || 'Без места'}
                           </h3>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${statusColors[order.status] || 'bg-white/5 text-white'}`}>
-                            {order.status === 'accepted' ? 'Принят' : order.status === 'preparing' ? 'Подбор табака' : order.status === 'roasting' ? 'Раскуривание' : 'В доставке'}
-                          </span>
+                          {order.seatZone && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-white/40 border border-white/10">
+                              {ZONES.find(z => z.id === order.seatZone)?.icon} {ZONES.find(z => z.id === order.seatZone)?.label || order.seatZone}
+                            </span>
+                          )}
+                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${statusColors[order.status] || 'bg-white/5 text-white'}`}>
+                             {order.status === 'accepted' ? 'Принят' : order.status === 'preparing' ? 'Подбор табака' : order.status === 'roasting' ? 'Раскуривание' : order.status === 'delivering' ? 'В доставке' : order.status === 'done' ? 'Подано' : order.status}
+                           </span>
 
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
                             orderStrength === 'light' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
