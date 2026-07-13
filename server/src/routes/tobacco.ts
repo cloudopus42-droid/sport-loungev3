@@ -16,19 +16,19 @@ function mapItem(item: any) {
 
 const createTobaccoSchema = z.object({
   name: z.string().min(1),
-  brand: z.string().min(1, 'Бренд обязателен'),
-  flavor: z.string().min(1, 'Вкус обязателен'),
-  emoji: z.string().optional(),
-  description: z.string().optional(),
+  brand: z.string().optional().default(''),
+  flavor: z.string().optional().default(''),
+  emoji: z.string().optional().default(''),
+  description: z.string().optional().default(''),
   image_url: z.string().optional(),
-  price: z.coerce.number().optional(),
+  price: z.coerce.number().optional().default(0),
   stock_quantity: z.coerce.number().int().min(0).default(0),
-  unit: z.string().optional(),
-  weight_grams: z.coerce.number().int().min(0).optional(),
-  is_active: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional(),
-  status: z.string().optional(),
+  unit: z.string().optional().default('gram'),
+  weight_grams: z.coerce.number().int().min(0).optional().default(50),
+  is_active: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional().default(true),
+  status: z.string().optional().default('active'),
   min_stock_threshold: z.coerce.number().int().min(0).default(5),
-  auto_reorder_enabled: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional(),
+  auto_reorder_enabled: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional().default(false),
 });
 
 const router = Router();
@@ -215,7 +215,13 @@ router.post('/adjust', auth, isAdmin, async (req: Request, res: Response, next: 
 
 router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = createTobaccoSchema.parse(req.body);
+    const parsed = createTobaccoSchema.safeParse(req.body);
+    if (!parsed.success) {
+      console.error('[Tobacco POST] Validation error:', parsed.error.format());
+      res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.format() });
+      return;
+    }
+    const data = parsed.data;
     let imageUrl = data.image_url;
     if (req.file) {
       imageUrl = await uploadToSupabase(req.file, 'tobacco');
@@ -272,7 +278,13 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
 
 router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = createTobaccoSchema.partial().parse(req.body);
+    const parsed = createTobaccoSchema.partial().safeParse(req.body);
+    if (!parsed.success) {
+      console.error('[Tobacco PUT] Validation error:', parsed.error.format());
+      res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.format() });
+      return;
+    }
+    const data = parsed.data;
     const updateData: Record<string, unknown> = {};
 
     if (data.name !== undefined) updateData.name = data.name;

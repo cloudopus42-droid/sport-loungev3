@@ -15,6 +15,54 @@ import { TOBACCO_BRANDS, getFlavorsForBrand, getBrandNames } from '@/data/tobacc
 import { TabSwitcher } from '@/components/ui/TabSwitcher';
 import api from '@/lib/api';
 
+const FLAVOR_EMOJI_MAP: Record<string, string> = {
+  'яблоко': '🍏', 'двойное яблоко': '🍏', 'apple': '🍏',
+  'манго': '🥭', 'манго-маракуйя': '🥭', 'mango': '🥭',
+  'персик': '🍑', 'персик-лайм': '🍑', 'peach': '🍑',
+  'грейпфрут': '🍊', 'грейпфрут-мята': '🍊', 'citrus': '🍊', 'цитрус': '🍊',
+  'клубника': '🍓', 'клубника-мята': '🍓', 'strawberry': '🍓', 'земляника': '🍓',
+  'черника': '🫐', 'черника-ежевика': '🫐', 'blueberry': '🫐', 'ежевика': '🫐',
+  'малина': '🫐', 'малина-личи': '🫐', 'raspberry': '🫐',
+  'арбуз': '🍉', 'арбуз-дыня': '🍉', 'watermelon': '🍉', 'дыня': '🍉',
+  'банан': '🍌', 'банан-шоколад': '🍌', 'banana': '🍌',
+  'кокос': '🥥', 'кокос-ваниль': '🥥', 'coconut': '🥥',
+  'лимон': '🍋', 'лимон-имбирь': '🍋', 'lemon': '🍋', 'лайм': '🍋',
+  'мята': '🧊', 'мята-айс': '🧊', 'mint': '🧊', 'айс': '🧊', 'фрост': '🧊',
+  'кактус': '🌵', 'кактус-фрост': '🌵', 'cactus': '🌵',
+  'виноград': '🍇', 'виноград-ягоды': '🍇', 'grape': '🍇',
+  'вишня': '🍒', 'cherry': '🍒',
+  'гранат': '🍎', 'pomegranate': '🍎',
+  'ананас': '🍍', 'pineapple': '🍍',
+  'гаува': '🍈', 'guava': '🍈',
+  'дыня': '🍈', 'melon': '🍈',
+  'кофе': '☕', 'coffee': '☕', 'капучино': '☕',
+  'шоколад': '🍫', 'chocolate': '🍫', 'какао': '🍫',
+  'карамель': '🍯', 'caramel': ' honey',
+  'ванилия': '🍦', 'ваниль': '🍦', 'vanilla': '🍦',
+  'сливки': '🥛', 'cream': '🥛',
+  'кола': '🥤', 'cola': '🥤',
+  'дыня': '🍈', 'melon': '🍈',
+  'табак': '烟草', 'tobacco': '🍃', 'трава': '🌿',
+  'спайс': '🌶️', 'спирт': '🍷', 'вино': '🍷', 'wine': '🍷',
+  'маракуйя': '🟣', 'passion fruit': '🟣',
+};
+
+const PRELOADED_EMOJIS = [
+  '🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐',
+  '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🥑', '🌵',
+  '🧊', '🍵', '☕', '🧃', '🥤', '🍷', '🍸', '🍹', '🥛', '🍾',
+  '🌶️', '🍫', '🍬', '🍭', '🍯', '🍦', '🍮', '🍁', '🌿', '🍃',
+  '🔥', '💎', '⭐', '🏆', '💪', '🎵', '🎮', '🎲', '🎯', '🎪',
+];
+
+function guessEmoji(flavorName: string): string {
+  const lower = flavorName.toLowerCase().trim();
+  for (const [keyword, emoji] of Object.entries(FLAVOR_EMOJI_MAP)) {
+    if (lower.includes(keyword)) return emoji;
+  }
+  return '🍂';
+}
+
 type Tab = 'items' | 'stock' | 'restock';
 
 interface TobaccoItem {
@@ -184,23 +232,19 @@ function TobaccoItemsPanel() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    const errors: string[] = [];
-    if (!brand?.trim()) errors.push('Выберите бренд');
-    if (!flavor?.trim()) errors.push('Выберите вкус');
-    if (!name?.trim() && brand && flavor) setName(`${brand} - ${flavor}`);
-    
-    if (errors.length > 0) {
-      setValidationErrors(errors);
-      showToast(errors[0], 'error');
-      return;
+    // Auto-generate name if empty
+    if (!name?.trim() && brand && flavor) {
+      setName(`${brand} - ${flavor}`);
     }
-    setValidationErrors([]);
 
     setSaving(true);
+    const finalName = name || `${brand} - ${flavor}` || 'Без названия';
     const payload: Record<string, unknown> = {
-      name: name || `${brand} - ${flavor}`,
-      brand, flavor, emoji, description,
+      name: finalName,
+      brand: brand || '',
+      flavor: flavor || '',
+      emoji: emoji || guessEmoji(flavor),
+      description,
       price: price ? Number(price) : 0,
       weight_grams: weightGrams,
       min_stock_threshold: minStockThreshold,
@@ -361,6 +405,9 @@ function TobaccoItemsPanel() {
                   if (brand && e.target.value) {
                     setName(`${brand} - ${e.target.value}`);
                   }
+                  if (e.target.value && !emoji) {
+                    setEmoji(guessEmoji(e.target.value));
+                  }
                 }}
                 className="glass-input w-full"
                 required
@@ -374,14 +421,32 @@ function TobaccoItemsPanel() {
             </div>
             <div>
               <label className="block text-[10px] text-white/50 mb-1 font-medium">Эмодзи</label>
-              <input
-                type="text"
-                value={emoji}
-                onChange={(e) => setEmoji(e.target.value)}
-                placeholder="🍏"
-                className="glass-input"
-                maxLength={4}
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={emoji}
+                  onChange={(e) => setEmoji(e.target.value)}
+                  placeholder="🍏"
+                  className="glass-input w-16 text-center text-lg"
+                  maxLength={4}
+                />
+                <div className="flex flex-wrap gap-1 max-h-[60px] overflow-y-auto flex-1">
+                  {PRELOADED_EMOJIS.map((em) => (
+                    <button
+                      key={em}
+                      type="button"
+                      onClick={() => setEmoji(em)}
+                      className={`w-7 h-7 rounded flex items-center justify-center text-sm transition-all ${
+                        emoji === em
+                          ? 'bg-accent-gold/20 ring-1 ring-accent-gold/50'
+                          : 'hover:bg-white/10'
+                      }`}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           <div>
