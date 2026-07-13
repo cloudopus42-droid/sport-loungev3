@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import {
-  Crown, LogOut, CalendarCheck, Sparkles
-} from 'lucide-react';
-import { HomeIcon, MenuIcon, UserIcon, CloseIcon } from '@/components/icons';
 import { PremiumIcon } from '@/components/ui/PremiumIcon';
 import clsx from 'clsx';
 import { useSocket } from '@/hooks/useSocket';
@@ -27,11 +23,12 @@ interface DesktopNavItem {
   label: string;
   to?: string;
   hash?: string;
+  icon: string;
 }
 
 const desktopNavItems: DesktopNavItem[] = [
-  { label: 'Главная', to: '/' },
-  { label: 'Заказ', to: '/order' },
+  { label: 'Главная', to: '/', icon: 'homeNav' },
+  { label: 'Заказ', to: '/order', icon: 'orderNav' },
 ];
 
 interface MobileTab {
@@ -59,9 +56,6 @@ export function MainLayout() {
 
   const easeOut = [0.23, 1, 0.32, 1];
   const ft = prefersReducedMotion ? { duration: 0.01 } : undefined;
-  const smoothFast = prefersReducedMotion
-    ? { duration: 0.01 }
-    : { duration: 0.35, ease: easeOut };
   const smoothGentle = prefersReducedMotion
     ? { duration: 0.01 }
     : { duration: 0.6, ease: easeOut };
@@ -147,22 +141,14 @@ export function MainLayout() {
           to={item.to}
           end={item.to === '/'}
           className={({ isActive }) => clsx(
-            'relative px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] transition-all duration-300',
-            isActive ? 'text-white' : 'text-white/40 hover:text-white/60'
+            'relative flex items-center gap-2 px-5 py-2 rounded-full font-mono text-[10px] uppercase tracking-[0.15em] transition-all duration-300',
+            isActive
+              ? 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-[#0b0807] font-bold shadow-[0_0_20px_rgba(255,191,0,0.25)]'
+              : 'liquid-glass text-white/50 hover:text-white/80 hover:border-[rgba(255,191,0,0.28)]'
           )}
         >
-          {({ isActive }) => (
-            <>
-              <span className="relative z-10">{item.label}</span>
-              {isActive && (
-                <motion.div
-                  layoutId="nav-underline"
-                  className="absolute bottom-0 left-2 right-2 h-px bg-white/30"
-                  transition={smoothFast}
-                />
-              )}
-            </>
-          )}
+          <PremiumIcon name={item.icon} size={13} />
+          <span className="relative z-10">{item.label}</span>
         </NavLink>
       );
     }
@@ -170,8 +156,9 @@ export function MainLayout() {
       <button
         key={item.label}
         onClick={(e) => { e.preventDefault(); handleNavClick(item.hash!); }}
-        className="relative px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 hover:text-white/60 transition-all duration-300 cursor-pointer"
+        className="relative flex items-center gap-2 px-5 py-2 rounded-full liquid-glass font-mono text-[10px] uppercase tracking-[0.15em] text-white/50 hover:text-white/80 transition-all duration-300 cursor-pointer"
       >
+        <PremiumIcon name={item.icon} size={13} />
         {item.label}
       </button>
     );
@@ -218,30 +205,32 @@ export function MainLayout() {
             <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white">LOUNGE</span>
           </NavLink>
 
-          {/* Desktop nav — monospace labels with hairline connector */}
-          <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center" aria-label="Основная навигация">
+          {/* Desktop nav — oval pill bar with liquid glass */}
+          <nav className="hidden lg:flex items-center gap-2 flex-1 justify-center" aria-label="Основная навигация">
             {desktopNavItems.map(renderDesktopNavLink)}
             {user?.role === 'admin' && (
               <NavLink
                 to="/admin"
                 className={({ isActive }) => clsx(
-                  'relative flex items-center gap-1 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] transition-all duration-300',
-                  isActive ? 'text-white' : 'text-white/40 hover:text-white/60'
+                  'relative flex items-center gap-2 px-5 py-2 rounded-full font-mono text-[10px] uppercase tracking-[0.15em] transition-all duration-300',
+                  isActive
+                    ? 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-[#0b0807] font-bold shadow-[0_0_20px_rgba(255,191,0,0.25)]'
+                    : 'liquid-glass text-white/50 hover:text-white/80 hover:border-[rgba(255,191,0,0.28)]'
                 )}
               >
-                <PremiumIcon name="crown" size={12} />
+                <PremiumIcon name="crown" size={13} />
                 <span>Админ</span>
               </NavLink>
             )}
           </nav>
 
-          {/* Right actions */}
+          {/* Right actions — oval pill group */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {isAuthenticated ? (
               <>
                 <NavLink
                   to="/profile"
-                  className="group hidden sm:flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 hover:text-white transition-all duration-300 px-2 py-1"
+                  className="group hidden sm:flex items-center gap-2 px-4 py-2 rounded-full liquid-glass font-mono text-[10px] uppercase tracking-[0.15em] text-white/50 hover:text-white/80 transition-all duration-300"
                   aria-label="Профиль"
                 >
                   {user?.avatar ? (
@@ -259,24 +248,24 @@ export function MainLayout() {
                 </NavLink>
                 <button
                   onClick={handleLogout}
-                  className="p-2 text-white/30 hover:text-white/60 transition-all"
+                  className="p-2.5 rounded-full liquid-glass text-white/30 hover:text-red-400 transition-all"
                   title="Выйти"
                   aria-label="Выйти"
                 >
-                      <PremiumIcon name="logOut" size={14} />
+                  <PremiumIcon name="logOut" size={14} />
                 </button>
               </>
             ) : (
               <NavLink
                 to="/login"
-                className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 hover:text-white transition-all duration-300 px-3 py-1.5"
+                className="px-4 py-2 rounded-full liquid-glass font-mono text-[10px] uppercase tracking-[0.15em] text-white/50 hover:text-white/80 transition-all duration-300"
               >
                 Войти
               </NavLink>
             )}
 
             <NavLink to="/order" aria-label="Сделать заказ"
-              className="btn-primary px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5"
+              className="px-5 py-2 rounded-full bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-[#0b0807] text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_20px_rgba(255,191,0,0.25)] hover:shadow-[0_0_30px_rgba(255,191,0,0.35)] transition-all duration-300"
             >
               <PremiumIcon name="sparkle" size={12} />
               Заказ
@@ -285,7 +274,7 @@ export function MainLayout() {
             <button
               ref={menuButtonRef}
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-white/40 hover:text-white transition-all"
+              className="lg:hidden p-2.5 rounded-full liquid-glass text-white/40 hover:text-white transition-all"
               aria-label="Открыть меню"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
@@ -333,7 +322,7 @@ export function MainLayout() {
                 </button>
               </div>
 
-              <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Мобильное меню">
+              <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto" aria-label="Мобильное меню">
                 {desktopNavItems.map((item) => {
                   if (item.to) {
                     const to = item.to === '/profile' && !isAuthenticated ? '/login' : item.to;
@@ -344,12 +333,13 @@ export function MainLayout() {
                         end={item.to === '/'}
                         onClick={() => setMobileMenuOpen(false)}
                         className={({ isActive }) => clsx(
-                          'flex items-center gap-3 px-4 py-3 font-mono text-[11px] uppercase tracking-wider transition-all',
+                          'flex items-center gap-3 px-4 py-3 rounded-full font-mono text-[11px] uppercase tracking-wider transition-all',
                           isActive
-                            ? 'text-white bg-white/5 border border-white/10'
-                            : 'text-white/40 hover:text-white/60 hover:bg-white/3 border border-transparent'
+                            ? 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-[#0b0807] font-bold shadow-[0_0_16px_rgba(255,191,0,0.2)]'
+                            : 'liquid-glass text-white/50 hover:text-white/70'
                         )}
                       >
+                        <PremiumIcon name={item.icon} size={15} />
                         {item.label}
                       </NavLink>
                     );
@@ -358,8 +348,9 @@ export function MainLayout() {
                     <button
                       key={item.label}
                       onClick={() => { handleNavClick(item.hash!); setMobileMenuOpen(false); }}
-                      className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-white/40 hover:text-white/60 hover:bg-white/3 transition-all border border-transparent text-left"
+                      className="flex items-center gap-3 w-full px-4 py-3 rounded-full liquid-glass font-mono text-[11px] uppercase tracking-wider text-white/50 hover:text-white/70 transition-all text-left"
                     >
+                      <PremiumIcon name={item.icon} size={15} />
                       {item.label}
                     </button>
                   );
@@ -372,13 +363,13 @@ export function MainLayout() {
                       to="/admin"
                       onClick={() => setMobileMenuOpen(false)}
                       className={({ isActive }) => clsx(
-                        'flex items-center gap-3 px-4 py-3 font-mono text-[11px] uppercase tracking-wider transition-all',
+                        'flex items-center gap-3 px-4 py-3 rounded-full font-mono text-[11px] uppercase tracking-wider transition-all',
                         isActive
-                          ? 'text-white bg-white/5 border border-white/10'
-                          : 'text-white/40 hover:text-white/60 border border-transparent'
+                          ? 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-[#0b0807] font-bold'
+                          : 'liquid-glass text-white/50 hover:text-white/70'
                       )}
                     >
-                      <PremiumIcon name="crown" size={14} />
+                      <PremiumIcon name="crown" size={15} />
                       Панель админа
                     </NavLink>
                   </>
@@ -407,7 +398,7 @@ export function MainLayout() {
                   <NavLink
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-white/10 text-white/40 font-mono text-[11px] uppercase tracking-wider hover:text-white hover:border-white/20 transition-all"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-full liquid-glass text-white/50 font-mono text-[11px] uppercase tracking-wider hover:text-white transition-all"
                   >
                       <PremiumIcon name="user" size={14} />
                     Войти
