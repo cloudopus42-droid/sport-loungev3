@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Badge } from '@/components/ui/Badge';
 import { FileUploader } from '@/components/FileUploader';
 import { showToast } from '@/components/NotificationToast';
-import { TOBACCO_BRANDS, getFlavorsForBrand, getBrandNames } from '@/data/tobaccoBrands';
+import { getFlavorsForBrand, getBrandNames } from '@/data/tobaccoBrands';
 import { TabSwitcher } from '@/components/ui/TabSwitcher';
 import api from '@/lib/api';
 
@@ -23,7 +23,7 @@ const FLAVOR_EMOJI_MAP: Record<string, string> = {
   'клубника': '🍓', 'клубника-мята': '🍓', 'strawberry': '🍓', 'земляника': '🍓',
   'черника': '🫐', 'черника-ежевика': '🫐', 'blueberry': '🫐', 'ежевика': '🫐',
   'малина': '🫐', 'малина-личи': '🫐', 'raspberry': '🫐',
-  'арбуз': '🍉', 'арбуз-дыня': '🍉', 'watermelon': '🍉', 'дыня': '🍉',
+  'арбуз': '🍉', 'арбуз-дыня': '🍉', 'watermelon': '🍉',
   'банан': '🍌', 'банан-шоколад': '🍌', 'banana': '🍌',
   'кокос': '🥥', 'кокос-ваниль': '🥥', 'coconut': '🥥',
   'лимон': '🍋', 'лимон-имбирь': '🍋', 'lemon': '🍋', 'лайм': '🍋',
@@ -37,12 +37,11 @@ const FLAVOR_EMOJI_MAP: Record<string, string> = {
   'дыня': '🍈', 'melon': '🍈',
   'кофе': '☕', 'coffee': '☕', 'капучино': '☕',
   'шоколад': '🍫', 'chocolate': '🍫', 'какао': '🍫',
-  'карамель': '🍯', 'caramel': ' honey',
+  'карамель': '🍯', 'caramel': '🍯',
   'ванилия': '🍦', 'ваниль': '🍦', 'vanilla': '🍦',
   'сливки': '🥛', 'cream': '🥛',
   'кола': '🥤', 'cola': '🥤',
-  'дыня': '🍈', 'melon': '🍈',
-  'табак': '烟草', 'tobacco': '🍃', 'трава': '🌿',
+  'табак': '🍃', 'tobacco': '🍃', 'трава': '🌿',
   'спайс': '🌶️', 'спирт': '🍷', 'вино': '🍷', 'wine': '🍷',
   'маракуйя': '🟣', 'passion fruit': '🟣',
 };
