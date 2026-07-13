@@ -34,7 +34,7 @@ async function processQueue() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item.payload),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(2500),
     });
 
     const data = await res.json() as any;
@@ -47,7 +47,7 @@ async function processQueue() {
     }
   } catch (err: any) {
     if (item.retries < item.maxRetries) {
-      const backoff = Math.pow(3, item.retries) * 1000;
+      const backoff = Math.pow(2, item.retries) * 1000;
       item.retries++;
       console.warn(`⚠️ [Telegram] Send failed (attempt ${item.retries}/${item.maxRetries}), retrying in ${backoff}ms: ${err.message}`);
       setTimeout(() => {

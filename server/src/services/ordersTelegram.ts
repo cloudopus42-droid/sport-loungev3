@@ -21,7 +21,7 @@ async function sendTelegramMessage(token: string, chatId: string, text: string):
         text,
         parse_mode: 'MarkdownV2',
       }),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(2000),
     });
 
     const data = await res.json() as any;
@@ -35,7 +35,7 @@ async function sendTelegramMessage(token: string, chatId: string, text: string):
     try {
       const targetUrl = `${telegramApi}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=MarkdownV2`;
       const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(7000) });
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(3000) });
       const data = await res.json() as any;
       if (data && data.ok) {
         console.log('🎉 Telegram alert sent via proxy.');

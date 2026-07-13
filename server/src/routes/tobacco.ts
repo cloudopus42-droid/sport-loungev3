@@ -276,7 +276,7 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
   } catch (e) { next(e); }
 });
 
-router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = createTobaccoSchema.partial().safeParse(req.body);
     if (!parsed.success) {
@@ -300,21 +300,6 @@ router.put('/:id', auth, isAdmin, uploadSingle('image'), async (req: Request, re
     if (data.status !== undefined) updateData.status = data.status;
     if (data.min_stock_threshold !== undefined) updateData.min_stock_threshold = data.min_stock_threshold;
     if (data.auto_reorder_enabled !== undefined) updateData.auto_reorder_enabled = data.auto_reorder_enabled;
-
-    if (req.file) {
-      const { data: oldItem } = await supabase
-        .from('mixes')
-        .select('image_url')
-        .eq('id', req.params.id)
-        .maybeSingle();
-
-      if (oldItem?.image_url) {
-        await deleteFromSupabase(oldItem.image_url);
-      }
-      updateData.image_url = await uploadToSupabase(req.file, 'tobacco');
-    } else if (data.image_url !== undefined) {
-      updateData.image_url = data.image_url || null;
-    }
 
     updateData.updated_at = new Date().toISOString();
 

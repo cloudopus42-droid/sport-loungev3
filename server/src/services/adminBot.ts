@@ -36,7 +36,7 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-async function callTelegramApi(method: string, body: any, timeoutMs = 10000): Promise<any> {
+async function callTelegramApi(method: string, body: any, timeoutMs = 5000): Promise<any> {
   const url = `${TELEGRAM_API}/${method}`;
   try {
     const res = await fetch(url, {
@@ -57,7 +57,7 @@ async function callTelegramApi(method: string, body: any, timeoutMs = 10000): Pr
       }
       const targetUrl = `${TELEGRAM_API}/${method}?${params.toString()}`;
       const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(timeoutMs + 5000) });
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(timeoutMs + 3000) });
       const data = await res.json() as any;
       if (data && data.ok) return data;
       throw new Error(data?.description || 'Proxy API returned ok: false');
