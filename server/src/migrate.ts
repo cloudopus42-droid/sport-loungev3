@@ -76,11 +76,10 @@ export async function runMigrations(): Promise<void> {
   }
 
   console.warn('\n⚠️ Could not connect to database. Migrations NOT applied.');
-  console.warn('   To apply manually, run these SQL statements in Supabase Dashboard → SQL Editor:\n');
-  for (const file of files) {
-    const content = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf-8');
-    console.warn(`-- ${file}`);
-    console.warn(content);
-    console.warn('');
-  }
+  console.warn('   To fix this, set SUPABASE_DB_PASSWORD in server/.env');
+  console.warn('   OR apply migrations manually:\n');
+  console.warn('   1. Open Supabase Dashboard → SQL Editor');
+  console.warn('   2. Copy the contents of: server/src/migrations/apply_all.sql');
+  console.warn('   3. Paste and run in SQL Editor\n');
+  console.warn('   The file contains ALL migrations in order, idempotent (safe to re-run).\n');
 }

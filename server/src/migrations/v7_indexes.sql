@@ -22,16 +22,10 @@ CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(date);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
 CREATE INDEX IF NOT EXISTS idx_bookings_date_status ON bookings(date, status);
 
--- mixes: queried by category, is_available
+-- mixes: queried by category, is_active, stock
 CREATE INDEX IF NOT EXISTS idx_mixes_category ON mixes(category);
-CREATE INDEX IF NOT EXISTS idx_mixes_available ON mixes(is_available);
-
--- inventory: queried by category
-CREATE INDEX IF NOT EXISTS idx_inventory_category ON inventory(category);
-
--- tobacco: queried by stock level, category
-CREATE INDEX IF NOT EXISTS idx_tobacco_stock ON tobacco(stock_quantity);
-CREATE INDEX IF NOT EXISTS idx_tobacco_category ON tobacco(category);
+CREATE INDEX IF NOT EXISTS idx_mixes_available ON mixes(is_active);
+CREATE INDEX IF NOT EXISTS idx_mixes_stock ON mixes(stock_quantity);
 
 -- users: queried by telegram_id (bot), phone, name
 CREATE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id);
