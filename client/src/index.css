@@ -102,13 +102,11 @@
     border-radius: inherit;
     background:
       linear-gradient(135deg,
-        rgba(255, 255, 255, 0.48) 0%,
-        rgba(255, 255, 255, 0.12) 22%,
-        rgba(255, 200, 100, 0.05) 44%,
-        transparent 62%),
-      radial-gradient(circle at 20% 0%,
-        rgba(255, 255, 255, 0.16), transparent 38%);
-    mix-blend-mode: screen;
+        rgba(255, 255, 255, 0.30) 0%,
+        rgba(255, 255, 255, 0.06) 25%,
+        transparent 55%),
+      radial-gradient(circle at 18% 0%,
+        rgba(255, 255, 255, 0.10), transparent 32%);
     pointer-events: none;
   }
 
@@ -174,13 +172,11 @@
     border-radius: inherit;
     background:
       linear-gradient(135deg,
-        rgba(255, 255, 255, 0.55) 0%,
-        rgba(255, 255, 255, 0.18) 20%,
-        rgba(255, 200, 100, 0.07) 40%,
-        transparent 60%),
-      radial-gradient(circle at 22% 0%,
-        rgba(255, 255, 255, 0.20), transparent 40%);
-    mix-blend-mode: screen;
+        rgba(255, 255, 255, 0.38) 0%,
+        rgba(255, 255, 255, 0.10) 25%,
+        transparent 55%),
+      radial-gradient(circle at 20% 0%,
+        rgba(255, 255, 255, 0.14), transparent 35%);
     pointer-events: none;
   }
 
@@ -388,16 +384,14 @@
     inset: 0;
     z-index: 1;
     border-radius: inherit;
-    /* Dispersion 100%: diagonal sheen with color separation */
+    /* Dispersion 100%: diagonal sheen — using normal blend to avoid red fringing */
     background:
       linear-gradient(135deg,
-        rgba(255, 255, 255, 0.50) 0%,
-        rgba(255, 255, 255, 0.15) 20%,
-        rgba(255, 200, 100, 0.06) 40%,
-        transparent 60%),
-      radial-gradient(circle at 20% 0%,
-        rgba(255, 255, 255, 0.18), transparent 40%);
-    mix-blend-mode: screen;
+        rgba(255, 255, 255, 0.35) 0%,
+        rgba(255, 255, 255, 0.08) 25%,
+        transparent 55%),
+      radial-gradient(circle at 18% 0%,
+        rgba(255, 255, 255, 0.12), transparent 35%);
     pointer-events: none;
   }
 
@@ -424,15 +418,7 @@
       inset 0 0 28px rgba(255, 191, 0, 0.06);
   }
 
-  /* Refraction 100%: real backdrop displacement (Chromium only) */
-  @supports (backdrop-filter: url(#x)) {
-    .liquid-glass,
-    .liquid-glass-gold,
-    .glass-card {
-      backdrop-filter: blur(4px) url(#liquid-refraction) saturate(200%) brightness(1.15);
-      -webkit-backdrop-filter: blur(4px) url(#liquid-refraction) saturate(200%) brightness(1.15);
-    }
-  }
+  /* Liquid Glass — no SVG filter in backdrop-filter (invalid CSS) */
 
   .liquid-glass-gold {
     position: relative;
@@ -461,13 +447,11 @@
     border-radius: inherit;
     background:
       linear-gradient(135deg,
-        rgba(255, 255, 255, 0.55) 0%,
-        rgba(255, 255, 255, 0.18) 20%,
-        rgba(255, 200, 100, 0.08) 40%,
-        transparent 60%),
-      radial-gradient(circle at 22% 0%,
-        rgba(255, 255, 255, 0.20), transparent 42%);
-    mix-blend-mode: screen;
+        rgba(255, 255, 255, 0.40) 0%,
+        rgba(255, 255, 255, 0.12) 25%,
+        transparent 55%),
+      radial-gradient(circle at 20% 0%,
+        rgba(255, 255, 255, 0.15), transparent 36%);
     pointer-events: none;
   }
 

@@ -7,6 +7,7 @@ import { FeatureProvider } from '@/contexts/FeatureContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MainLayout } from '@/layouts/MainLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { AshParticles } from '@/components/AshParticles';
 
 
 // Lazily load route components
@@ -47,13 +48,15 @@ export default function App() {
       <SocketProvider>
         <FeatureProvider>
           <ErrorBoundary>
-          {/* SVG refraction filter for Liquid Glass (Chromium) */}
+          {/* Floating ash particles — atmospheric background */}
+          <AshParticles />
+          {/* SVG filter for subtle glass refraction (applied via CSS filter, not backdrop-filter) */}
           <svg width="0" height="0" style={{ position: 'absolute' }}>
             <defs>
-              <filter id="liquid-refraction" x="-10%" y="-10%" width="120%" height="120%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.012 0.012" numOctaves="3" seed="5" result="noise" />
-                <feGaussianBlur in="noise" stdDeviation="3" result="blurred" />
-                <feDisplacementMap in="SourceGraphic" in2="blurred" scale="80" xChannelSelector="R" yChannelSelector="G" />
+              <filter id="liquid-refraction" x="-5%" y="-5%" width="110%" height="110%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="3" result="noise" />
+                <feGaussianBlur in="noise" stdDeviation="1.5" result="blurred" />
+                <feDisplacementMap in="SourceGraphic" in2="blurred" scale="12" xChannelSelector="R" yChannelSelector="G" />
               </filter>
             </defs>
           </svg>
