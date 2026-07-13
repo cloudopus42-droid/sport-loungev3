@@ -21,7 +21,7 @@ async function sendTelegramMessage(token: string, chatId: string, text: string):
         text,
         parse_mode: 'MarkdownV2',
       }),
-      signal: AbortSignal.timeout(2000),
+      signal: AbortSignal.timeout(5000),
     });
 
     const data = await res.json() as any;
@@ -29,21 +29,10 @@ async function sendTelegramMessage(token: string, chatId: string, text: string):
       console.log(' Telegram alert sent successfully.');
       return true;
     }
-    throw new Error(data?.description || 'API returned ok: false');
+    console.error('Telegram API error:', data?.description);
+    return false;
   } catch (err: any) {
-    console.warn(`⚠️ Direct sendTelegramMessage failed: ${err.message}. Trying CodeTabs proxy fallback...`);
-    try {
-      const targetUrl = `${telegramApi}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=MarkdownV2`;
-      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(3000) });
-      const data = await res.json() as any;
-      if (data && data.ok) {
-        console.log('🎉 Telegram alert sent via proxy.');
-        return true;
-      }
-    } catch (proxyErr: any) {
-      console.error('❌ Telegram Proxy fallback failed:', proxyErr.message);
-    }
+    console.error(`❌ sendTelegramMessage failed: ${err.message}`);
     return false;
   }
 }

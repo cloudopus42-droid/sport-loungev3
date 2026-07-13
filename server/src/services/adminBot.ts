@@ -38,55 +38,25 @@ function escapeHtml(text: string): string {
 
 async function callTelegramApi(method: string, body: any, timeoutMs = 5000): Promise<any> {
   const url = `${TELEGRAM_API}/${method}`;
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    const data = await res.json() as any;
-    if (data && data.ok) return data;
-    throw new Error(data?.description || 'Telegram API returned ok: false');
-  } catch (err: any) {
-    console.warn(`⚠️ [Admin Bot] Telegram API call ${method} failed: ${err.message}`);
-    try {
-      const params = new URLSearchParams();
-      for (const [key, value] of Object.entries(body)) {
-        params.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
-      }
-      const targetUrl = `${TELEGRAM_API}/${method}?${params.toString()}`;
-      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(timeoutMs + 3000) });
-      const data = await res.json() as any;
-      if (data && data.ok) return data;
-      throw new Error(data?.description || 'Proxy API returned ok: false');
-    } catch (proxyErr: any) {
-      console.error(`❌ [Admin Bot] Both direct/Proxy failed for ${method}:`, proxyErr.message);
-      throw proxyErr;
-    }
-  }
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  const data = await res.json() as any;
+  if (data && data.ok) return data;
+  throw new Error(data?.description || 'Telegram API returned ok: false');
 }
 
 async function getUpdates(offset: number, timeout = 30): Promise<any[]> {
   const url = `${TELEGRAM_API}/getUpdates?offset=${offset}&timeout=${timeout}`;
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout((timeout + 5) * 1000),
-    });
-    const data = await res.json() as any;
-    if (data && data.ok) return data.result || [];
-    return [];
-  } catch (err: any) {
-    // Proxy fallback
-    try {
-      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout((timeout + 15) * 1000) });
-      const data = await res.json() as any;
-      if (data && data.ok) return data.result || [];
-    } catch (e) { console.warn('Silent catch:', e); }
-    return [];
-  }
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout((timeout + 5) * 1000),
+  });
+  const data = await res.json() as any;
+  if (data && data.ok) return data.result || [];
+  return [];
 }
 
 async function isAdminUser(telegramId: number, username?: string): Promise<boolean> {

@@ -106,25 +106,13 @@ async function executeTelegramSend(booking: BookingInfo): Promise<boolean> {
         text: message,
         parse_mode: 'MarkdownV2',
       }),
-      signal: AbortSignal.timeout(2500)
+      signal: AbortSignal.timeout(5000)
     });
 
     const data = (await res.json()) as any;
     return !!data.ok;
   } catch (error: any) {
-    console.warn('⚠️ Direct Telegram send failed or timed out. Attempting proxy fallback via CodeTabs...');
-    try {
-      const targetUrl = `${TELEGRAM_API}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=MarkdownV2`;
-      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(6000) });
-      const data = (await res.json()) as any;
-      if (data && data.ok) {
-        console.log('🎉 Telegram notification delivered successfully via CodeTabs proxy!');
-        return true;
-      }
-    } catch (fallbackErr: any) {
-      console.error('❌ Telegram Proxy fallback failed:', fallbackErr.message);
-    }
+    console.error('⚠️ Telegram sendBookingNotification failed:', error.message);
     return false;
   }
 }
@@ -175,20 +163,12 @@ export async function sendStatusNotification(
         text: message,
         parse_mode: 'MarkdownV2',
       }),
-      signal: AbortSignal.timeout(2500)
+      signal: AbortSignal.timeout(5000)
     });
     const data = (await res.json()) as any;
     return !!(data && data.ok);
   } catch {
-    try {
-      const targetUrl = `${TELEGRAM_API}/sendMessage?chat_id=${config.telegramChatId}&text=${encodeURIComponent(message)}&parse_mode=MarkdownV2`;
-      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(6000) });
-      const data = (await res.json()) as any;
-      return !!(data && data.ok);
-    } catch {
-      return false;
-    }
+    return false;
   }
 }
 
@@ -219,20 +199,12 @@ export async function sendChatMessageNotification(
         text: message,
         parse_mode: 'MarkdownV2',
       }),
-      signal: AbortSignal.timeout(2500)
+      signal: AbortSignal.timeout(5000)
     });
     const data = (await res.json()) as any;
     return !!(data && data.ok);
   } catch {
-    try {
-      const targetUrl = `${TELEGRAM_API}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=MarkdownV2`;
-      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(6000) });
-      const data = (await res.json()) as any;
-      return !!(data && data.ok);
-    } catch {
-      return false;
-    }
+    return false;
   }
 }
 
