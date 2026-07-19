@@ -61,7 +61,17 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
   try {
     const data = createOrderSchema.parse(req.body);
     const userId = req.user!.id;
-    const promisedTime = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    // Count active orders in queue (accepted, preparing, roasting)
+    const { count: activeCount } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['accepted', 'preparing', 'roasting']);
+
+    // Sequential wait: each order adds 15 min, first order = 15 min
+    const queuePosition = (activeCount || 0) + 1;
+    const waitMinutes = queuePosition * 15;
+    const promisedTime = new Date(Date.now() + waitMinutes * 60 * 1000).toISOString();
     const priority = Date.now();
 
     const { data: userProfile } = await supabase
@@ -125,8 +135,11 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 
     const mixDetails = { name: 'Индивидуальный микс' };
 
+    // Add queue position to notification
+    const orderWithQueue = { ...order, queue_position: queuePosition, wait_minutes: waitMinutes };
+
     if (userProfile) {
-      sendOrderNotification(order, userProfile.name, userProfile.phone || 'Не указан', mixDetails).catch(() => {});
+      sendOrderNotification(orderWithQueue, userProfile.name, userProfile.phone || 'Не указан', mixDetails).catch(() => {});
     }
 
     try { getIO().emit('order:created', mapOrderToFrontend(order)); } catch (e) { console.warn('⚠️ Socket emit order:created failed:', e); }

@@ -670,11 +670,14 @@ export async function adminNotifyNewOrder(
   seatZone: string,
   userName: string,
   mixName: string,
-  promisedTime: string
+  promisedTime: string,
+  queuePosition?: number,
+  waitMinutes?: number
 ): Promise<void> {
   if (!ADMIN_BOT_TOKEN) return;
 
   const time = new Date(promisedTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  const queueInfo = queuePosition ? ` (очередь #${queuePosition}, ~${waitMinutes} мин)` : '';
 
   const text = [
     '💨 <b>НОВЫЙ ЗАКАЗ КАЛЬЯНА!</b>',
@@ -682,7 +685,7 @@ export async function adminNotifyNewOrder(
     `📍 <b>Стол:</b> ${escapeHtml(seatLabel)} (${escapeHtml(seatZone)})`,
     `👤 <b>Клиент:</b> ${escapeHtml(userName)}`,
     `🏺 <b>Микс:</b> ${escapeHtml(mixName)}`,
-    `🕐 <b>Обещан:</b> ${time}`,
+    `🕐 <b>Обещан:</b> ${time}${queueInfo}`,
   ].join('\n');
 
   for (const adminChatId of knownAdminChatIds) {

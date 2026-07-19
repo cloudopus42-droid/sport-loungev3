@@ -42,12 +42,15 @@ export async function sendOrderNotification(order: any, userName: string, phone:
   if (!chatId) { console.warn('⚠️ No TELEGRAM_CHAT_ID configured'); return false; }
   const zoneName = ZONE_LABELS[order.seat_zone] || order.seat_zone || 'Общий зал';
   const promisedTime = new Date(order.promised_delivery_time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  const queuePos = order.queue_position || 1;
+  const waitMin = order.wait_minutes || 15;
 
   const message = [
     '💨 *НОВЫЙ ЗАКАЗ КАЛЬЯНА\\!*',
     '',
     `📍 *Место:* ${escapeMarkdown(order.seat_label || 'Не указан')} \\(${escapeMarkdown(zoneName)}\\)`,
-    `🕐 *Обещанное время подачи:* ${escapeMarkdown(promisedTime)} \\(15 мин\\)`,
+    `🕐 *Обещанное время подачи:* ${escapeMarkdown(promisedTime)}`,
+    `⏳ *Ожидание:* ~${waitMin} мин \\(очередь \\#${queuePos}\\)`,
     '',
     '🏺 *Спецификация:*',
     `   Микс: *${escapeMarkdown(mixDetails.name || 'Свой микс')}*`,
@@ -66,6 +69,8 @@ export async function sendOrderNotification(order: any, userName: string, phone:
     userName,
     mixDetails.name || 'Индивидуальный микс',
     order.promised_delivery_time,
+    order.queue_position,
+    order.wait_minutes,
   ).catch(err => console.warn('⚠️ Admin bot notify failed:', err.message));
 
   return sendTelegramMessage(ORDER_BOT_TOKEN, chatId, message);
