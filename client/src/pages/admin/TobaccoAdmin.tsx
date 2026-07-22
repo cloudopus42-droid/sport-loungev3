@@ -162,6 +162,9 @@ function TobaccoItemsPanel() {
   const [deleting, setDeleting] = useState(false);
   const [migrationNeeded, setMigrationNeeded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
@@ -299,6 +302,39 @@ function TobaccoItemsPanel() {
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredItems.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredItems.map(i => i._id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      await api('/api/tobacco/bulk-delete', { method: 'POST', body: { ids: Array.from(selectedIds) } });
+      showToast(`Удалено ${selectedIds.size} позиций`, 'success');
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+      fetchItems();
+    } catch {
+      showToast('Ошибка массового удаления', 'error');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-2">
       {migrationNeeded && (
@@ -318,12 +354,24 @@ function TobaccoItemsPanel() {
             className="glass-input pl-8 py-1.5 text-xs w-full"
           />
         </div>
-        <p className="text-xs text-white/40 flex-shrink-0">
-          {filteredItems.length}{searchQuery ? ` из ${items.length}` : ''} позиций
-        </p>
-        <GlowButton onClick={openCreate} size="sm">
-          <Plus className="w-4 h-4" /> Добавить
-        </GlowButton>
+        {selectedIds.size > 0 ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-accent-gold font-medium">{selectedIds.size} выбрано</span>
+            <GlowButton size="sm" variant="danger" onClick={() => setBulkDeleteOpen(true)}>
+              <Trash2 className="w-4 h-4" /> Удалить ({selectedIds.size})
+            </GlowButton>
+            <button onClick={() => setSelectedIds(new Set())} className="text-xs text-white/40 hover:text-white/60 transition-colors">Снять</button>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-white/40 flex-shrink-0">
+              {filteredItems.length}{searchQuery ? ` из ${items.length}` : ''} позиций
+            </p>
+            <GlowButton onClick={openCreate} size="sm">
+              <Plus className="w-4 h-4" /> Добавить
+            </GlowButton>
+          </>
+        )}
       </div>
 
       {loading ? (
@@ -332,11 +380,55 @@ function TobaccoItemsPanel() {
         </div>
       ) : (
         <div className="grid gap-2">
+          {filteredItems.length > 0 && (
+            <div className="flex items-center gap-2 px-1">
+              <label className="flex items-center gap-2 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.size === filteredItems.length && filteredItems.length > 0}
+                  onChange={toggleSelectAll}
+                  className="sr-only peer"
+                />
+                <div className="w-4 h-4 rounded border-2 border-white/20 peer-checked:border-accent-gold peer-checked:bg-accent-gold/20 flex items-center justify-center transition-all">
+                  {selectedIds.size === filteredItems.length && filteredItems.length > 0 && (
+                    <svg className="w-2.5 h-2.5 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                  {selectedIds.size > 0 && selectedIds.size < filteredItems.length && (
+                    <div className="w-2 h-0.5 bg-accent-gold rounded" />
+                  )}
+                </div>
+                <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
+                  {selectedIds.size > 0 ? `${selectedIds.size}/${filteredItems.length}` : 'Выбрать все'}
+                </span>
+              </label>
+            </div>
+          )}
           {filteredItems.map((item) => (
             <div
               key={item._id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-glass-bg border border-glass-border hover:border-accent-gold/30 transition-all"
+              className={`flex items-center gap-3 p-3 rounded-xl bg-glass-bg border transition-all ${
+                selectedIds.has(item._id)
+                  ? 'border-accent-gold/60 bg-accent-gold/5'
+                  : 'border-glass-border hover:border-accent-gold/30'
+              }`}
             >
+              <label className="flex-shrink-0 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(item._id)}
+                  onChange={() => toggleSelect(item._id)}
+                  className="sr-only peer"
+                />
+                <div className="w-5 h-5 rounded-md border-2 border-white/20 peer-checked:border-accent-gold peer-checked:bg-accent-gold/20 flex items-center justify-center transition-all">
+                  {selectedIds.has(item._id) && (
+                    <svg className="w-3 h-3 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </label>
               <div className="w-10 h-10 rounded-lg overflow-hidden bg-dark-surface flex-shrink-0">
                 {item.image_url ? (
                   <img src={item.image_url} alt="" className="w-full h-full object-cover" />
@@ -532,6 +624,16 @@ function TobaccoItemsPanel() {
         message="Вы уверены, что хотите удалить этот товар?"
         confirmText="Удалить"
         loading={deleting}
+      />
+
+      <ConfirmDialog
+        isOpen={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`Удалить ${selectedIds.size} позиций?`}
+        message={`Вы уверены, что хотите удалить ${selectedIds.size} позиций? Это действие необратимо.`}
+        confirmText={`Удалить ${selectedIds.size}`}
+        loading={bulkDeleting}
       />
     </div>
   );
