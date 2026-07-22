@@ -16,12 +16,16 @@ jobs:
           RETRY_DELAY=15
 
           for i in $(seq 1 $MAX_RETRIES); do
-            HTTP_CODE=$(curl -s -o /tmp/response -w "%{http_code}" --max-time 30 "$URL" 2>/dev/null || echo "000")
+            RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 60 "$URL" 2>/dev/null)
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            BODY=$(echo "$RESPONSE" | sed '$d')
+            
             echo "Attempt $i: HTTP $HTTP_CODE"
             
             if [ "$HTTP_CODE" = "200" ]; then
               echo "✅ Render is alive"
-              cat /tmp/response 2>/dev/null
+              echo "$BODY" | head -c 200
+              echo ""
               exit 0
             fi
             
