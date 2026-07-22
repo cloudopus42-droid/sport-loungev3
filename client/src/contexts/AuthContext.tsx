@@ -39,36 +39,35 @@ function normalizeUser(u: any): User {
   return { ...u, _id: u._id || u.id };
 }
 
-function getInitialUser(): User | null {
+function getStoredUser(): User | null {
   try {
     const saved = localStorage.getItem('user');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return normalizeUser(parsed);
-    }
+    if (saved) return normalizeUser(JSON.parse(saved));
   } catch (e) { console.warn('Silent catch:', e); }
   return null;
 }
 
+function getStoredToken(): string | null {
+  return localStorage.getItem('token');
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
-  const [user, setUser] = useState<User | null>(() => getInitialUser());
-  const [loading, setLoading] = useState(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = getInitialUser();
-    return !savedToken || !savedUser;
-  });
+  const [token, setToken] = useState<string | null>(getStoredToken);
+  const [user, setUser] = useState<User | null>(getStoredUser);
+  const [loading, setLoading] = useState(true);
 
   const isAuthenticated = !!token && !!user;
   const isAdmin = user?.role === 'admin';
 
+  // Verify token on mount and refresh user data
   useEffect(() => {
     const ac = new AbortController();
-    const checkAuth = async () => {
-      const savedToken = localStorage.getItem('token');
+
+    const verify = async () => {
+      const savedToken = getStoredToken();
       if (!savedToken) {
-        setUser(null);
         setToken(null);
+        setUser(null);
         setLoading(false);
         return;
       }
@@ -80,6 +79,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setToken(savedToken);
         localStorage.setItem('user', JSON.stringify(normalized));
       } catch {
+        // Token is invalid or expired — clear everything
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setToken(null);
@@ -89,12 +89,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    checkAuth();
+    verify();
     return () => ac.abort();
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await api<AuthResponse>('/api/auth/login', { method: 'POST', body: { email, password } });
+    const data = await api<AuthResponse>('/api/auth/login', {
+      method: 'POST',
+      body: { email, password },
+    });
     const normalized = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(normalized));
@@ -103,7 +106,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    const data = await api<AuthResponse>('/api/auth/register', { method: 'POST', body: { email, password, name } });
+    const data = await api<AuthResponse>('/api/auth/register', {
+      method: 'POST',
+      body: { email, password, name },
+    });
     const normalized = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(normalized));
@@ -115,14 +121,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: import.meta.env.VITE_REDIRECT_URL || `${window.location.origin}${import.meta.env.BASE_URL}login/callback`,
+        redirectTo:
+          import.meta.env.VITE_REDIRECT_URL ||
+          `${window.location.origin}${import.meta.env.BASE_URL || '/'}login/callback`,
       },
     });
     if (error) throw error;
   }, []);
 
   const handleGoogleCallback = useCallback(async (accessToken: string) => {
-    const data = await api<AuthResponse>('/api/auth/google', { method: 'POST', body: { accessToken } });
+    const data = await api<AuthResponse>('/api/auth/google', {
+      method: 'POST',
+      body: { accessToken },
+    });
     const normalized = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(normalized));
@@ -138,19 +149,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     supabase.auth.signOut().catch(() => {});
   }, []);
 
-  const contextValue = useMemo(() => ({
-    user,
-    token,
-    isAuthenticated,
-    isAdmin,
-    loading,
-    login,
-    register,
-    logout,
-    loginWithGoogle,
-    handleGoogleCallback,
-    setUser,
-  }), [user, token, isAuthenticated, isAdmin, loading, login, register, logout, loginWithGoogle, handleGoogleCallback, setUser]);
+  const contextValue = useMemo(
+    () => ({
+      user,
+      token,
+      isAuthenticated,
+      isAdmin,
+      loading,
+      login,
+      register,
+      logout,
+      loginWithGoogle,
+      handleGoogleCallback,
+      setUser,
+    }),
+    [
+      user, token, isAuthenticated, isAdmin, loading,
+      login, register, logout, loginWithGoogle, handleGoogleCallback, setUser,
+    ],
+  );
 
   return (
     <AuthContext.Provider value={contextValue}>

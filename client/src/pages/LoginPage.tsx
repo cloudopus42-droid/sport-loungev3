@@ -49,7 +49,7 @@ export function LoginPage() {
     if (password.length < 6) { setError('Пароль должен содержать минимум 6 символов'); return; }
     setLoading(true);
     try {
-      await register(name, email, password);
+      await register(email, password, name);
       navigate(redirectUrl, { replace: true });
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string; message?: string } } };
