@@ -220,12 +220,11 @@ export function FeedPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-4 pt-1">
-                  <motion.button onClick={() => handleLike(post._id)}
-                    className={clsx('flex items-center gap-1.5 text-sm transition-colors', liked ? 'text-red-400' : 'text-white/40 hover:text-red-400')}
-                    whileTap={{ scale: 0.9 }}>
+                  <button onClick={() => handleLike(post._id)}
+                    className={clsx('flex items-center gap-1.5 text-sm transition-all duration-200 active:scale-90 cursor-pointer', liked ? 'text-red-400' : 'text-white/40 hover:text-red-400')}>
                     <Heart className={clsx('w-5 h-5', liked && 'fill-current')} />
                     <span>{post.likes || 0}</span>
-                  </motion.button>
+                  </button>
 
                   <button onClick={() => toggleComments(post._id)}
                     className="flex items-center gap-1.5 text-sm text-white/40 hover:text-accent-gold transition-colors">
@@ -260,11 +259,10 @@ export function FeedPage() {
                             className="glass-input text-xs flex-1 !py-1.5"
                             onKeyDown={(e) => e.key === 'Enter' && submitComment(post._id)}
                           />
-                          <motion.button onClick={() => submitComment(post._id)}
-                            className="p-3 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-                            whileTap={{ scale: 0.9 }}>
+                          <button onClick={() => submitComment(post._id)}
+                            className="p-3 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-all duration-200 active:scale-90 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer">
                             <Send className="w-3.5 h-3.5" />
-                          </motion.button>
+                          </button>
                         </div>
                       )}
                     </motion.div>

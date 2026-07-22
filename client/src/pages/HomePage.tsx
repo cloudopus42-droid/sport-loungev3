@@ -141,22 +141,18 @@ export function HomePage() {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <NavLink to="/order" className="w-full sm:w-auto">
-              <motion.button
-                className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
+                className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 <PremiumIcon name="clockPremium" size={16} /> Сделать заказ
-              </motion.button>
+              </button>
             </NavLink>
             <NavLink to="/order#mixologist" className="w-full sm:w-auto">
-              <motion.button
-                className="btn-secondary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 w-full sm:w-auto"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
+                className="btn-secondary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 w-full sm:w-auto transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 <PremiumIcon name="flamePremium" size={16} /> ИИ-Миксолог
-              </motion.button>
+              </button>
             </NavLink>
           </motion.div>
 
@@ -300,13 +296,11 @@ export function HomePage() {
 
               <div className="pt-6 z-10">
                 <NavLink to="/order">
-                  <motion.button
-                    className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 text-sm font-semibold w-full sm:w-auto"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
+                    className="btn-primary px-8 py-3.5 rounded-full flex items-center justify-center gap-2 text-sm font-semibold w-full sm:w-auto transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                      <Flame className="w-4 h-4" /> Открыть конструктор
-                  </motion.button>
+                  </button>
                 </NavLink>
               </div>
             </GlassCard>
