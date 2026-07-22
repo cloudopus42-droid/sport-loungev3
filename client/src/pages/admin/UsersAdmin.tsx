@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, Shield, Ban, CheckCircle, Eye, X, Trash2, AlertTriangle } from 'lucide-react';
+import { Users, Search, Shield, Ban, CheckCircle, Eye, X, Trash2 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { GlowButton } from '@/components/ui/GlowButton';
 import { Badge } from '@/components/ui/Badge';
 import { TabSwitcher } from '@/components/ui/TabSwitcher';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -69,12 +70,6 @@ export function UsersAdmin() {
       default: return users;
     }
   }, [users, activeTab]);
-
-  const counts = useMemo(() => ({
-    all: users.length,
-    blocked: users.filter(u => u.isBlocked).length,
-    admins: users.filter(u => u.role === 'admin').length,
-  }), [users]);
 
   const openDetail = async (userId: string) => {
     try {
