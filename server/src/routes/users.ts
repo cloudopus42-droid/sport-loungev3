@@ -206,4 +206,60 @@ router.delete('/:id', auth, isAdmin, async (req: Request, res: Response, next: N
   }
 });
 
+// POST /api/users/bulk-delete — Delete multiple users by IDs (admin only)
+router.post('/bulk-delete', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({ error: 'ids array is required' });
+      return;
+    }
+
+    // Filter out admins
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, role')
+      .in('id', ids);
+
+    const nonAdminIds = (users || []).filter(u => u.role !== 'admin').map(u => u.id);
+    if (nonAdminIds.length === 0) {
+      res.status(400).json({ error: 'Нельзя удалить администраторов' });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .in('id', nonAdminIds);
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    res.json({ deleted: nonAdminIds.length, skipped: ids.length - nonAdminIds.length });
+  } catch (e) { next(e); }
+});
+
+// POST /api/users/bulk-block — Block/unblock multiple users
+router.post('/bulk-block', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids, is_blocked } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0 || typeof is_blocked !== 'boolean') {
+      res.status(400).json({ error: 'ids array and is_blocked boolean are required' });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ is_blocked })
+      .in('id', ids);
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    res.json({ updated: ids.length });
+  } catch (e) { next(e); }
+});
+
 export default router;

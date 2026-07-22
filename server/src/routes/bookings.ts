@@ -722,4 +722,48 @@ router.post('/public-mix', async (req: Request, res: Response, next: NextFunctio
   }
 });
 
+// POST /api/bookings/bulk-delete — Delete multiple bookings by IDs
+router.post('/bulk-delete', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({ error: 'ids array is required' });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('bookings')
+      .delete()
+      .in('id', ids);
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    res.json({ deleted: ids.length });
+  } catch (e) { next(e); }
+});
+
+// POST /api/bookings/bulk-status — Update status for multiple bookings
+router.post('/bulk-status', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids, status } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0 || !status) {
+      res.status(400).json({ error: 'ids array and status are required' });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .in('id', ids);
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    res.json({ updated: ids.length });
+  } catch (e) { next(e); }
+});
+
 export default router;

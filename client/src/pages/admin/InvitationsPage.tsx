@@ -26,6 +26,10 @@ export function AdminInvitationsPage() {
   const [deleting, setDeleting] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   // Form
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -146,6 +150,39 @@ export function AdminInvitationsPage() {
     setEditingInvitation(null);
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === invitations.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(invitations.map(i => i._id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      await api('/api/invitations/bulk-delete', { method: 'POST', body: { ids: Array.from(selectedIds) } });
+      showToast(`Удалено ${selectedIds.size} приглашений`, 'success');
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+      fetchInvitations();
+    } catch {
+      showToast('Ошибка массового удаления', 'error');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const columns = [
     {
       key: 'image',
@@ -245,13 +282,33 @@ export function AdminInvitationsPage() {
         </GlowButton>
       </motion.div>
 
+      {selectedIds.size > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 px-3 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/30"
+        >
+          <span className="text-xs text-accent-gold font-medium">{selectedIds.size} выбрано</span>
+          <GlowButton size="sm" variant="danger" onClick={() => setBulkDeleteOpen(true)}>
+            <Trash2 className="w-4 h-4" /> Удалить ({selectedIds.size})
+          </GlowButton>
+          <button onClick={() => setSelectedIds(new Set())} className="text-xs text-white/40 hover:text-white/60 transition-colors">Снять</button>
+        </motion.div>
+      )}
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <Table columns={columns} data={invitations} />
+          <Table
+            columns={columns}
+            data={invitations}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onSelectAll={toggleSelectAll}
+          />
         )}
       </motion.div>
 
@@ -318,6 +375,16 @@ export function AdminInvitationsPage() {
         message="Вы уверены, что хотите удалить это приглашение?"
         confirmText="Удалить"
         loading={deleting}
+      />
+
+      <ConfirmDialog
+        isOpen={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`Удалить ${selectedIds.size} приглашений?`}
+        message={`Вы уверены, что хотите удалить ${selectedIds.size} приглашений? Это действие необратимо.`}
+        confirmText={`Удалить ${selectedIds.size}`}
+        loading={bulkDeleting}
       />
     </div>
   );

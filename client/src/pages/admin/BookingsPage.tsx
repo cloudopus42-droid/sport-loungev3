@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Filter, Flame, Trash2 } from 'lucide-react';
+import { Calendar, Filter, Flame, Trash2, CheckCircle, X } from 'lucide-react';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { showToast } from '@/components/NotificationToast';
 import api from '@/lib/api';
 import type { Booking, User } from '@/types';
@@ -34,6 +35,11 @@ export function AdminBookingsPage() {
   const [filterDate, setFilterDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [filterStatus, setFilterStatus] = useState('');
   const [hookahStatuses, setHookahStatuses] = useState<Record<string, any>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkStatusOpen, setBulkStatusOpen] = useState<'confirmed' | 'cancelled' | null>(null);
+  const [bulkStatusLoading, setBulkStatusLoading] = useState(false);
 
   const fetchBookings = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -83,6 +89,55 @@ export function AdminBookingsPage() {
     } catch { showToast('Ошибка при обновлении статуса', 'error'); }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === bookings.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(bookings.map(b => b._id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      await api('/api/bookings/bulk-delete', { method: 'POST', body: { ids: Array.from(selectedIds) } });
+      showToast(`Удалено ${selectedIds.size} заказов`, 'success');
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+      fetchBookings();
+    } catch {
+      showToast('Ошибка массового удаления', 'error');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleBulkStatus = async (status: 'confirmed' | 'cancelled') => {
+    if (selectedIds.size === 0) return;
+    setBulkStatusLoading(true);
+    try {
+      await api('/api/bookings/bulk-status', { method: 'POST', body: { ids: Array.from(selectedIds), status } });
+      setBookings(prev => prev.map(b => selectedIds.has(b._id) ? { ...b, status } : b));
+      showToast(status === 'confirmed' ? `${selectedIds.size} заказов подтверждено` : `${selectedIds.size} заказов отклонено`, 'success');
+      setSelectedIds(new Set());
+      setBulkStatusOpen(null);
+    } catch {
+      showToast('Ошибка', 'error');
+    } finally {
+      setBulkStatusLoading(false);
+    }
+  };
+
   // Stats
   const activeBookings = bookings.filter(b => b.status !== 'cancelled');
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
@@ -110,6 +165,17 @@ export function AdminBookingsPage() {
         <div className="flex items-center gap-1.5 mb-2">
           <Filter className="w-3.5 h-3.5 text-accent-gold" />
           <span className="text-xs font-medium text-white">Фильтры</span>
+          {selectedIds.size > 0 && (
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-xs text-accent-gold font-medium">{selectedIds.size} выбрано</span>
+              <button onClick={toggleSelectAll} className="text-[10px] text-white/50 hover:text-white/70 transition-colors">
+                {selectedIds.size === bookings.length ? 'Снять все' : 'Выбрать все'}
+              </button>
+              <button onClick={() => setSelectedIds(new Set())} className="text-white/40 hover:text-white/60 transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex gap-2 flex-wrap">
           <div className="flex items-center gap-2">
@@ -127,6 +193,25 @@ export function AdminBookingsPage() {
           </select>
         </div>
       </GlassCard>
+
+      {/* Bulk actions bar */}
+      {selectedIds.size > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/30 flex-wrap"
+        >
+          <GlowButton size="sm" onClick={() => setBulkStatusOpen('confirmed')}>
+            <CheckCircle className="w-3.5 h-3.5" /> Принять ({selectedIds.size})
+          </GlowButton>
+          <GlowButton size="sm" variant="secondary" onClick={() => setBulkStatusOpen('cancelled')}>
+            Отклонить ({selectedIds.size})
+          </GlowButton>
+          <GlowButton size="sm" variant="danger" onClick={() => setBulkDeleteOpen(true)}>
+            <Trash2 className="w-3.5 h-3.5" /> Удалить ({selectedIds.size})
+          </GlowButton>
+        </motion.div>
+      )}
 
       {/* Grid: Left - Orders list, Right - Stats and hookah queue */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -150,10 +235,26 @@ export function AdminBookingsPage() {
                 return (
                   <motion.div key={booking._id} initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.02 }}>
-                    <GlassCard variant="premium" className="p-3">
+                    <GlassCard variant="premium" className={`p-3 transition-all ${selectedIds.has(booking._id) ? 'border-accent-gold/60 bg-accent-gold/5' : ''}`}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
+                            {/* Checkbox */}
+                            <label className="cursor-pointer flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.has(booking._id)}
+                                onChange={() => toggleSelect(booking._id)}
+                                className="sr-only peer"
+                              />
+                              <div className="w-4 h-4 rounded border-2 border-white/20 peer-checked:border-accent-gold peer-checked:bg-accent-gold/20 flex items-center justify-center transition-all">
+                                {selectedIds.has(booking._id) && (
+                                  <svg className="w-2.5 h-2.5 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                            </label>
                             <span className="text-[11px] font-semibold text-white bg-white/5 border border-glass-border px-2 py-0.5 rounded-md">{booking.seatLabel}</span>
                             <Badge text={st.text} color={st.color} size="sm" />
                             <span className="text-xs text-white/30">
@@ -277,6 +378,31 @@ export function AdminBookingsPage() {
           </GlassCard>
         </div>
       </div>
+
+      {/* Bulk delete confirm */}
+      <ConfirmDialog
+        isOpen={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`Удалить ${selectedIds.size} заказов?`}
+        message={`Вы уверены, что хотите удалить ${selectedIds.size} заказов? Это действие необратимо.`}
+        confirmText={`Удалить ${selectedIds.size}`}
+        loading={bulkDeleting}
+      />
+
+      {/* Bulk status confirm */}
+      <ConfirmDialog
+        isOpen={!!bulkStatusOpen}
+        onClose={() => setBulkStatusOpen(null)}
+        onConfirm={() => bulkStatusOpen && handleBulkStatus(bulkStatusOpen)}
+        title={bulkStatusOpen === 'confirmed' ? `Подтвердить ${selectedIds.size} заказов?` : `Отклонить ${selectedIds.size} заказов?`}
+        message={bulkStatusOpen === 'confirmed'
+          ? `Подтвердить ${selectedIds.size} заказов? Клиенты получат уведомление.`
+          : `Отклонить ${selectedIds.size} заказов? Клиенты получат уведомление об отмене.`
+        }
+        confirmText={bulkStatusOpen === 'confirmed' ? 'Подтвердить' : 'Отклонить'}
+        loading={bulkStatusLoading}
+      />
     </div>
   );
 }

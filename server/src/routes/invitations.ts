@@ -265,4 +265,39 @@ router.delete(
   }
 );
 
+// POST /api/invitations/bulk-delete — Delete multiple invitations by IDs
+router.post('/bulk-delete', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({ error: 'ids array is required' });
+      return;
+    }
+
+    const { data: items } = await supabase
+      .from('invitations')
+      .select('id, image_url')
+      .in('id', ids);
+
+    if (items) {
+      for (const item of items) {
+        if (item.image_url) {
+          await deleteFromSupabase(item.image_url).catch(() => {});
+        }
+      }
+    }
+
+    const { error } = await supabase
+      .from('invitations')
+      .delete()
+      .in('id', ids);
+
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    res.json({ deleted: ids.length });
+  } catch (e) { next(e); }
+});
+
 export default router;

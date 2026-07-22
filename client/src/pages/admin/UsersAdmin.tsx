@@ -39,6 +39,9 @@ export function UsersAdmin() {
   const [editingPrice, setEditingPrice] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UserData | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const fetchUsers = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -157,6 +160,51 @@ export function UsersAdmin() {
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredUsers.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredUsers.map(u => u.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const result = await api<{ deleted: number; skipped: number }>('/api/users/bulk-delete', { method: 'POST', body: { ids: Array.from(selectedIds) } });
+      showToast(`Удалено ${result.deleted}${result.skipped ? `, пропущено ${result.skipped} (админы)` : ''}`, 'success');
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+      fetchUsers();
+    } catch (err: any) {
+      showToast(err?.message || 'Ошибка массового удаления', 'error');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleBulkBlock = async (block: boolean) => {
+    if (selectedIds.size === 0) return;
+    try {
+      await api('/api/users/bulk-block', { method: 'POST', body: { ids: Array.from(selectedIds), is_blocked: block } });
+      setUsers(prev => prev.map(u => selectedIds.has(u.id) ? { ...u, isBlocked: block } : u));
+      showToast(block ? `${selectedIds.size} пользователей заблокировано` : `${selectedIds.size} пользователей разблокировано`, 'success');
+      setSelectedIds(new Set());
+    } catch {
+      showToast('Ошибка', 'error');
+    }
+  };
+
   const formatDate = (d: string) => new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
   return (
@@ -200,6 +248,30 @@ export function UsersAdmin() {
         variant="glass"
       />
 
+      {/* Bulk actions toolbar */}
+      {selectedIds.size > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent-gold/10 border border-accent-gold/30 flex-wrap"
+        >
+          <span className="text-xs text-accent-gold font-medium">{selectedIds.size} выбрано</span>
+          <button onClick={toggleSelectAll} className="text-xs text-white/50 hover:text-white/70 transition-colors">
+            {selectedIds.size === filteredUsers.length ? 'Снять все' : 'Выбрать все'}
+          </button>
+          <div className="flex-1" />
+          <GlowButton size="sm" variant="secondary" onClick={() => handleBulkBlock(false)}>
+            <CheckCircle className="w-3.5 h-3.5" /> Разблокировать
+          </GlowButton>
+          <GlowButton size="sm" variant="danger" onClick={() => setBulkDeleteOpen(true)}>
+            <Trash2 className="w-3.5 h-3.5" /> Удалить ({selectedIds.size})
+          </GlowButton>
+          <button onClick={() => setSelectedIds(new Set())} className="text-xs text-white/40 hover:text-white/60 transition-colors ml-1">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </motion.div>
+      )}
+
       {/* Users List */}
       <div className="space-y-1.5">
         {loading ? (
@@ -222,8 +294,25 @@ export function UsersAdmin() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
             >
-              <GlassCard className="p-3">
+              <GlassCard className={`p-3 transition-all ${selectedIds.has(user.id) ? 'border-accent-gold/60 bg-accent-gold/5' : ''}`}>
                 <div className="flex items-center gap-3">
+                  {/* Checkbox */}
+                  <label className="flex-shrink-0 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(user.id)}
+                      onChange={() => toggleSelect(user.id)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-5 h-5 rounded-md border-2 border-white/20 peer-checked:border-accent-gold peer-checked:bg-accent-gold/20 flex items-center justify-center transition-all">
+                      {selectedIds.has(user.id) && (
+                        <svg className="w-3 h-3 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </label>
+
                   {/* Avatar */}
                   <div className="w-8 h-8 rounded-full bg-[#0D0F13] border border-glass-border flex items-center justify-center text-xs font-bold text-[#FFBF00] flex-shrink-0 overflow-hidden">
                     {user.avatar ? (
@@ -500,6 +589,18 @@ export function UsersAdmin() {
         message={`Вы уверены, что хотите удалить ${deleteTarget?.name || deleteTarget?.email}? Это действие необратимо.`}
         confirmText="Удалить"
         variant="danger"
+      />
+
+      {/* Bulk Delete Confirm */}
+      <ConfirmDialog
+        isOpen={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`Удалить ${selectedIds.size} пользователей?`}
+        message={`Вы уверены, что хотите удалить ${selectedIds.size} пользователей? Администраторы будут пропущены. Это действие необратимо.`}
+        confirmText={`Удалить ${selectedIds.size}`}
+        variant="danger"
+        loading={bulkDeleting}
       />
     </div>
   );
