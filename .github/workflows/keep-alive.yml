@@ -1,13 +1,35 @@
-name: Keep Render Alive
+name: Keep Render Alive (Primary)
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/8 * * * *'
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Ping Render
+      - name: Ping with retry
         run: |
-          curl -s -o /dev/null -w "%{http_code}" https://sport-loungev3.onrender.com/api/health || true
+          URL="https://sport-loungev3.onrender.com/api/health"
+          MAX_RETRIES=3
+          RETRY_DELAY=15
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            HTTP_CODE=$(curl -s -o /tmp/response -w "%{http_code}" --max-time 30 "$URL" 2>/dev/null || echo "000")
+            echo "Attempt $i: HTTP $HTTP_CODE"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Render is alive"
+              cat /tmp/response 2>/dev/null
+              exit 0
+            fi
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "Retrying in ${RETRY_DELAY}s..."
+              sleep $RETRY_DELAY
+            fi
+          done
+          
+          echo "⚠️ All attempts failed, but workflow won't block"
+          exit 0

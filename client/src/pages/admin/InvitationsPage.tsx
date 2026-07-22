@@ -234,32 +234,26 @@ export function AdminInvitationsPage() {
       render: (inv: Invitation) => (
         <div className="flex items-center gap-1">
           {inv.status === 'draft' && (
-            <motion.button
-              className="p-1.5 rounded-lg text-white/30 hover:text-green-400 hover:bg-green-500/10 transition-colors"
+            <button
+              className="p-1.5 rounded-lg text-white/30 hover:text-green-400 hover:bg-green-500/10 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
               onClick={(e) => { e.stopPropagation(); setPublishTarget(inv); setPublishDialogOpen(true); }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
               title="Опубликовать"
             >
               <Send className="w-4 h-4" />
-            </motion.button>
+            </button>
           )}
-          <motion.button
-            className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors"
+          <button
+            className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
             onClick={(e) => { e.stopPropagation(); openEdit(inv); }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
             <Edit2 className="w-4 h-4" />
-          </motion.button>
-          <motion.button
-            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          </button>
+          <button
+            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
             onClick={(e) => { e.stopPropagation(); setDeleteTarget(inv._id); setDeleteDialogOpen(true); }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
             <Trash2 className="w-4 h-4" />
-          </motion.button>
+          </button>
         </div>
       ),
     },

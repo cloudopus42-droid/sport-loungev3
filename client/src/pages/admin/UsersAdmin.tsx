@@ -371,35 +371,32 @@ export function UsersAdmin() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-1">
-                    <motion.button
+                    <button
                       onClick={() => openDetail(user.id)}
-                      className="p-2 rounded-lg text-white/40 hover:text-[#FFBF00] hover:bg-[#FFBF00]/10 transition-colors"
-                      whileTap={{ scale: 0.9 }}
+                      className="p-2 rounded-lg text-white/40 hover:text-[#FFBF00] hover:bg-[#FFBF00]/10 transition-all duration-200 active:scale-95 cursor-pointer"
                       title="Подробнее"
                     >
                       <Eye className="w-4 h-4" />
-                    </motion.button>
-                    <motion.button
+                    </button>
+                    <button
                       onClick={() => toggleBlock(user.id, user.isBlocked)}
-                      className={`p-2 rounded-lg transition-colors ${
+                      className={`p-2 rounded-lg transition-all duration-200 active:scale-95 cursor-pointer ${
                         user.isBlocked
                           ? 'text-green-400 hover:bg-green-500/10'
                           : 'text-red-400 hover:bg-red-500/10'
                       }`}
-                      whileTap={{ scale: 0.9 }}
                       title={user.isBlocked ? 'Разблокировать' : 'Заблокировать'}
                     >
                       {user.isBlocked ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                    </motion.button>
+                    </button>
                     {user.role !== 'admin' && (
-                      <motion.button
+                      <button
                         onClick={() => setDeleteTarget(user)}
-                        className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                        whileTap={{ scale: 0.9 }}
+                        className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 active:scale-95 cursor-pointer"
                         title="Удалить"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </motion.button>
+                      </button>
                     )}
                   </div>
                 </div>

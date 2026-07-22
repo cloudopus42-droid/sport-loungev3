@@ -456,20 +456,18 @@ function TobaccoItemsPanel() {
                 )}
               </div>
               <div className="flex items-center gap-1">
-                <motion.button
-                  className="p-2.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                <button
+                  className="p-2.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-all duration-200 hover:scale-110 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                   onClick={() => openEdit(item)}
-                  whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                 >
                   <Edit2 className="w-4 h-4" />
-                </motion.button>
-                <motion.button
-                  className="p-2.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                </button>
+                <button
+                  className="p-2.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 hover:scale-110 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                   onClick={() => { setDeleteTarget(item._id); setDeleteDialogOpen(true); }}
-                  whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                 >
                   <Trash2 className="w-4 h-4" />
-                </motion.button>
+                </button>
               </div>
             </div>
           ))}
@@ -739,13 +737,12 @@ function StockPanel() {
                     <td className="px-3 py-2 text-sm text-white/60">{item.weight_grams ? `${item.weight_grams} г` : '—'}</td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
-                        <motion.button
-                          className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-accent-gold transition-colors"
+                        <button
+                          className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-accent-gold transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                           onClick={() => adjustStock(item._id, -1)}
-                          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                         >
                           <ChevronDown className="w-4 h-4" />
-                        </motion.button>
+                        </button>
                         <input
                           type="number"
                           value={editVal}
@@ -757,13 +754,12 @@ function StockPanel() {
                           }`}
                           min={0}
                         />
-                        <motion.button
-                          className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-accent-gold transition-colors"
+                        <button
+                          className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-accent-gold transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                           onClick={() => adjustStock(item._id, 1)}
-                          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                         >
                           <ChevronUp className="w-4 h-4" />
-                        </motion.button>
+                        </button>
                         {isLow && <span className="text-[10px] text-red-400 font-medium">Мало</span>}
                       </div>
                     </td>

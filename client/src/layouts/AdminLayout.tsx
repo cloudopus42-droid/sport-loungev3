@@ -179,17 +179,14 @@ export function AdminLayout() {
               </div>
               <span className="text-[10px] font-mono text-white/50 truncate max-w-[80px]">{user?.name || 'Админ'}</span>
             </div>
-            <motion.button
-              className="p-2 rounded-full liquid-glass text-white/30 hover:text-red-400 transition-colors"
+            <button
+              className="p-2 rounded-full liquid-glass text-white/30 hover:text-red-400 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
               onClick={handleLogout}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={transitionFast}
               title="Выйти"
               aria-label="Выйти"
             >
               <PremiumIcon name="logOut" size={14} />
-            </motion.button>
+            </button>
           </div>
         </div>
       </header>

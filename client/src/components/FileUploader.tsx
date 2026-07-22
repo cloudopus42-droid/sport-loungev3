@@ -88,14 +88,12 @@ export function FileUploader({
             alt="Preview"
             className="w-full h-48 object-cover"
           />
-          <motion.button
-            className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white border border-white/20 hover:bg-red-500/60 transition-colors"
+          <button
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white border border-white/20 hover:bg-red-500/60 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
             onClick={clearPreview}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
             <X className="w-4 h-4" />
-          </motion.button>
+          </button>
         </div>
       ) : (
         <motion.div

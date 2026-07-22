@@ -1,10 +1,9 @@
 import { memo } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import clsx from 'clsx';
-import type { ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-interface GlowButtonProps extends HTMLMotionProps<'button'> {
+interface GlowButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   variant?: 'primary' | 'secondary' | 'danger' | 'gold';
   size?: 'sm' | 'md' | 'lg';
@@ -35,16 +34,14 @@ export const GlowButton = memo(function GlowButton({
 }: GlowButtonProps) {
   const isDisabled = disabled || loading;
   return (
-    <motion.button
+    <button
       className={clsx(
-        'relative overflow-hidden font-semibold inline-flex items-center justify-center gap-2',
+        'relative overflow-hidden font-semibold inline-flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer',
         variantStyles[variant],
         sizeStyles[size],
-        isDisabled && 'opacity-50 cursor-not-allowed',
+        isDisabled && 'opacity-50 cursor-not-allowed pointer-events-none',
         className
       )}
-      whileHover={isDisabled ? {} : { scale: 1.02, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] } }}
-      whileTap={isDisabled ? {} : { scale: 0.98, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
       disabled={isDisabled}
       {...props}
     >
@@ -52,6 +49,6 @@ export const GlowButton = memo(function GlowButton({
         <Loader2 className="w-4 h-4 animate-spin" />
       )}
       {children}
-    </motion.button>
+    </button>
   );
 });

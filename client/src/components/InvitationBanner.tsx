@@ -70,14 +70,12 @@ export function InvitationBanner({ invitation, onClose }: InvitationBannerProps)
                 </div>
               </div>
 
-              <motion.button
-                className="p-1 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
+              <button
+                className="p-1 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all duration-200 hover:scale-110 active:scale-95 flex-shrink-0 cursor-pointer"
                 onClick={handleClose}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
               >
                 <X className="w-4 h-4" />
-              </motion.button>
+              </button>
             </div>
 
             {/* Glow accent line */}

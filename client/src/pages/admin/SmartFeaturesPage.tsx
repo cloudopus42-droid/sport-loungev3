@@ -214,14 +214,12 @@ export function SmartFeaturesPage() {
                   <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-white/40 tracking-tight">
                     {feature.feature_key}
                   </span>
-                  <motion.button
-                    className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-colors"
+                   <button
+                    className="p-1.5 rounded-lg text-white/30 hover:text-accent-gold hover:bg-accent-gold/10 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                     onClick={() => openEditModal(feature)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
                   >
                     <Edit2 className="w-4 h-4" />
-                  </motion.button>
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -251,14 +249,12 @@ export function SmartFeaturesPage() {
                 <h2 className="text-lg font-display font-semibold text-white">
                   {editingFeature.name}
                 </h2>
-                <motion.button
-                  className="p-1.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-gold/40 transition-colors"
+                <button
+                  className="p-1.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-gold/40 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                   onClick={() => { setEditModalOpen(false); setEditingFeature(null); }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
                 >
                   <CloseIcon className="w-4 h-4" />
-                </motion.button>
+                </button>
               </div>
               <div className="px-6 py-5 space-y-4">
                 <p className="text-xs text-white/40 font-mono">{editingFeature.feature_key}</p>

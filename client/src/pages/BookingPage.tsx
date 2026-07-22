@@ -413,9 +413,9 @@ export function BookingPage() {
                     .map(flavor => {
                       const sel = selectedFlavors.includes(flavor.name);
                       return (
-                        <motion.button key={flavor.name} whileTap={{ scale: 0.96 }}
+                        <button key={flavor.name} 
                           onClick={() => toggleFlavor(flavor.name)}
-                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all border ${
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all duration-200 active:scale-95 border cursor-pointer ${
                             sel
                               ? 'bg-[rgba(255,191,0,0.08)] border-[rgba(255,191,0,0.25)] text-accent-gold'
                               : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
@@ -423,7 +423,7 @@ export function BookingPage() {
                         >
                           <span className="text-base leading-none">{flavor.emoji || '🍂'}</span>
                           <span className="truncate">{flavor.name}</span>
-                        </motion.button>
+                        </button>
                       );
                     })}
                 </div>
@@ -553,20 +553,18 @@ export function BookingPage() {
               </div>
 
               {/* Order Button */}
-              <motion.button
-                whileHover={{ scale: (!selectedSeat || selectedFlavors.length === 0) ? 1 : 1.01 }}
-                whileTap={{ scale: (!selectedSeat || selectedFlavors.length === 0) ? 1 : 0.98 }}
+              <button
                 onClick={handleQuickOrder}
                 disabled={!selectedSeat || selectedFlavors.length === 0}
-                className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.12em] transition-all duration-300 flex items-center justify-center gap-2 ${
+                className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.12em] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                   !selectedSeat || selectedFlavors.length === 0
                     ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
-                    : 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)]'
+                    : 'bg-gradient-to-r from-[#FFBF00] to-[#FFD54F] text-black shadow-[0_4px_20px_rgba(255,191,0,0.25),0_0_40px_rgba(255,191,0,0.1)] hover:shadow-[0_4px_28px_rgba(255,191,0,0.35),0_0_50px_rgba(255,191,0,0.15)] hover:scale-[1.01] active:scale-[0.98]'
                 }`}
               >
                 <ShoppingCart className="w-4 h-4" />
                 {!selectedSeat ? 'Выберите место' : selectedFlavors.length === 0 ? 'Выберите вкус' : 'Заказать'}
-              </motion.button>
+              </button>
 
               {/* Active Order Tracker */}
               {activeOrder && (
@@ -724,15 +722,14 @@ export function BookingPage() {
               )}
 
               {isAuthenticated && (selectedFlavors.length > 0 || aiRecommendations.length > 0) && (
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={handleSaveMix}
                   disabled={savingMix || mixSaved}
-                  className="w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:opacity-40 text-[11px] font-bold text-accent-gold uppercase tracking-[0.12em] transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl border border-[rgba(255,191,0,0.2)] bg-[rgba(255,191,0,0.04)] hover:bg-[rgba(255,191,0,0.1)] disabled:opacity-40 text-[11px] font-bold text-accent-gold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Bot className="w-3.5 h-3.5" />
                   {mixSaved ? '✓ Сохранено' : savingMix ? 'Сохранение...' : 'Сохранить рецепт в профиль'}
-                </motion.button>
+                </button>
               )}
 
               {isAuthenticated && userMixes.length > 0 && (

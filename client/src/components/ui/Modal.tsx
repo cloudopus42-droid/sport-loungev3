@@ -47,14 +47,12 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-glass-border">
               <h2 className="text-base sm:text-lg font-display font-semibold text-white">{title}</h2>
-              <motion.button
-                className="p-2.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-gold/40 transition-colors"
+              <button
+                className="p-2.5 rounded-lg bg-glass-bg border border-glass-border text-white/60 hover:text-white hover:border-accent-gold/40 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
                 onClick={onClose}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
               >
                 <X className="w-4 h-4" />
-              </motion.button>
+              </button>
             </div>
 
             {/* Body */}
