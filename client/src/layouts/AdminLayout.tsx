@@ -90,6 +90,13 @@ export function AdminLayout() {
     }
   }, [loading, isAdmin, navigate]);
 
+  const handleLogout = useCallback(() => {
+    logout();
+    navigate('/login', { replace: true });
+  }, [logout, navigate]);
+
+  const clearNewOrders = () => setHasNewOrders(false);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dark-bg">
@@ -99,13 +106,6 @@ export function AdminLayout() {
   }
 
   if (!isAdmin) return null;
-
-  const handleLogout = useCallback(() => {
-    logout();
-    navigate('/login', { replace: true });
-  }, [logout, navigate]);
-
-  const clearNewOrders = () => setHasNewOrders(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-dark-bg">
