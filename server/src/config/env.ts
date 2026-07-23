@@ -14,6 +14,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   SUPABASE_URL: z.string().default('https://haemdfhteicygsidftqp.supabase.co'),
   SUPABASE_KEY: z.string().min(1, 'SUPABASE_KEY is required'),
+  SUPABASE_SECRET_KEY: z.string().optional().default(''),
   SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
   SUPABASE_DB_PASSWORD: z.string().default(''),
 });
@@ -35,7 +36,7 @@ export const config = {
   nodeEnv: parsed.data.NODE_ENV,
   isProduction: parsed.data.NODE_ENV === 'production',
   supabaseUrl: parsed.data.SUPABASE_URL,
-  supabaseKey: parsed.data.SUPABASE_KEY,
+  supabaseKey: parsed.data.SUPABASE_SECRET_KEY || parsed.data.SUPABASE_KEY,
   supabaseAnonKey: parsed.data.SUPABASE_ANON_KEY,
   supabaseDbPassword: parsed.data.SUPABASE_DB_PASSWORD,
 };

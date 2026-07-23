@@ -39,6 +39,7 @@ async function bootstrap(): Promise<void> {
   server.listen(config.port, () => {
     console.log(`\n🚀 SPORT LOUNGE Server running on port ${config.port}`);
     console.log(`   Environment: ${config.nodeEnv}`);
+    console.log(`   Supabase key type: ${config.supabaseKey.startsWith('sb_secret') ? 'SERVICE_ROLE (RLS bypass)' : config.supabaseKey.startsWith('sb_publishable') ? 'PUBLISHABLE (RLS enforced!)' : 'ANON'}`);
     console.log(`   API: http://localhost:${config.port}/api`);
     console.log(`   Health: http://localhost:${config.port}/api/health\n`);
 
