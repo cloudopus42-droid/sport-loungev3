@@ -245,6 +245,16 @@ function TobaccoItemsPanel() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate required fields
+    if (!brand?.trim()) {
+      showToast('Выберите бренд', 'error');
+      return;
+    }
+    if (!flavor?.trim()) {
+      showToast('Выберите вкус', 'error');
+      return;
+    }
+    
     // Auto-generate name if empty
     if (!name?.trim() && brand && flavor) {
       setName(`${brand} - ${flavor}`);
@@ -279,8 +289,9 @@ function TobaccoItemsPanel() {
       setModalOpen(false);
       resetForm();
       fetchItems();
-    } catch {
-      showToast('Ошибка сохранения', 'error');
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || 'Ошибка сохранения';
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
