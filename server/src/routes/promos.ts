@@ -32,12 +32,13 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
     // Фильтр: isActive = true AND (startDate IS NULL OR startDate <= now) AND (endDate IS NULL OR endDate >= now)
     const { data: promos, error } = await supabase
       .from('promos')
-      .select('*')
+      .select('id, title, description, image_url, discount_percent, badge_color, priority, start_date, end_date, is_active, created_at')
       .eq('is_active', true)
       .or(`start_date.is.null,start_date.lte.${now}`)
       .or(`end_date.is.null,end_date.gte.${now}`)
       .order('priority', { ascending: false })
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(50);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -55,9 +56,10 @@ router.get('/all', auth, isAdmin, async (_req: Request, res: Response, next: Nex
   try {
     const { data: promos, error } = await supabase
       .from('promos')
-      .select('*')
+      .select('id, title, description, image_url, discount_percent, badge_color, priority, start_date, end_date, is_active, created_at')
       .order('priority', { ascending: false })
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -226,11 +228,9 @@ router.post('/bulk-delete', auth, isAdmin, async (req: Request, res: Response, n
       .in('id', ids);
 
     if (items) {
-      for (const item of items) {
-        if (item.image_url) {
-          await deleteFromSupabase(item.image_url).catch(() => {});
-        }
-      }
+      await Promise.all(items.map(item => 
+        item.image_url ? deleteFromSupabase(item.image_url).catch(() => {}) : Promise.resolve()
+      ));
     }
 
     const { error } = await supabase

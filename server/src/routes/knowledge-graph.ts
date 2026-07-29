@@ -7,18 +7,12 @@ const router = Router();
 
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const { data: nodes, error: nodesError } = await supabase
-      .from('knowledge_nodes')
-      .select('*')
-      .order('title');
+    const [{ data: nodes, error: nodesError }, { data: edges, error: edgesError }] = await Promise.all([
+      supabase.from('knowledge_nodes').select('id, title, description, type, data').order('title').limit(500),
+      supabase.from('knowledge_edges').select('id, source, target, label').limit(1000),
+    ]);
 
-    if (nodesError) { res.status(500).json({ error: nodesError.message }); return; }
-
-    const { data: edges, error: edgesError } = await supabase
-      .from('knowledge_edges')
-      .select('*');
-
-    if (edgesError) { res.status(500).json({ error: edgesError.message }); return; }
+    if (nodesError || edgesError) { res.status(500).json({ error: (nodesError || edgesError)?.message }); return; }
 
     res.json({ nodes: nodes || [], edges: edges || [] });
   } catch (e) { next(e); }
@@ -28,7 +22,7 @@ router.get('/node/:id', async (req: Request, res: Response, next: NextFunction) 
   try {
     const { data: node, error } = await supabase
       .from('knowledge_nodes')
-      .select('*')
+      .select('id, title, description, type, data')
       .eq('id', req.params.id)
       .single();
 
@@ -47,9 +41,10 @@ router.get('/search', async (req: Request, res: Response, next: NextFunction) =>
 
     const { data, error } = await supabase
       .from('knowledge_nodes')
-      .select('*')
+      .select('id, title, description, type, data')
       .ilike('title', `%${query}%`)
-      .order('title');
+      .order('title')
+      .limit(100);
 
     if (error) { res.status(500).json({ error: error.message }); return; }
     res.json(data || []);

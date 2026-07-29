@@ -52,7 +52,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
         name: data.name,
         role
       })
-      .select()
+      .select('id, email, name, role, avatar, bio, phone, created_at')
       .single();
 
     if (insertError || !user) {
@@ -96,7 +96,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
 
     const { data: user, error: fetchError } = await supabase
       .from('users')
-      .select('*')
+      .select('id, email, name, role, password, avatar, bio, phone, created_at')
       .eq('email', data.email.toLowerCase())
       .maybeSingle();
 
@@ -155,7 +155,7 @@ router.post('/google', async (req: Request, res: Response, next: NextFunction) =
     // Проверяем, существует ли пользователь в нашей таблице
     let { data: dbUser, error: fetchError } = await supabase
       .from('users')
-      .select('*')
+      .select('id, email, name, role, avatar, bio, phone, created_at')
       .eq('email', email)
       .maybeSingle();
 
@@ -178,7 +178,7 @@ router.post('/google', async (req: Request, res: Response, next: NextFunction) =
           role,
           avatar
         })
-        .select()
+        .select('id, email, name, role, avatar, bio, phone, created_at')
         .single();
 
       if (insertError || !newUser) {
@@ -197,7 +197,7 @@ router.post('/google', async (req: Request, res: Response, next: NextFunction) =
           .from('users')
           .update(updates)
           .eq('id', dbUser.id)
-          .select()
+          .select('id, email, name, role, avatar, bio, phone, created_at')
           .single();
         if (updated) dbUser = updated;
       }
@@ -228,7 +228,7 @@ router.get('/me', auth, async (req: Request, res: Response, next: NextFunction) 
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, email, name, role, avatar, bio, phone, created_at')
       .eq('id', req.user!.id)
       .maybeSingle();
 
@@ -267,7 +267,7 @@ router.put('/profile', auth, async (req: Request, res: Response, next: NextFunct
       .from('users')
       .update(updates)
       .eq('id', req.user!.id)
-      .select()
+      .select('id, email, name, role, avatar, bio, phone, created_at')
       .single();
 
     if (error || !user) {
@@ -340,7 +340,7 @@ router.post(
         .from('users')
         .update({ avatar: avatarUrl })
         .eq('id', req.user!.id)
-        .select()
+        .select('id, email, name, role, avatar, bio, phone, created_at')
         .single();
 
       if (updateError || !updatedUser) {

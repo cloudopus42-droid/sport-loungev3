@@ -137,8 +137,9 @@ router.get('/manage', auth, isAdmin, async (_req: Request, res: Response, next: 
   try {
     const { data: items, error } = await supabase
       .from('showcases')
-      .select('*')
-      .order('sort_order', { ascending: true });
+      .select('id, title, description, image_url, sort_order, is_active, created_at')
+      .order('sort_order', { ascending: true })
+      .limit(100);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -162,7 +163,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
 
     const { data: items, error } = await supabase
       .from('showcases')
-      .select('*')
+      .select('id, title, description, image_url, sort_order, is_active')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
       .limit(settings.topCount);

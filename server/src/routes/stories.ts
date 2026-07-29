@@ -35,10 +35,11 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data: stories, error } = await supabase
       .from('stories')
-      .select('*')
+      .select('id, media_url, media_type, duration_seconds, sort_order, is_active, created_at')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(50);
 
     if (error) {
       res.status(500).json({ error: error.message });

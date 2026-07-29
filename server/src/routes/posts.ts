@@ -37,7 +37,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     // Выбираем посты, автора и лайкающих пользователей
     const { data: postsData, count, error } = await supabase
       .from('posts')
-      .select('*, author:author_id(id, name, email, avatar), post_likes(user_id)', { count: 'exact' })
+      .select('id, title, description, image_url, likes, author_id, created_at, author:author_id(id, name, email, avatar), post_likes(user_id)', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(skip, skip + limit - 1);
 
@@ -150,11 +150,9 @@ router.delete(
         .in('id', ids);
 
       if (posts) {
-        for (const post of posts) {
-          if (post.image_url) {
-            await deleteFromSupabase(post.image_url);
-          }
-        }
+        await Promise.all(posts.map(post => 
+          post.image_url ? deleteFromSupabase(post.image_url).catch(() => {}) : Promise.resolve()
+        ));
       }
 
       // Удаляем посты из БД (лайки и комменты удалятся автоматически благодаря ON DELETE CASCADE)

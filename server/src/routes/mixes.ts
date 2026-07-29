@@ -29,9 +29,10 @@ router.get('/user-mixes', auth, async (req: Request, res: Response, next: NextFu
   try {
     const { data, error } = await supabase
       .from('user_mixes')
-      .select('*')
+      .select('id, user_id, name, flavors, percentages, strength, notes, created_at')
       .eq('user_id', req.user!.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (error) {
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
@@ -114,8 +115,9 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data: mixes, error } = await supabase
       .from('mixes')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('id, name, manufacturer, description, flavors, strength, status, emoji, category, color, created_at')
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (error) {
       res.status(500).json({ error: error.message });

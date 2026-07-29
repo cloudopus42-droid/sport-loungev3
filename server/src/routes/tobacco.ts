@@ -39,7 +39,8 @@ router.get('/flavors', async (_req: Request, res: Response, next: NextFunction) 
       .from('mixes')
       .select('id, name, flavor, category, emoji, is_active, price')
       .eq('is_active', true)
-      .order('name');
+      .order('name')
+      .limit(500);
 
     if (error) {
       const { data: fallback, error: fbErr } = await supabase
@@ -70,7 +71,8 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
     const { data, error } = await supabase
       .from('mixes')
       .select('id, name, brand, flavor, description, image_url, price, stock_quantity, unit, weight_grams, is_active, status, min_stock_threshold, auto_reorder_enabled')
-      .order('name');
+      .order('name')
+      .limit(500);
 
     if (error) {
       // Any column-missing error → graceful fallback
@@ -90,8 +92,9 @@ router.get('/transactions', auth, isAdmin, async (req: Request, res: Response, n
   try {
     const { data, error } = await supabase
       .from('tobacco_transactions')
-      .select('*, mixes(name)')
-      .order('created_at', { ascending: false });
+      .select('id, mix_id, type, quantity, unit, price, notes, performed_by, created_at, mixes(name)')
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (error) { res.status(500).json({ error: error.message }); return; }
     res.json(data || []);
@@ -386,11 +389,9 @@ router.post('/bulk-delete', auth, isAdmin, async (req: Request, res: Response, n
 
     // Delete images from storage
     if (items) {
-      for (const item of items) {
-        if (item.image_url) {
-          await deleteFromSupabase(item.image_url).catch(() => {});
-        }
-      }
+      await Promise.all(items.map(item => 
+        item.image_url ? deleteFromSupabase(item.image_url).catch(() => {}) : Promise.resolve()
+      ));
     }
 
     const { error } = await supabase

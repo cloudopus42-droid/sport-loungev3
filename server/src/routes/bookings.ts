@@ -221,18 +221,19 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
 router.get('/my', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const pag = getPagination(req, 20, 100);
-    const { count } = await supabase
-      .from('bookings')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', req.user!.id);
-
-    const { data: bookings, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('user_id', req.user!.id)
-      .order('date', { ascending: false })
-      .order('time', { ascending: false })
-      .range(pag.offset, pag.offset + pag.limit - 1);
+    const [{ count }, { data: bookings, error }] = await Promise.all([
+      supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', req.user!.id),
+      supabase
+        .from('bookings')
+        .select('id, seat_id, seat_label, seat_zone, date, time, guests_count, phone, hookah_mix, hookah_strength, hookah_count, hookah_status, hookah_status_updated_at, comment, status, created_at')
+        .eq('user_id', req.user!.id)
+        .order('date', { ascending: false })
+        .order('time', { ascending: false })
+        .range(pag.offset, pag.offset + pag.limit - 1),
+    ]);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -253,7 +254,8 @@ router.get('/date/:date', async (req: Request, res: Response, next: NextFunction
       .from('bookings')
       .select('seat_id, time, status')
       .eq('date', date)
-      .neq('status', 'cancelled');
+      .neq('status', 'cancelled')
+      .limit(200);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -276,23 +278,21 @@ router.get('/date/:date', async (req: Request, res: Response, next: NextFunction
 // GET /api/bookings/taste-stats — Hookah flavor analytics (admin)
 router.get('/taste-stats', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { data: bookings, error: dbErr } = await supabase
-      .from('bookings')
-      .select('hookah_mix, hookah_strength, user_id, user:user_id(id, name, email)')
-      .neq('status', 'cancelled');
+    const [{ data: bookings, error: dbErr }, { count: totalUsers, error: usersErr }] = await Promise.all([
+      supabase
+        .from('bookings')
+        .select('hookah_mix, hookah_strength, user_id, user:user_id(id, name, email)')
+        .neq('status', 'cancelled')
+        .order('created_at', { ascending: false })
+        .limit(1000),
+      supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'user'),
+    ]);
 
-    if (dbErr) {
-      res.status(500).json({ error: dbErr.message });
-      return;
-    }
-
-    const { count: totalUsers, error: usersErr } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'user');
-
-    if (usersErr) {
-      res.status(500).json({ error: usersErr.message });
+    if (dbErr || usersErr) {
+      res.status(500).json({ error: (dbErr || usersErr)?.message });
       return;
     }
 

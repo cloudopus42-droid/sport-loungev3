@@ -46,9 +46,10 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { data: invitations, error } = await supabase
       .from('invitations')
-      .select('*')
+      .select('id, title, description, date_time, location, image_url, max_participants, current_participants, status, created_at')
       .eq('status', 'published')
-      .order('date_time', { ascending: true });
+      .order('date_time', { ascending: true })
+      .limit(100);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -66,8 +67,9 @@ router.get('/all', auth, isAdmin, async (_req: Request, res: Response, next: Nex
   try {
     const { data: invitations, error } = await supabase
       .from('invitations')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('id, title, description, date_time, location, image_url, max_participants, current_participants, status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (error) {
       res.status(500).json({ error: error.message });
@@ -280,11 +282,9 @@ router.post('/bulk-delete', auth, isAdmin, async (req: Request, res: Response, n
       .in('id', ids);
 
     if (items) {
-      for (const item of items) {
-        if (item.image_url) {
-          await deleteFromSupabase(item.image_url).catch(() => {});
-        }
-      }
+      await Promise.all(items.map(item => 
+        item.image_url ? deleteFromSupabase(item.image_url).catch(() => {}) : Promise.resolve()
+      ));
     }
 
     const { error } = await supabase

@@ -63,22 +63,23 @@ router.post('/', auth, async (req: Request, res: Response, next: NextFunction) =
     const userId = req.user!.id;
 
     // Count active orders in queue (accepted, preparing, roasting)
-    const { count: activeCount } = await supabase
-      .from('orders')
-      .select('*', { count: 'exact', head: true })
-      .in('status', ['accepted', 'preparing', 'roasting']);
+    const [{ count: activeCount }, { data: userProfile }] = await Promise.all([
+      supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['accepted', 'preparing', 'roasting']),
+      supabase
+        .from('users')
+        .select('personal_price, name, phone')
+        .eq('id', userId)
+        .maybeSingle(),
+    ]);
 
     // Sequential wait: each order adds 15 min, first order = 15 min
     const queuePosition = (activeCount || 0) + 1;
     const waitMinutes = queuePosition * 15;
     const promisedTime = new Date(Date.now() + waitMinutes * 60 * 1000).toISOString();
     const priority = Date.now();
-
-    const { data: userProfile } = await supabase
-      .from('users')
-      .select('personal_price, name, phone')
-      .eq('id', userId)
-      .maybeSingle();
 
     const orderPrice = userProfile?.personal_price || null;
 
@@ -235,7 +236,7 @@ router.get('/:id/status', auth, async (req: Request, res: Response, next: NextFu
   try {
     const { data: order, error } = await supabase
       .from('orders')
-      .select('*')
+      .select('id, status, priority, promised_delivery_time, rating, seat_label, created_at')
       .eq('id', req.params.id)
       .maybeSingle();
 
@@ -349,11 +350,11 @@ router.post('/:id/rating', auth, async (req: Request, res: Response, next: NextF
     // Retry loop to handle race condition on concurrent rating submissions
     const MAX_RETRIES = 3;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      const { data: order, error: fetchErr } = await supabase
-        .from('orders')
-        .select('rating, user_id')
-        .eq('id', req.params.id)
-        .maybeSingle();
+    const { data: order, error: fetchErr } = await supabase
+      .from('orders')
+      .select('id, user_id, rating')
+      .eq('id', req.params.id)
+      .maybeSingle();
 
       if (fetchErr || !order) {
         res.status(404).json({ error: 'Заказ не найден', status: 404 });
@@ -408,20 +409,17 @@ router.put('/reorder', auth, isAdmin, async (req: Request, res: Response, next: 
       return;
     }
 
-    // Set priority as index number (ascending) to maintain sorting
-    for (let index = 0; index < queueIds.length; index++) {
-      const orderId = queueIds[index];
-      await supabase
-        .from('orders')
-        .update({ priority: index })
-        .eq('id', orderId);
-    }
+    // Set priority as index number (ascending) to maintain sorting — batch update
+    await Promise.all(queueIds.map((orderId: string, index: number) =>
+      supabase.from('orders').update({ priority: index }).eq('id', orderId)
+    ));
 
     // Fetch and broadcast new order list to sockets
     const { data: orders } = await supabase
       .from('orders')
-      .select('*, user:user_id(name, phone)')
-      .order('priority', { ascending: true });
+      .select('id, user_id, mix_id, liquid_id, notes, status, priority, promised_delivery_time, rating, rating_comment, master_called, seat_id, seat_label, seat_zone, price, strength, hookah_mix, created_at, user:user_id(name, phone)')
+      .order('priority', { ascending: true })
+      .limit(200);
 
     const mapped = (orders || []).map((o: any) => {
       const frontend = mapOrderToFrontend(o) as any;
@@ -567,8 +565,8 @@ router.put('/:id/status', auth, isAdmin, async (req: Request, res: Response, nex
       return;
     }
 
-    // Insert to status history log
-    await supabase
+    // Insert to status history log (fire-and-forget)
+    void supabase
       .from('order_status_history')
       .insert({
         order_id: updated.id,

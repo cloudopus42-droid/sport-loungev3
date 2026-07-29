@@ -20,6 +20,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { errorMonitor } from './middleware/errorMonitor';
 import { requestLogger } from './middleware/requestLogger';
 import { rateLimiter } from './middleware/rateLimiter';
+import { cacheMiddleware } from './middleware/cache';
 
 // Route imports
 import authRoutes from './routes/auth';
@@ -92,6 +93,44 @@ app.use(express.json({ limit: '500kb' }));
 app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 app.use(requestLogger);
 
+// Cache-Control headers for public API GET endpoints
+app.use('/api/mixes', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+  next();
+});
+app.use('/api/promos', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+  next();
+});
+app.use('/api/stories', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+  next();
+});
+app.use('/api/invitations', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+  next();
+});
+app.use('/api/showcases', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+  next();
+});
+app.use('/api/tobacco', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+  next();
+});
+app.use('/api/knowledge-graph', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+  next();
+});
+app.use('/api/flavors', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+  next();
+});
+app.use('/api/posts', (req, res, next) => {
+  if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+  next();
+});
+
 // Serve static uploads (dirs created in server.ts bootstrap)
 const uploadsDir = path.resolve(__dirname, '../uploads');
 
@@ -119,16 +158,16 @@ app.use('/api/auth/register', rateLimiter(5, 60000));
 app.use('/api/auth/google', rateLimiter(10, 60000));
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/mixes', mixRoutes);
-app.use('/api/promos', promoRoutes);
-app.use('/api/stories', storyRoutes);
-app.use('/api/invitations', invitationRoutes);
+app.use('/api/mixes', cacheMiddleware(20000), mixRoutes);
+app.use('/api/promos', cacheMiddleware(30000), promoRoutes);
+app.use('/api/stories', cacheMiddleware(30000), storyRoutes);
+app.use('/api/invitations', cacheMiddleware(30000), invitationRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/showcases', showcaseRoutes);
+app.use('/api/showcases', cacheMiddleware(30000), showcaseRoutes);
 app.use('/api/ai', aiRoutes);
 
 const flavorsRouter = Router();
-flavorsRouter.get('/', async (_req, res, next) => {
+flavorsRouter.get('/', cacheMiddleware(60000), async (_req, res, next) => {
   try {
     const { data, error } = await supabase.from('mixes').select('id, name, flavor, is_active, price, emoji, category, color, strength').eq('is_active', true).order('name');
     if (error) { res.json([]); return; }
@@ -146,8 +185,8 @@ flavorsRouter.get('/', async (_req, res, next) => {
 });
 app.use('/api/flavors', flavorsRouter);
 
-app.use('/api/tobacco', tobaccoRoutes);
-app.use('/api/knowledge-graph', knowledgeGraphRoutes);
+app.use('/api/tobacco', cacheMiddleware(20000), tobaccoRoutes);
+app.use('/api/knowledge-graph', cacheMiddleware(30000), knowledgeGraphRoutes);
 app.use('/api/memberships', membershipRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/orders', orderRoutes);
