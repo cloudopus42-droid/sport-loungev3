@@ -62,7 +62,6 @@ export function FloorMapEditor() {
   const [isLassoing, setIsLassoing] = useState(false);
   const lassoRef = useRef<HTMLDivElement>(null);
   const lassoCoords = useRef({ x1: 0, y1: 0, x2: 0, y2: 0 });
-  const lassoRaf = useRef<number>(0);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -132,6 +131,7 @@ export function FloorMapEditor() {
   // ── Delete selected ──
   const handleDeleteSelected = useCallback(() => {
     if (selectedIds.size === 0) return;
+    if (!window.confirm(`Удалить ${selectedIds.size} блок(ов)?`)) return;
     setTables(prev => prev.filter(t => !selectedIds.has(t.id)));
     setSelectedIds(new Set());
   }, [selectedIds]);
@@ -189,15 +189,18 @@ export function FloorMapEditor() {
     const startX = e.clientX;
     const startY = e.clientY;
 
-    // Store originals for all selected blocks
-    const originals = tables
-      .filter(t => selectedIds.has(t.id))
-      .map(t => ({ id: t.id, x: t.x, y: t.y }));
-
-    // If clicking unselected block, select only it
+    // If clicking unselected block, select only it and only move it
     if (!selectedIds.has(table.id)) {
       setSelectedIds(new Set([table.id]));
     }
+
+    // Store originals for blocks that will move
+    // If clicking already-selected block: move all selected together
+    // If clicking unselected block: move only the clicked block
+    const moveIds = selectedIds.has(table.id) ? selectedIds : new Set([table.id]);
+    const originals = tables
+      .filter(t => moveIds.has(t.id))
+      .map(t => ({ id: t.id, x: t.x, y: t.y }));
 
     let rafId = 0;
     const onMove = (ev: MouseEvent) => {
@@ -353,17 +356,25 @@ export function FloorMapEditor() {
   // ══════════════════════════════════════════════
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (editingInline) return;
+      const tag = (e.target as HTMLElement).tagName;
+      const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable;
+
+      // Escape: close modals (always), clear selection only if no modal open
+      if (e.key === 'Escape') {
+        if (showManager) { setShowManager(false); return; }
+        if (showSettings) { setShowSettings(false); return; }
+        setSelectedIds(new Set());
+        return;
+      }
+
+      // Skip shortcuts when typing in inputs or modals are open
+      if (isInput || showSettings || showManager || editingInline) return;
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedIds.size > 0) {
           e.preventDefault();
           handleDeleteSelected();
         }
-      }
-      if (e.key === 'Escape') {
-        setSelectedIds(new Set());
-        setShowSettings(false);
-        setShowManager(false);
       }
       if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
@@ -372,7 +383,7 @@ export function FloorMapEditor() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [selectedIds, editingInline, handleDeleteSelected, tables]);
+  }, [selectedIds, showSettings, showManager, editingInline, handleDeleteSelected, tables]);
 
   if (loading) {
     return (
@@ -611,8 +622,8 @@ export function FloorMapEditor() {
       {/* ═══════════ SETTINGS MODAL ═══════════ */}
       {showSettings && (
         <SettingsModal
-          table={selectedTable || { id: '', name: '', x: 0, y: 0, width: 0.1, height: 0.1, color: 'purple', shape: 'rect' }}
-          multiCount={selectedIds.size}
+          tables={tables}
+          selectedIds={selectedIds}
           onUpdate={updateTable}
           onUpdateMulti={updateSelected}
           onClose={() => setShowSettings(false)}
@@ -642,26 +653,38 @@ export function FloorMapEditor() {
    SETTINGS MODAL — detailed config for selected block(s)
    ═══════════════════════════════════════════════════════ */
 function SettingsModal({
-  table,
-  multiCount,
+  tables,
+  selectedIds,
   onUpdate,
   onUpdateMulti,
   onClose,
 }: {
-  table: TableData;
-  multiCount: number;
+  tables: TableData[];
+  selectedIds: Set<string>;
   onUpdate: (id: string, patch: Partial<TableData>) => void;
   onUpdateMulti: (patch: Partial<TableData>) => void;
   onClose: () => void;
 }) {
-  const isMulti = multiCount > 1;
+  const selected = tables.filter(t => selectedIds.has(t.id));
+  const isMulti = selected.length > 1;
+  const first = selected[0];
+
+  // Compute common values for multi-select
+  const commonColor = isMulti
+    ? (selected.every(t => t.color === first.color) ? first.color : '')
+    : first.color;
+  const commonShape = isMulti
+    ? (selected.every(t => t.shape === first.shape) ? first.shape : '')
+    : first.shape;
+
+  if (!first) return null;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-[#141420] border border-white/10 rounded-2xl p-5 w-[420px] max-w-[95vw] max-h-[85vh] overflow-auto shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-white">
-            {isMulti ? `Настройки (${multiCount} блоков)` : `Настройки: ${table.name}`}
+            {isMulti ? `Настройки (${selected.length} блоков)` : `Настройки: ${first.name}`}
           </h3>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors">
             <X size={16} />
@@ -672,7 +695,7 @@ function SettingsModal({
           {/* Name */}
           {!isMulti && (
             <Field label="Название">
-              <input value={table.name} onChange={e => onUpdate(table.id, { name: e.target.value })}
+              <input value={first.name} onChange={e => onUpdate(first.id, { name: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg bg-black/30 border border-white/10 text-white text-sm outline-none focus:border-purple-400" />
             </Field>
           )}
@@ -680,52 +703,70 @@ function SettingsModal({
           {/* Position */}
           <Field label="Позиция (в долях 0..1)">
             <div className="grid grid-cols-2 gap-2">
-              <NumberInput label="X" value={table.x} min={0} max={1 - table.width} step={0.005}
-                onChange={v => isMulti ? onUpdateMulti({ x: v }) : onUpdate(table.id, { x: v })} />
-              <NumberInput label="Y" value={table.y} min={0} max={1 - table.height} step={0.005}
-                onChange={v => isMulti ? onUpdateMulti({ y: v }) : onUpdate(table.id, { y: v })} />
+              <NumberInput label="X" value={first.x} min={0} max={1 - first.width} step={0.005}
+                onChange={v => isMulti ? onUpdateMulti({ x: v }) : onUpdate(first.id, { x: v })} />
+              <NumberInput label="Y" value={first.y} min={0} max={1 - first.height} step={0.005}
+                onChange={v => isMulti ? onUpdateMulti({ y: v }) : onUpdate(first.id, { y: v })} />
             </div>
           </Field>
 
           {/* Size */}
           <Field label="Размер (в долях 0..1)">
             <div className="grid grid-cols-2 gap-2">
-              <NumberInput label="Ширина" value={table.width} min={0.03} max={1} step={0.005}
-                onChange={v => isMulti ? onUpdateMulti({ width: v }) : onUpdate(table.id, { width: v })} />
-              <NumberInput label="Высота" value={table.height} min={0.03} max={1} step={0.005}
-                onChange={v => isMulti ? onUpdateMulti({ height: v }) : onUpdate(table.id, { height: v })} />
+              <NumberInput label="Ширина" value={first.width} min={0.03} max={1} step={0.005}
+                onChange={v => isMulti ? onUpdateMulti({ width: v }) : onUpdate(first.id, { width: v })} />
+              <NumberInput label="Высота" value={first.height} min={0.03} max={1} step={0.005}
+                onChange={v => isMulti ? onUpdateMulti({ height: v }) : onUpdate(first.id, { height: v })} />
             </div>
           </Field>
 
           {/* Color */}
-          <Field label="Цвет">
+          <Field label={isMulti && !commonColor ? 'Цвет (смешанный — клик применит ко всем)' : 'Цвет'}>
             <div className="flex items-center gap-2 flex-wrap">
-              {PRESET_COLORS.map(c => (
-                <button key={c.value}
-                  onClick={() => isMulti ? onUpdateMulti({ color: c.value }) : onUpdate(table.id, { color: c.value })}
-                  className={`w-8 h-8 rounded-lg border-2 transition-all flex items-center justify-center text-[10px] text-white/70 font-mono
-                    ${table.color === c.value ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
-                  style={{ background: c.bg }}
-                  title={c.label}
-                >
-                  {c.label[0]}
-                </button>
-              ))}
+              {PRESET_COLORS.map(c => {
+                const isActive = isMulti ? commonColor === c.value : first.color === c.value;
+                return (
+                  <button key={c.value}
+                    onClick={() => onUpdateMulti({ color: c.value })}
+                    className={`w-8 h-8 rounded-lg border-2 transition-all flex items-center justify-center text-[10px] text-white/70 font-mono
+                      ${isActive ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
+                    style={{ background: c.bg }}
+                    title={c.label}
+                  >
+                    {c.label[0]}
+                  </button>
+                );
+              })}
             </div>
           </Field>
 
           {/* Shape */}
-          {!isMulti && (
+          {!isMulti ? (
             <Field label="Форма">
               <div className="flex gap-2">
-                <button onClick={() => onUpdate(table.id, { shape: 'rect' })}
+                <button onClick={() => onUpdate(first.id, { shape: 'rect' })}
                   className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all
-                    ${table.shape === 'rect' ? 'border-purple-400 bg-purple-500/20 text-purple-300' : 'border-white/10 text-white/40 hover:text-white/60'}`}>
+                    ${first.shape === 'rect' ? 'border-purple-400 bg-purple-500/20 text-purple-300' : 'border-white/10 text-white/40 hover:text-white/60'}`}>
                   Прямоугольник
                 </button>
-                <button onClick={() => onUpdate(table.id, { shape: 'round' })}
+                <button onClick={() => onUpdate(first.id, { shape: 'round' })}
                   className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all
-                    ${table.shape === 'round' ? 'border-purple-400 bg-purple-500/20 text-purple-300' : 'border-white/10 text-white/40 hover:text-white/60'}`}>
+                    ${first.shape === 'round' ? 'border-purple-400 bg-purple-500/20 text-purple-300' : 'border-white/10 text-white/40 hover:text-white/60'}`}>
+                  Круг
+                </button>
+              </div>
+            </Field>
+          ) : (
+            <Field label={commonShape ? 'Форма' : 'Форма (смешанная — клик применит ко всем)'}>
+              <div className="flex gap-2">
+                <button onClick={() => onUpdateMulti({ shape: 'rect' })}
+                  className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all
+                    ${commonShape === 'rect' ? 'border-purple-400 bg-purple-500/20 text-purple-300' : 'border-white/10 text-white/40 hover:text-white/60'}`}>
+                  Прямоугольник
+                </button>
+                <button onClick={() => onUpdateMulti({ shape: 'round' })}
+                  className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all
+                    ${commonShape === 'round' ? 'border-purple-400 bg-purple-500/20 text-purple-300' : 'border-white/10 text-white/40 hover:text-white/60'}`}>
                   Круг
                 </button>
               </div>
@@ -792,8 +833,11 @@ function ManagerModal({
               <div key={t.id}
                 className={`grid grid-cols-[1fr_60px_60px_60px_60px_70px_36px] gap-2 items-center px-3 py-2 rounded-lg transition-colors cursor-pointer
                   ${isSel ? 'bg-purple-500/10 border border-purple-500/20' : 'hover:bg-white/[0.02] border border-transparent'}`}
-                onClick={() => {
-                  if (isSel) {
+                onClick={(e) => {
+                  if (e.shiftKey) {
+                    // Shift+click: replace selection with just this row
+                    onSelect(new Set([t.id]));
+                  } else if (isSel) {
                     const n = new Set(selectedIds);
                     n.delete(t.id);
                     onSelect(n);
@@ -838,7 +882,7 @@ function ManagerModal({
                 </div>
 
                 {/* Delete */}
-                <button onClick={e => { e.stopPropagation(); onDelete(t.id); }}
+                <button onClick={e => { e.stopPropagation(); if (window.confirm(`Удалить "${t.name}"?`)) onDelete(t.id); }}
                   className="p-1 rounded hover:bg-red-500/20 text-white/20 hover:text-red-400 transition-colors justify-self-end">
                   <Trash2 size={12} />
                 </button>
