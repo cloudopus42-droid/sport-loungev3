@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { Save, Plus, Trash2, Settings, List, Copy, X, Move, Maximize2 } from 'lucide-react';
+import { Save, Plus, Trash2, Settings, List, Copy, X, Move, Maximize2, MousePointer } from 'lucide-react';
 import { showToast } from '@/components/NotificationToast';
+import api from '@/lib/api';
 
 interface TableData {
   id: string;
@@ -11,6 +12,7 @@ interface TableData {
   height: number;
   color: string;
   shape: 'rect' | 'round';
+  clickable: boolean;
 }
 
 const MIN_SIZE = 0.03;
@@ -37,16 +39,16 @@ function generateId() {
 }
 
 const DEFAULT_TABLES: TableData[] = [
-  { id: 'tbl-1', name: 'VIP-1',  x: 0.04, y: 0.06, width: 0.20, height: 0.18, color: 'purple', shape: 'rect' },
-  { id: 'tbl-2', name: 'VIP-2',  x: 0.27, y: 0.06, width: 0.20, height: 0.18, color: 'purple', shape: 'rect' },
-  { id: 'tbl-3', name: 'Стол 3', x: 0.52, y: 0.06, width: 0.18, height: 0.14, color: 'blue', shape: 'rect' },
-  { id: 'tbl-4', name: 'Стол 4', x: 0.73, y: 0.06, width: 0.18, height: 0.14, color: 'blue', shape: 'rect' },
-  { id: 'tbl-5', name: 'Барная', x: 0.04, y: 0.38, width: 0.34, height: 0.12, color: 'amber', shape: 'rect' },
-  { id: 'tbl-6', name: 'Стол 6', x: 0.43, y: 0.38, width: 0.16, height: 0.18, color: 'green', shape: 'rect' },
-  { id: 'tbl-7', name: 'Стол 7', x: 0.63, y: 0.38, width: 0.16, height: 0.18, color: 'green', shape: 'rect' },
-  { id: 'tbl-8', name: 'Лаунж',  x: 0.04, y: 0.66, width: 0.38, height: 0.22, color: 'cyan', shape: 'round' },
-  { id: 'tbl-9', name: 'Стол 9', x: 0.48, y: 0.66, width: 0.20, height: 0.22, color: 'pink', shape: 'rect' },
-  { id: 'tbl-10', name: 'Стол 10', x: 0.72, y: 0.66, width: 0.22, height: 0.22, color: 'pink', shape: 'rect' },
+  { id: 'tbl-1', name: 'VIP-1',  x: 0.04, y: 0.06, width: 0.20, height: 0.18, color: 'purple', shape: 'rect', clickable: true },
+  { id: 'tbl-2', name: 'VIP-2',  x: 0.27, y: 0.06, width: 0.20, height: 0.18, color: 'purple', shape: 'rect', clickable: true },
+  { id: 'tbl-3', name: 'Стол 3', x: 0.52, y: 0.06, width: 0.18, height: 0.14, color: 'blue', shape: 'rect', clickable: true },
+  { id: 'tbl-4', name: 'Стол 4', x: 0.73, y: 0.06, width: 0.18, height: 0.14, color: 'blue', shape: 'rect', clickable: true },
+  { id: 'tbl-5', name: 'Барная', x: 0.04, y: 0.38, width: 0.34, height: 0.12, color: 'amber', shape: 'rect', clickable: true },
+  { id: 'tbl-6', name: 'Стол 6', x: 0.43, y: 0.38, width: 0.16, height: 0.18, color: 'green', shape: 'rect', clickable: true },
+  { id: 'tbl-7', name: 'Стол 7', x: 0.63, y: 0.38, width: 0.16, height: 0.18, color: 'green', shape: 'rect', clickable: true },
+  { id: 'tbl-8', name: 'Лаунж',  x: 0.04, y: 0.66, width: 0.38, height: 0.22, color: 'cyan', shape: 'round', clickable: true },
+  { id: 'tbl-9', name: 'Стол 9', x: 0.48, y: 0.66, width: 0.20, height: 0.22, color: 'pink', shape: 'rect', clickable: true },
+  { id: 'tbl-10', name: 'Стол 10', x: 0.72, y: 0.66, width: 0.22, height: 0.22, color: 'pink', shape: 'rect', clickable: true },
 ];
 
 export function FloorMapEditor() {
@@ -72,7 +74,12 @@ export function FloorMapEditor() {
       .then(r => r.json())
       .then(data => {
         if (data.tables && Array.isArray(data.tables) && data.tables.length > 0) {
-          setTables(data.tables.map((t: any) => ({ ...t, color: t.color || 'purple', shape: t.shape || 'rect' })));
+          setTables(data.tables.map((t: any) => ({
+            ...t,
+            color: t.color || 'purple',
+            shape: t.shape || 'rect',
+            clickable: t.clickable !== false,
+          })));
         } else {
           setTables(DEFAULT_TABLES);
         }
@@ -95,12 +102,7 @@ export function FloorMapEditor() {
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/floor-map', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tables }),
-      });
-      if (!res.ok) throw new Error('Save failed');
+      await api('/api/floor-map', { method: 'PUT', body: { tables } });
       showToast('Карта сохранена и опубликована', 'success');
     } catch {
       showToast('Ошибка сохранения', 'error');
@@ -123,6 +125,7 @@ export function FloorMapEditor() {
       height: 0.16,
       color: 'purple',
       shape: 'rect',
+      clickable: true,
     };
     setTables(prev => [...prev, newTable]);
     setSelectedIds(new Set([newTable.id]));
@@ -514,6 +517,13 @@ export function FloorMapEditor() {
               ⬭
             </button>
           </div>
+
+          {/* Clickable toggle */}
+          <button onClick={() => updateTable(selectedTable.id, { clickable: !selectedTable.clickable })}
+            className={`px-2 py-1 rounded text-[10px] font-mono transition-all flex items-center gap-1
+              ${selectedTable.clickable ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white/30'}`}>
+            <MousePointer size={10} /> {selectedTable.clickable ? 'Кликабельный' : 'Нейтральный'}
+          </button>
         </div>
       )}
 
@@ -537,7 +547,8 @@ export function FloorMapEditor() {
           return (
             <div
               key={table.id}
-              className={`absolute flex items-center justify-center border-2 transition-shadow cursor-grab active:cursor-grabbing
+              className={`absolute flex items-center justify-center border-2 transition-shadow
+                ${table.clickable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default opacity-50'}
                 ${table.shape === 'round' ? 'rounded-full' : 'rounded-lg'}
                 ${isSelected
                   ? 'shadow-[0_0_0_3px_rgba(168,85,247,0.3)]'
@@ -772,6 +783,18 @@ function SettingsModal({
               </div>
             </Field>
           )}
+
+          {/* Clickable toggle */}
+          <Field label="Для клиента">
+            <button onClick={() => isMulti ? onUpdateMulti({ clickable: !first.clickable }) : onUpdate(first.id, { clickable: !first.clickable })}
+              className={`w-full py-2 rounded-lg border text-xs font-semibold transition-all flex items-center justify-center gap-2
+                ${first.clickable
+                  ? 'border-green-400/30 bg-green-500/10 text-green-400'
+                  : 'border-white/10 bg-white/5 text-white/40'}`}>
+              <MousePointer size={12} />
+              {first.clickable ? 'Кликабельный — клиент может выбрать' : 'Нейтральный — просто элемент карты'}
+            </button>
+          </Field>
         </div>
 
         <button onClick={onClose}

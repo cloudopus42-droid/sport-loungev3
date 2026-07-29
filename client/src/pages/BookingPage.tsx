@@ -90,6 +90,7 @@ export function BookingPage() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('asap');
   const [selectedZone, setSelectedZone] = useState<ZoneId | ''>('');
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
+  const [floorMapTables, setFloorMapTables] = useState<any[]>([]);
 
   const flavorCategories = useMemo(() => {
     const cats = new Set(flavors.map(f => f.category).filter(Boolean));
@@ -192,6 +193,18 @@ export function BookingPage() {
     }
     return () => { ac.abort(); };
   }, [isAuthenticated]);
+
+  // Fetch floor map for seat selection
+  useEffect(() => {
+    fetch('/api/floor-map')
+      .then(r => r.json())
+      .then(data => {
+        if (data.tables && Array.isArray(data.tables)) {
+          setFloorMapTables(data.tables);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const savedOrderId = localStorage.getItem('current_order_id');
@@ -512,7 +525,7 @@ export function BookingPage() {
                 )}
               </div>
 
-              {/* Seat Selection */}
+              {/* Seat Selection — Floor Map or Fallback Zone/Seat */}
               <div className="liquid-glass bg-liquid-glass rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-accent-gold text-sm">🪑</span>
@@ -521,34 +534,102 @@ export function BookingPage() {
                     <span className="ml-auto text-[11px] text-accent-gold font-semibold">{selectedSeat.label}</span>
                   )}
                 </div>
-                <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide mb-2">
-                  {ZONES.map(zone => (
-                    <button key={zone.id} type="button" onClick={() => { setSelectedZone(zone.id as ZoneId); setSelectedSeat(null); }}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all border flex items-center gap-1 ${
-                        selectedZone === zone.id
-                          ? 'bg-accent-gold text-[#0b0807] border-accent-gold/30'
-                          : 'text-white/40 bg-white/5 border-transparent hover:border-accent-gold/20'
-                      }`}>
-                      <span>{zone.icon}</span> {zone.label}
-                    </button>
-                  ))}
-                </div>
-                {selectedZone && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-[120px] overflow-y-auto scrollbar-hide pr-1">
-                    {SEATS.filter(s => s.zone === selectedZone).map(seat => (
-                      <button key={seat.id} type="button" onClick={() => setSelectedSeat(seat)}
-                        className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all border text-center ${
-                          selectedSeat?.id === seat.id
-                            ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
-                            : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
-                        }`}>
-                        {seat.label.split('—')[1]?.trim() || seat.label}
-                      </button>
-                    ))}
+
+                {floorMapTables.length > 0 ? (
+                  /* Floor Map */
+                  <div
+                    className="relative w-full rounded-xl border border-white/5 overflow-hidden"
+                    style={{
+                      aspectRatio: '16 / 10',
+                      background: `
+                        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)`,
+                      backgroundSize: '40px 40px',
+                    }}
+                  >
+                    {floorMapTables.map((table: any) => {
+                      const isClickable = table.clickable !== false;
+                      const isChosen = selectedSeat?.id === table.id;
+                      const colorMap: Record<string, { bg: string; border: string }> = {
+                        purple: { bg: 'rgba(138,43,226,0.25)', border: 'rgba(168,85,247,0.5)' },
+                        blue: { bg: 'rgba(59,130,246,0.25)', border: 'rgba(96,165,250,0.5)' },
+                        green: { bg: 'rgba(34,197,94,0.25)', border: 'rgba(74,222,128,0.5)' },
+                        amber: { bg: 'rgba(245,158,11,0.25)', border: 'rgba(251,191,36,0.5)' },
+                        cyan: { bg: 'rgba(6,182,212,0.25)', border: 'rgba(34,211,238,0.5)' },
+                        pink: { bg: 'rgba(236,72,153,0.25)', border: 'rgba(244,114,182,0.5)' },
+                        slate: { bg: 'rgba(100,116,139,0.25)', border: 'rgba(148,163,184,0.5)' },
+                      };
+                      const cs = colorMap[table.color || 'purple'] || colorMap.purple;
+                      return (
+                        <div
+                          key={table.id}
+                          className={`absolute flex items-center justify-center border-2 transition-all select-none
+                            ${table.shape === 'round' ? 'rounded-full' : 'rounded-lg'}
+                            ${isClickable
+                              ? `cursor-pointer ${isChosen
+                                  ? 'border-green-400 bg-green-500/25 shadow-[0_0_0_3px_rgba(34,197,94,0.3)]'
+                                  : 'hover:scale-[1.02] hover:shadow-[0_0_16px_rgba(168,85,247,0.15)]'}`
+                              : 'cursor-default opacity-40'
+                            }`}
+                          style={{
+                            left: `${table.x * 100}%`,
+                            top: `${table.y * 100}%`,
+                            width: `${table.width * 100}%`,
+                            height: `${table.height * 100}%`,
+                            background: isChosen ? undefined : cs.bg,
+                            borderColor: isChosen ? undefined : (isClickable ? cs.border : 'rgba(255,255,255,0.1)'),
+                          }}
+                          onClick={() => {
+                            if (!isClickable) return;
+                            setSelectedSeat({
+                              id: table.id,
+                              label: table.name,
+                              zone: 'floor-map',
+                              zoneLabel: 'Карта зала',
+                            });
+                          }}
+                        >
+                          <span className={`text-[10px] sm:text-xs font-bold text-center pointer-events-none drop-shadow-lg truncate max-w-[90%] px-1
+                            ${isChosen ? 'text-green-400' : isClickable ? 'text-white/90' : 'text-white/40'}`}>
+                            {table.name}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
-                {!selectedZone && (
-                  <p className="text-[11px] text-white/20 text-center py-2">Выберите зону</p>
+                ) : (
+                  /* Fallback: Zone/Seat dropdown */
+                  <>
+                    <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide mb-2">
+                      {ZONES.map(zone => (
+                        <button key={zone.id} type="button" onClick={() => { setSelectedZone(zone.id as ZoneId); setSelectedSeat(null); }}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all border flex items-center gap-1 ${
+                            selectedZone === zone.id
+                              ? 'bg-accent-gold text-[#0b0807] border-accent-gold/30'
+                              : 'text-white/40 bg-white/5 border-transparent hover:border-accent-gold/20'
+                          }`}>
+                          <span>{zone.icon}</span> {zone.label}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedZone && (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-[120px] overflow-y-auto scrollbar-hide pr-1">
+                        {SEATS.filter(s => s.zone === selectedZone).map(seat => (
+                          <button key={seat.id} type="button" onClick={() => setSelectedSeat(seat)}
+                            className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all border text-center ${
+                              selectedSeat?.id === seat.id
+                                ? 'bg-[rgba(255,191,0,0.1)] border-[rgba(255,191,0,0.3)] text-accent-gold'
+                                : 'bg-white/[0.02] border-transparent text-white/40 hover:border-[rgba(255,191,0,0.12)]'
+                            }`}>
+                            {seat.label.split('—')[1]?.trim() || seat.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {!selectedZone && (
+                      <p className="text-[11px] text-white/20 text-center py-2">Выберите зону</p>
+                    )}
+                  </>
                 )}
               </div>
 

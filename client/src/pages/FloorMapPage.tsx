@@ -9,7 +9,21 @@ interface TableData {
   y: number;
   width: number;
   height: number;
+  color?: string;
+  shape?: 'rect' | 'round';
+  clickable?: boolean;
 }
+
+const PRESET_COLORS: Record<string, { bg: string; border: string }> = {
+  purple: { bg: 'rgba(138,43,226,0.25)', border: 'rgba(168,85,247,0.5)' },
+  blue: { bg: 'rgba(59,130,246,0.25)', border: 'rgba(96,165,250,0.5)' },
+  green: { bg: 'rgba(34,197,94,0.25)', border: 'rgba(74,222,128,0.5)' },
+  amber: { bg: 'rgba(245,158,11,0.25)', border: 'rgba(251,191,36,0.5)' },
+  red: { bg: 'rgba(239,68,68,0.25)', border: 'rgba(248,113,113,0.5)' },
+  cyan: { bg: 'rgba(6,182,212,0.25)', border: 'rgba(34,211,238,0.5)' },
+  pink: { bg: 'rgba(236,72,153,0.25)', border: 'rgba(244,114,182,0.5)' },
+  slate: { bg: 'rgba(100,116,139,0.25)', border: 'rgba(148,163,184,0.5)' },
+};
 
 export function FloorMapPage() {
   const [tables, setTables] = useState<TableData[]>([]);
@@ -30,6 +44,7 @@ export function FloorMapPage() {
   }, []);
 
   const chosen = tables.find(t => t.id === chosenId);
+  const clickableTables = tables.filter(t => t.clickable !== false);
 
   if (loading) {
     return (
@@ -82,25 +97,35 @@ export function FloorMapPage() {
       >
         {tables.map(table => {
           const isChosen = chosenId === table.id;
+          const isClickable = table.clickable !== false;
+          const cs = PRESET_COLORS[table.color || 'purple'] || PRESET_COLORS.purple;
+          const isRound = table.shape === 'round';
+
           return (
             <motion.div
               key={table.id}
-              className={`absolute flex items-center justify-center rounded-lg border-2 cursor-pointer transition-all select-none
-                ${isChosen
-                  ? 'border-green-400 bg-green-500/25 shadow-[0_0_0_3px_rgba(34,197,94,0.3),0_0_24px_rgba(34,197,94,0.1)]'
-                  : 'border-purple-500/40 bg-purple-500/20 hover:border-purple-400/60 hover:bg-purple-500/30 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]'}`}
+              className={`absolute flex items-center justify-center border-2 select-none
+                ${isRound ? 'rounded-full' : 'rounded-lg'}
+                ${isClickable
+                  ? `cursor-pointer ${isChosen
+                      ? 'border-green-400 bg-green-500/25 shadow-[0_0_0_3px_rgba(34,197,94,0.3),0_0_24px_rgba(34,197,94,0.1)]'
+                      : 'hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]'}`
+                  : 'cursor-default opacity-40'
+              }`}
               style={{
                 left: `${table.x * 100}%`,
                 top: `${table.y * 100}%`,
                 width: `${table.width * 100}%`,
                 height: `${table.height * 100}%`,
+                background: isChosen ? undefined : cs.bg,
+                borderColor: isChosen ? undefined : (isClickable ? cs.border : 'rgba(255,255,255,0.1)'),
               }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setChosenId(table.id)}
+              whileHover={isClickable ? { scale: 1.02 } : undefined}
+              whileTap={isClickable ? { scale: 0.98 } : undefined}
+              onClick={() => { if (isClickable) setChosenId(table.id); }}
             >
               <span className={`text-xs sm:text-sm font-bold text-center pointer-events-none drop-shadow-lg truncate max-w-[90%] px-1
-                ${isChosen ? 'text-green-400' : 'text-white/90'}`}>
+                ${isChosen ? 'text-green-400' : isClickable ? 'text-white/90' : 'text-white/40'}`}>
                 {table.name}
               </span>
             </motion.div>
