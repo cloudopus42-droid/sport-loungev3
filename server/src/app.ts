@@ -47,6 +47,7 @@ import { config } from './config/env';
 import pagesRoutes from './routes/pages';
 import telegramRoutes from './routes/telegram';
 import adminLogRoutes from './routes/adminLog';
+import floorMapRoutes from './routes/floorMap';
 
 const app = express();
 
@@ -198,6 +199,7 @@ app.use('/api/menu', menuRoutes);
 app.use('/api/pages', pagesRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/admin/logs', adminLogRoutes);
+app.use('/api/floor-map', cacheMiddleware(10000), floorMapRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

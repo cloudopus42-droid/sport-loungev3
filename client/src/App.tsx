@@ -41,6 +41,8 @@ const SmartFeaturesPage = lazy(() => import('@/pages/admin/SmartFeaturesPage').t
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then(m => ({ default: m.AdminLogsPage })));
 
 const UsersAdmin = lazy(() => import('@/pages/admin/UsersAdmin').then(m => ({ default: m.UsersAdmin })));
+const FloorMapEditor = lazy(() => import('@/pages/admin/FloorMapEditor').then(m => ({ default: m.FloorMapEditor })));
+const FloorMapPage = lazy(() => import('@/pages/FloorMapPage').then(m => ({ default: m.FloorMapPage })));
 
 export default function App() {
   return (
@@ -82,6 +84,7 @@ export default function App() {
                 <Route path="feed" element={<FeedPage />} />
                 <Route path="invitations" element={<InvitationsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="floor-map" element={<FloorMapPage />} />
                 <Route path="cookie-policy" element={<CookiePolicyPage />} />
               </Route>
 
@@ -103,6 +106,7 @@ export default function App() {
           <Route path="logs" element={<AdminLogsPage />} />
 
           <Route path="users" element={<UsersAdmin />} />
+          <Route path="floor-map" element={<FloorMapEditor />} />
         </Route>
 
               <Route path="/404" element={<NotFound />} />

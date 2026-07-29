@@ -27,6 +27,7 @@ const sidebarItems: SidebarItem[] = [
   { path: '/admin/promos', icon: 'sparkle', label: 'Акции', end: false },
   { path: '/admin/invitations', icon: 'chat', label: 'Приглаш.', end: false },
   { path: '/admin/tobacco', icon: 'profileNav', label: 'Табак', end: false },
+  { path: '/admin/floor-map', icon: 'sparkle', label: 'Карта', end: false },
   { path: '/admin/smart-features', icon: 'crown', label: 'Smart', end: false },
   { path: '/admin/logs', icon: 'homeNav', label: 'Логи', end: false },
 ];
