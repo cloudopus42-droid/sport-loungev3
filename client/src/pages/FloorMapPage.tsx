@@ -86,13 +86,13 @@ export function FloorMapPage() {
       {/* Canvas */}
       <div
         ref={canvasRef}
-        className="relative w-full rounded-2xl border border-white/5 overflow-hidden"
+        className="relative w-full rounded-2xl border border-white/5 overflow-hidden -mx-1"
         style={{
-          aspectRatio: '16 / 10',
+          aspectRatio: '16 / 9',
           background: `
-            linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`,
+          backgroundSize: '32px 32px',
         }}
       >
         {tables.map(table => {
@@ -134,7 +134,7 @@ export function FloorMapPage() {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 text-[11px] text-white/30">
+      <div className="flex items-center justify-center gap-6 text-xs text-white/30">
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded border-2 border-purple-500/40 bg-purple-500/20" />
           Свободно

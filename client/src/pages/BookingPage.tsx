@@ -537,13 +537,13 @@ export function BookingPage() {
                 {floorMapTables.length > 0 ? (
                   /* Floor Map */
                   <div
-                    className="relative w-full rounded-xl border border-white/5 overflow-hidden"
+                    className="relative w-full rounded-xl border border-white/5 overflow-hidden -mx-1"
                     style={{
-                      aspectRatio: '16 / 10',
+                      aspectRatio: '16 / 9',
                       background: `
-                        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)`,
-                      backgroundSize: '40px 40px',
+                        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`,
+                      backgroundSize: '32px 32px',
                     }}
                   >
                     {floorMapTables.map((table: any) => {
@@ -588,7 +588,7 @@ export function BookingPage() {
                             });
                           }}
                         >
-                          <span className={`text-[10px] sm:text-xs font-bold text-center pointer-events-none drop-shadow-lg truncate max-w-[90%] px-1
+                          <span className={`text-xs sm:text-sm font-bold text-center pointer-events-none drop-shadow-lg truncate max-w-[90%] px-1
                             ${isChosen ? 'text-green-400' : isClickable ? 'text-white/90' : 'text-white/40'}`}>
                             {table.name}
                           </span>
