@@ -42,6 +42,7 @@ import smartFeaturesRoutes from './routes/smartFeatures';
 import inventoryRoutes from './routes/inventory';
 import menuRoutes from './routes/menu';
 import { supabase } from './config/supabase';
+import { config } from './config/env';
 import pagesRoutes from './routes/pages';
 import telegramRoutes from './routes/telegram';
 import adminLogRoutes from './routes/adminLog';
