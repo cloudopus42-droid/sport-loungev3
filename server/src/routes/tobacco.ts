@@ -229,6 +229,7 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
 
     const record: Record<string, unknown> = {
       name: data.name,
+      manufacturer: data.brand || '',
       description: data.description || '',
       status: data.status || 'active',
     };
@@ -260,7 +261,7 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
     if (error) {
       console.error('[Tobacco POST] Supabase insert error:', error.message);
       // Fallback: insert only base columns that always exist
-      const base = { name: data.name, description: data.description || '', status: data.status || 'active' };
+      const base = { name: data.name, manufacturer: data.brand || '', description: data.description || '', status: data.status || 'active' };
       const { data: fb, error: fbErr } = await supabase
         .from('mixes')
         .insert(base)
@@ -290,7 +291,8 @@ router.put('/:id', auth, isAdmin, async (req: Request, res: Response, next: Next
     const updateData: Record<string, unknown> = {};
 
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.brand !== undefined) updateData.brand = data.brand || null;
+    if (data.brand !== undefined) updateData.manufacturer = data.brand || '';
+    if (data.brand !== undefined) updateData.brand = data.brand || '';
     if (data.flavor !== undefined) updateData.flavor = data.flavor || null;
     if (data.emoji !== undefined) updateData.emoji = data.emoji || null;
     if (data.description !== undefined) updateData.description = data.description;
