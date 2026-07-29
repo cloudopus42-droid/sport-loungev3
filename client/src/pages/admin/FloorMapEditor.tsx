@@ -70,8 +70,7 @@ export function FloorMapEditor() {
 
   // Load from server on mount
   useEffect(() => {
-    fetch('/api/floor-map')
-      .then(r => r.json())
+    api<any>('/api/floor-map')
       .then(data => {
         if (data.tables && Array.isArray(data.tables) && data.tables.length > 0) {
           setTables(data.tables.map((t: any) => ({

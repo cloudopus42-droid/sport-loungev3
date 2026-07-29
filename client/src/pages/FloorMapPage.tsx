@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import api from '@/lib/api';
 
 interface TableData {
   id: string;
@@ -32,8 +33,7 @@ export function FloorMapPage() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/floor-map')
-      .then(r => r.json())
+    api<any>('/api/floor-map')
       .then(data => {
         if (data.tables && Array.isArray(data.tables)) {
           setTables(data.tables);

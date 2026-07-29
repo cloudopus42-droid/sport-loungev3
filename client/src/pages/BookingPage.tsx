@@ -196,8 +196,7 @@ export function BookingPage() {
 
   // Fetch floor map for seat selection
   useEffect(() => {
-    fetch('/api/floor-map')
-      .then(r => r.json())
+    api<any>('/api/floor-map')
       .then(data => {
         if (data.tables && Array.isArray(data.tables)) {
           setFloorMapTables(data.tables);
