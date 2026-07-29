@@ -121,7 +121,7 @@ export function ConciergeChat() {
                     </div>
                   </div>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="text-white/25 hover:text-white/60 transition-colors p-1">
+                <button onClick={() => setIsOpen(false)} className="text-white/25 hover:text-white/60 transition-colors p-2">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>

@@ -36,7 +36,7 @@ export function CookieSettingsModal({ consent, onSave, onClose }: Props) {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-heading font-bold text-white">Настройки куки</h2>
-            <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white/70 rounded-lg transition-colors" aria-label="Закрыть">
+            <button onClick={onClose} className="p-2 text-white/40 hover:text-white/70 rounded-lg transition-colors" aria-label="Закрыть">
               <X className="w-4 h-4" />
             </button>
           </div>

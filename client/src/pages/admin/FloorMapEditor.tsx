@@ -630,7 +630,7 @@ function SettingsModal({
           <h3 className="text-sm font-bold text-white">
             {isMulti ? `Настройки (${multiCount} блоков)` : `Настройки: ${table.name}`}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors">
             <X size={16} />
           </button>
         </div>
@@ -739,7 +739,7 @@ function ManagerModal({
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-semibold hover:bg-purple-500 transition-colors">
               <Plus size={12} /> Добавить
             </button>
-            <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors">
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors">
               <X size={16} />
             </button>
           </div>
