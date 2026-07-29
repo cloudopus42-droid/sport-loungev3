@@ -609,9 +609,9 @@ export function FloorMapEditor() {
       </div>
 
       {/* ═══════════ SETTINGS MODAL ═══════════ */}
-      {showSettings && selectedTable && (
+      {showSettings && (
         <SettingsModal
-          table={selectedTable}
+          table={selectedTable || { id: '', name: '', x: 0, y: 0, width: 0.1, height: 0.1, color: 'purple', shape: 'rect' }}
           multiCount={selectedIds.size}
           onUpdate={updateTable}
           onUpdateMulti={updateSelected}
