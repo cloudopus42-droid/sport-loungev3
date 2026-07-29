@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sport Lounge — Конструктор карты помещения</title>
+  <style>
+    /* ═══════════════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       LAYOUT
+       ═══════════════════════════════════════════════════ */
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(18, 18, 26, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .tab-btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover { color: rgba(255, 255, 255, 0.8); }
+
+    .tab-btn.active {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a855f7;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      gap: 16px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       TOOLBAR (Admin)
+       ═══════════════════════════════════════════════════ */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .toolbar button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #e0e0e0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .toolbar button:hover {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.3);
+      color: #a855f7;
+    }
+
+    .toolbar button.primary {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      border: none;
+      color: #fff;
+    }
+
+    .toolbar button.primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .toolbar .info {
+      margin-left: auto;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MAP CANVAS
+       ═══════════════════════════════════════════════════ */
+    .canvas-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      min-height: 500px;
+    }
+
+    .canvas {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 10;
+      background:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .canvas.admin { cursor: crosshair; }
+    .canvas.client { cursor: default; }
+
+    /* ═══════════════════════════════════════════════════
+       TABLE BLOCK — shared
+       ═══════════════════════════════════════════════════ */
+    .table-block {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(138, 43, 226, 0.25);
+      border: 2px solid rgba(168, 85, 247, 0.5);
+      border-radius: 10px;
+      cursor: default;
+      transition: box-shadow 0.15s, border-color 0.15s, background 0.15s;
+      overflow: hidden;
+    }
+
+    .table-block .label {
+      font-size: clamp(10px, 1.2vw, 14px);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      pointer-events: none;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90%;
+      padding: 0 4px;
+    }
+
+    /* ─── Admin mode ─── */
+    .canvas.admin .table-block {
+      cursor: grab;
+    }
+
+    .canvas.admin .table-block:active {
+      cursor: grabbing;
+    }
+
+    .canvas.admin .table-block.selected {
+      border-color: #a855f7;
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.35), 0 0 20px rgba(168, 85, 247, 0.15);
+      background: rgba(138, 43, 226, 0.4);
+    }
+
+    /* Delete button — only visible on selected */
+    .table-block .delete-btn {
+      display: none;
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ef4444;
+      border: 2px solid #0a0a0f;
+      color: #fff;
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas.admin .table-block.selected .delete-btn {
+      display: flex;
+    }
+
+    /* Resize handles — only visible on selected */
+    .resize-handle {
+      display: none;
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #a855f7;
+      border: 2px solid #0a0a0f;
+      border-radius: 3px;
+      z-index: 10;
+    }
+
+    .canvas.admin .table-block.selected .resize-handle {
+      display: block;
+    }
+
+    .resize-handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+    .resize-handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+    .resize-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+    .resize-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+    .resize-handle.n  { top: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.s  { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.w  { top: 50%; left: -6px; transform: translateY(-50%); cursor: ew-resize; }
+    .resize-handle.e  { top: 50%; right: -6px; transform: translateY(-50%); cursor: ew-resize; }
+
+    /* ─── Client mode ─── */
+    .canvas.client .table-block {
+      cursor: pointer;
+    }
+
+    .canvas.client .table-block:hover {
+      border-color: #a855f7;
+      background: rgba(138, 43, 226, 0.45);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+    }
+
+    .canvas.client .table-block.chosen {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.25);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3), 0 0 24px rgba(34, 197, 94, 0.15);
+    }
+
+    .canvas.client .table-block.chosen .label {
+      color: #22c55e;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       RENAME POPUP
+       ═══════════════════════════════════════════════════ */
+    .rename-popup {
+      display: none;
+      position: absolute;
+      z-index: 200;
+      background: #1a1a2e;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .rename-popup.visible { display: flex; gap: 6px; }
+
+    .rename-popup input {
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      font-size: 13px;
+      width: 140px;
+      outline: none;
+    }
+
+    .rename-popup input:focus {
+      border-color: #a855f7;
+    }
+
+    .rename-popup button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #7c3aed;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       JSON PREVIEW
+       ═══════════════════════════════════════════════════ */
+    .json-preview {
+      margin-top: 8px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 16px;
+      max-height: 200px;
+      overflow: auto;
+    }
+
+    .json-preview pre {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .json-preview h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       CLIENT NOTIFICATION
+       ═══════════════════════════════════════════════════ */
+    .client-notification {
+      text-align: center;
+      padding: 14px 20px;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      color: #22c55e;
+      font-weight: 600;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .client-notification.empty {
+      color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.02);
+      border-color: rgba(255,255,255,0.06);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       HIDDEN
+       ═══════════════════════════════════════════════════ */
+    .hidden { display: none !important; }
+
+    /* ═══════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .main { padding: 12px; }
+      .toolbar { gap: 6px; }
+      .toolbar button { padding: 8px 12px; font-size: 12px; }
+      .toolbar .info { display: none; }
+      .canvas { aspect-ratio: 4 / 3; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header class="header">
+      <h1>Konstructor</h1>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="admin">Админ-панель</button>
+        <button class="tab-btn" data-tab="client">Клиент</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- ═══════════ ADMIN VIEW ═══════════ -->
+      <div id="admin-view">
+        <div class="toolbar">
+          <button id="btn-add" class="primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Добавить стол
+          </button>
+          <button id="btn-publish" class="primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Сохранить и Опубликовать
+          </button>
+          <div class="separator"></div>
+          <button id="btn-clear">Очистить всё</button>
+          <span class="info" id="table-count">0 столов</span>
+        </div>
+
+        <div class="canvas-wrapper">
+          <div class="canvas admin" id="admin-canvas"></div>
+        </div>
+
+        <div class="json-preview" id="json-preview">
+          <h3>JSON-конфигурация карты</h3>
+          <pre id="json-output">[]</pre>
+        </div>
+      </div>
+
+      <!-- ═══════════ CLIENT VIEW ═══════════ -->
+      <div id="client-view" class="hidden">
+        <div class="client-notification empty" id="client-notice">
+          Нажмите на стол, чтобы выбрать место
+        </div>
+
+        <div class="canvas-wrapper">
+          <div class="canvas client" id="client-canvas"></div>
+        </div>
+
+        <div class="json-preview">
+          <h3>JSON-конфигурация (только чтение)</h3>
+          <pre id="client-json-output">[]</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RENAME POPUP ═══════════ -->
+  <div class="rename-popup" id="rename-popup">
+    <input type="text" id="rename-input" placeholder="Название стола" maxlength="30" />
+    <button id="rename-ok">OK</button>
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════
+       STATE — all coordinates stored as 0..1 fractions
+       ═══════════════════════════════════════════════════════════ */
+    let tables = [];
+    let nextId = 1;
+    let selectedId = null;
+
+    /* ═══════════════════════════════════════════════════════════
+       DOM REFS
+       ═══════════════════════════════════════════════════════════ */
+    const adminCanvas  = document.getElementById('admin-canvas');
+    const clientCanvas = document.getElementById('client-canvas');
+    const jsonOutput   = document.getElementById('json-output');
+    const clientJson   = document.getElementById('client-json-output');
+    const tableCount   = document.getElementById('table-count');
+    const clientNotice = document.getElementById('client-notice');
+    const renamePopup  = document.getElementById('rename-popup');
+    const renameInput  = document.getElementById('rename-input');
+    const renameOk     = document.getElementById('rename-ok');
+
+    /* ═══════════════════════════════════════════════════════════
+       HELPERS
+       ═══════════════════════════════════════════════════════════ */
+    function generateId() { return `table-${nextId++}`; }
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    /** Convert pixel delta to fraction of canvas size */
+    function pxToFrac(px, canvasDim) { return px / canvasDim; }
+
+    /* ═══════════════════════════════════════════════════════════
+       RENDER — draws table blocks on both canvases
+       ═══════════════════════════════════════════════════════════ */
+    function render() {
+      adminCanvas.innerHTML = '';
+      clientCanvas.innerHTML = '';
+
+      tables.forEach(t => {
+        // ── Admin block ──
+        const aBlock = createBlock(t, true);
+        adminCanvas.appendChild(aBlock);
+
+        // ── Client block ──
+        const cBlock = createBlock(t, false);
+        clientCanvas.appendChild(cBlock);
+      });
+
+      updateJsonPreview();
+      tableCount.textContent = `${tables.length} столов`;
+    }
+
+    function createBlock(t, isAdmin) {
+      const el = document.createElement('div');
+      el.className = 'table-block';
+      el.dataset.id = t.id;
+
+      // Position via fractions (percentage of canvas)
+      el.style.left   = `${t.x * 100}%`;
+      el.style.top    = `${t.y * 100}%`;
+      el.style.width  = `${t.width * 100}%`;
+      el.style.height = `${t.height * 100}%`;
+
+      // Label
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = t.name;
+      el.appendChild(label);
+
+      if (isAdmin) {
+        // Delete button
+        const del = document.createElement('div');
+        del.className = 'delete-btn';
+        del.textContent = '×';
+        del.addEventListener('mousedown', e => {
+          e.stopPropagation();
+          tables = tables.filter(x => x.id !== t.id);
+          if (selectedId === t.id) selectedId = null;
+          render();
+        });
+        el.appendChild(del);
+
+        // Resize handles (8 directions)
+        ['nw','n','ne','w','e','sw','s','se'].forEach(dir => {
+          const h = document.createElement('div');
+          h.className = `resize-handle ${dir}`;
+          h.addEventListener('mousedown', e => {
+            e.stopPropagation();
+            startResize(e, t, dir);
+          });
+          el.appendChild(h);
+        });
+
+        // Click to select / double-click to rename
+        el.addEventListener('mousedown', e => {
+          if (e.target.classList.contains('resize-handle') || e.target.classList.contains('delete-btn')) return;
+          e.preventDefault();
+          selectedId = t.id;
+          render();
+          startDrag(e, t);
+        });
+
+        el.addEventListener('dblclick', e => {
+          e.stopPropagation();
+          showRenamePopup(t, el);
+        });
+
+        // Selection highlight
+        if (selectedId === t.id) el.classList.add('selected');
+      } else {
+        // Client: click to choose
+        el.addEventListener('click', () => chooseTable(t));
+      }
+
+      return el;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DRAG (Admin only)
+       ═══════════════════════════════════════════════════════════ */
+    function startDrag(e, table) {
+      const canvasRect = adminCanvas.getBoundingClientRect();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const origX = table.x;
+      const origY = table.y;
+
+      function onMove(ev) {
+        const dx = pxToFrac(ev.clientX - startX, canvasRect.width);
+        const dy = pxToFrac(ev.clientY - startY, canvasRect.height);
+        table.x = clamp(origX + dx, 0, 1 - table.width);
+        table.y = clamp(origY + dy, 0, 1 - table.height);
+        render();
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESIZE (Admin only)
+       ═══════════════════════════════════════════════════════════ */
+    function startResize(e, table, dir) {
+      e.preventDefault();
+      const canvasRect = adminCanvas.getBoundingClientRect();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const origX = table.x;
+      const origY = table.y;
+      const origW = table.width;
+      const origH = table.height;
+      const MIN = 0.04; // minimum 4% of canvas
+
+      function onMove(ev) {
+        const dx = pxToFrac(ev.clientX - startX, canvasRect.width);
+        const dy = pxToFrac(ev.clientY - startY, canvasRect.height);
+
+        let newX = origX, newY = origY, newW = origW, newH = origH;
+
+        // Horizontal
+        if (dir.includes('e')) {
+          newW = clamp(origW + dx, MIN, 1 - origX);
+        } else if (dir.includes('w')) {
+          newW = clamp(origW - dx, MIN, origX + origW);
+          newX = clamp(origX + dx, 0, origX + origW - MIN);
+        }
+
+        // Vertical
+        if (dir.includes('s')) {
+          newH = clamp(origH + dy, MIN, 1 - origY);
+        } else if (dir.includes('n')) {
+          newH = clamp(origH - dy, MIN, origY + origH);
+          newY = clamp(origY + dy, 0, origY + origH - MIN);
+        }
+
+        table.x = newX;
+        table.y = newY;
+        table.width = newW;
+        table.height = newH;
+        render();
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RENAME POPUP
+       ═══════════════════════════════════════════════════════════ */
+    function showRenamePopup(table, blockEl) {
+      const rect = blockEl.getBoundingClientRect();
+      renamePopup.style.left = `${rect.left + rect.width / 2 - 100}px`;
+      renamePopup.style.top = `${rect.top - 50}px`;
+      renamePopup.classList.add('visible');
+      renameInput.value = table.name;
+      renameInput.focus();
+      renameInput.select();
+
+      function commit() {
+        const val = renameInput.value.trim();
+        if (val) table.name = val;
+        renamePopup.classList.remove('visible');
+        render();
+        cleanup();
+      }
+
+      function onKey(ev) {
+        if (ev.key === 'Enter') commit();
+        if (ev.key === 'Escape') { renamePopup.classList.remove('visible'); cleanup(); }
+      }
+
+      function cleanup() {
+        renameOk.removeEventListener('click', commit);
+        renameInput.removeEventListener('keydown', onKey);
+        document.removeEventListener('mousedown', outsideClick);
+      }
+
+      function outsideClick(ev) {
+        if (!renamePopup.contains(ev.target)) commit();
+      }
+
+      renameOk.addEventListener('click', commit);
+      renameInput.addEventListener('keydown', onKey);
+      setTimeout(() => document.addEventListener('mousedown', outsideClick), 0);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CLIENT — choose table
+       ═══════════════════════════════════════════════════════════ */
+    let chosenTableId = null;
+
+    function chooseTable(table) {
+      chosenTableId = table.id;
+      clientNotice.className = 'client-notification';
+      clientNotice.textContent = `Вы выбрали место: ${table.name}`;
+      console.log(`[Konstructor] Выбрано место: "${table.name}" (id: ${table.id})`);
+      renderClientHighlight();
+    }
+
+    function renderClientHighlight() {
+      clientCanvas.querySelectorAll('.table-block').forEach(el => {
+        el.classList.toggle('chosen', el.dataset.id === chosenTableId);
+      });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       JSON PREVIEW
+       ═══════════════════════════════════════════════════════════ */
+    function updateJsonPreview() {
+      const json = JSON.stringify(tables, null, 2);
+      jsonOutput.textContent = json;
+      clientJson.textContent = json;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TABS
+       ═══════════════════════════════════════════════════════════ */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('admin-view').classList.toggle('hidden', tab !== 'admin');
+        document.getElementById('client-view').classList.toggle('hidden', tab !== 'client');
+        if (tab === 'client') render();
+      });
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       TOOLBAR ACTIONS
+       ═══════════════════════════════════════════════════════════ */
+    document.getElementById('btn-add').addEventListener('click', () => {
+      const id = generateId();
+      const count = tables.length;
+      // Place new table in a grid-like pattern
+      const col = count % 4;
+      const row = Math.floor(count / 4);
+      tables.push({
+        id,
+        name: `Стол ${count + 1}`,
+        x: 0.05 + col * 0.23,
+        y: 0.08 + row * 0.22,
+        width: 0.18,
+        height: 0.16,
+      });
+      selectedId = id;
+      render();
+    });
+
+    document.getElementById('btn-publish').addEventListener('click', () => {
+      console.log('[Konstructor] Опубликованная конфигурация:', JSON.stringify(tables, null, 2));
+      alert('Конфигурация опубликована!\n\nПроверьте console.log для просмотра JSON.');
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      if (tables.length === 0) return;
+      if (!confirm('Удалить все столы?')) return;
+      tables = [];
+      selectedId = null;
+      render();
+    });
+
+    // Deselect on canvas click
+    adminCanvas.addEventListener('mousedown', e => {
+      if (e.target === adminCanvas) {
+        selectedId = null;
+        render();
+      }
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       INIT — seed demo data
+       ═══════════════════════════════════════════════════════════ */
+    tables = [
+      { id: 'table-1', name: 'VIP-1',   x: 0.05, y: 0.08, width: 0.20, height: 0.18 },
+      { id: 'table-2', name: 'VIP-2',   x: 0.28, y: 0.08, width: 0.20, height: 0.18 },
+      { id: 'table-3', name: 'Стол 3',  x: 0.55, y: 0.08, width: 0.18, height: 0.14 },
+      { id: 'table-4', name: 'Стол 4',  x: 0.76, y: 0.08, width: 0.18, height: 0.14 },
+      { id: 'table-5', name: 'Барная',  x: 0.05, y: 0.40, width: 0.35, height: 0.12 },
+      { id: 'table-6', name: 'Стол 6',  x: 0.45, y: 0.40, width: 0.15, height: 0.18 },
+      { id: 'table-7', name: 'Стол 7',  x: 0.65, y: 0.40, width: 0.15, height: 0.18 },
+      { id: 'table-8', name: 'Лаунж',   x: 0.05, y: 0.68, width: 0.40, height: 0.20 },
+      { id: 'table-9', name: 'Стол 9',  x: 0.50, y: 0.68, width: 0.20, height: 0.20 },
+      { id: 'table-10', name: 'Стол 10', x: 0.74, y: 0.68, width: 0.20, height: 0.20 },
+    ];
+    nextId = 11;
+
+    render();
+  </script>
+</body>
+</html>
