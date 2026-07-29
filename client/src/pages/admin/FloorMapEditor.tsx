@@ -14,6 +14,7 @@ interface TableData {
 }
 
 const MIN_SIZE = 0.03;
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
 const PRESET_COLORS = [
   { value: 'purple', label: 'Фиолетовый', bg: 'rgba(138,43,226,0.25)', border: 'rgba(168,85,247,0.5)' },
@@ -80,7 +81,6 @@ export function FloorMapEditor() {
       .finally(() => setLoading(false));
   }, []);
 
-  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
   const pxToFrac = (px: number, dim: number) => px / dim;
 
   const selectedTable = useMemo(() => {
