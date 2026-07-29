@@ -3,16 +3,26 @@ import { auth } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 import { supabase } from '../config/supabase';
 import { createPageSchema, updatePageSchema } from '../schemas/pages.schema';
+import jwt from 'jsonwebtoken';
+import { config } from '../config/env';
 
 const router = Router();
 
 // GET /api/pages — list published pages (public) or all pages (admin)
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const isAdminRequest = req.headers.authorization?.startsWith('Bearer ');
+    let isAdminUser = false;
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, config.jwtSecret) as { role?: string };
+        isAdminUser = decoded.role === 'admin';
+      } catch { /* invalid token, treat as non-admin */ }
+    }
+
     let query = supabase.from('pages').select('*');
 
-    if (!isAdminRequest) {
+    if (!isAdminUser) {
       query = query.eq('is_published', true);
     }
 

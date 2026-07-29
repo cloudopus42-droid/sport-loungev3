@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase';
 import { auth } from '../middleware/auth';
+import { isAdmin } from '../middleware/isAdmin';
 
 const router = Router();
 
@@ -55,7 +56,7 @@ router.get('/search', async (req: Request, res: Response, next: NextFunction) =>
   } catch (e) { next(e); }
 });
 
-router.post('/sync', auth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/sync', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { nodes, edges } = req.body;
     if (!Array.isArray(nodes)) {

@@ -34,13 +34,16 @@ export function LuxuryCursor() {
     const handleMouseDown = () => setClicked(true);
     const handleMouseUp = () => setClicked(false);
 
-    // Dynamic hover listeners for links, buttons, inputs, select
-    const addHoverListeners = () => {
-      const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], [data-hover]');
-      interactives.forEach((el) => {
-        el.addEventListener('mouseenter', () => setHovered(true));
-        el.addEventListener('mouseleave', () => setHovered(false));
-      });
+    // Event delegation — one listener on body, no per-element leaks
+    const handleBodyMouseOver = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement)?.closest('a, button, input, select, textarea, [role="button"], [data-hover]');
+      if (target) setHovered(true);
+    };
+    const handleBodyMouseOut = (e: MouseEvent) => {
+      const related = e.relatedTarget as HTMLElement | null;
+      if (!related?.closest('a, button, input, select, textarea, [role="button"], [data-hover]')) {
+        setHovered(false);
+      }
     };
 
     window.addEventListener('mousemove', moveCursor);
@@ -48,12 +51,8 @@ export function LuxuryCursor() {
     document.addEventListener('mouseenter', handleMouseEnter);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
-
-    addHoverListeners();
-
-    // DOM MutationObserver to dynamically hook cursors to elements loaded later
-    const observer = new MutationObserver(addHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    document.body.addEventListener('mouseover', handleBodyMouseOver);
+    document.body.addEventListener('mouseout', handleBodyMouseOut);
 
     return () => {
       window.removeEventListener('mousemove', moveCursor);
@@ -61,7 +60,8 @@ export function LuxuryCursor() {
       document.removeEventListener('mouseenter', handleMouseEnter);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
-      observer.disconnect();
+      document.body.removeEventListener('mouseover', handleBodyMouseOver);
+      document.body.removeEventListener('mouseout', handleBodyMouseOut);
     };
   }, [cursorX, cursorY]);
 

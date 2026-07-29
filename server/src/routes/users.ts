@@ -54,7 +54,9 @@ router.get('/', auth, isAdmin, async (req: Request, res: Response, next: NextFun
     }
 
     if (search && typeof search === 'string') {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
+      // Escape SQL wildcards in user input
+      const safeSearch = search.replace(/[%_\\]/g, '\\$&');
+      query = query.or(`name.ilike.%${safeSearch}%,email.ilike.%${safeSearch}%,phone.ilike.%${safeSearch}%`);
     }
 
     const { data: users, error } = await query.order('created_at', { ascending: false });

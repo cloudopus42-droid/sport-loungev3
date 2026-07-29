@@ -215,15 +215,13 @@ router.post('/adjust', auth, isAdmin, async (req: Request, res: Response, next: 
 
 router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log('[Tobacco POST] body:', JSON.stringify(req.body));
     const parsed = createTobaccoSchema.safeParse(req.body);
     if (!parsed.success) {
-      console.error('[Tobacco POST] Validation error:', JSON.stringify(parsed.error.format()));
+      console.error('[Tobacco POST] Validation error:', parsed.error.format());
       res.status(400).json({ error: 'Ошибка валидации', details: parsed.error.format() });
       return;
     }
     const data = parsed.data;
-    console.log('[Tobacco POST] parsed data:', JSON.stringify(data));
     let imageUrl = data.image_url;
     if (req.file) {
       imageUrl = await uploadToSupabase(req.file, 'tobacco');
@@ -253,8 +251,6 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
       if (v !== undefined && v !== null) record[k] = v;
     }
 
-    console.log('[Tobacco POST] record to insert:', JSON.stringify(record));
-
     const { data: item, error } = await supabase
       .from('mixes')
       .insert(record)
@@ -262,7 +258,7 @@ router.post('/', auth, isAdmin, uploadSingle('image'), async (req: Request, res:
       .single();
 
     if (error) {
-      console.error('[Tobacco POST] Supabase insert error:', JSON.stringify(error));
+      console.error('[Tobacco POST] Supabase insert error:', error.message);
       // Fallback: insert only base columns that always exist
       const base = { name: data.name, description: data.description || '', status: data.status || 'active' };
       const { data: fb, error: fbErr } = await supabase

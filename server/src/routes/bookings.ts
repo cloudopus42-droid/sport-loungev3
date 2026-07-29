@@ -745,6 +745,7 @@ router.post('/bulk-delete', auth, isAdmin, async (req: Request, res: Response, n
 });
 
 // POST /api/bookings/bulk-status — Update status for multiple bookings
+const VALID_BOOKING_STATUSES = ['pending', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'];
 router.post('/bulk-status', auth, isAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { ids, status } = req.body;
@@ -752,10 +753,14 @@ router.post('/bulk-status', auth, isAdmin, async (req: Request, res: Response, n
       res.status(400).json({ error: 'ids array and status are required' });
       return;
     }
+    if (!VALID_BOOKING_STATUSES.includes(status)) {
+      res.status(400).json({ error: `Invalid status. Must be one of: ${VALID_BOOKING_STATUSES.join(', ')}` });
+      return;
+    }
 
     const { error } = await supabase
       .from('bookings')
-      .update({ status })
+      .update({ status, updated_at: new Date().toISOString() })
       .in('id', ids);
 
     if (error) {

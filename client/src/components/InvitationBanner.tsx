@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Calendar, PartyPopper } from 'lucide-react';
 import type { Invitation } from '@/types';
@@ -10,29 +10,34 @@ interface InvitationBannerProps {
 
 export function InvitationBanner({ invitation, onClose }: InvitationBannerProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const innerTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onClose, 400);
+      innerTimerRef.current = setTimeout(onClose, 400);
     }, 10000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (innerTimerRef.current) clearTimeout(innerTimerRef.current);
+    };
   }, [onClose]);
 
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(onClose, 400);
+    if (innerTimerRef.current) clearTimeout(innerTimerRef.current);
+    innerTimerRef.current = setTimeout(onClose, 400);
   };
 
-  const formattedDate = new Date(invitation.dateTime).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-  });
-  const formattedTime = new Date(invitation.dateTime).toLocaleTimeString('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const formattedDate = useMemo(() =>
+    new Date(invitation.dateTime).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }),
+    [invitation.dateTime]
+  );
+  const formattedTime = useMemo(() =>
+    new Date(invitation.dateTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+    [invitation.dateTime]
+  );
 
   return (
     <AnimatePresence>

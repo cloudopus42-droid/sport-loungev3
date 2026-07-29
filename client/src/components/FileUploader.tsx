@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
@@ -23,6 +23,13 @@ export function FileUploader({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const handleFile = useCallback(
     (file: File) => {
       setError(null);
@@ -32,17 +39,17 @@ export function FileUploader({
         return;
       }
 
-      if (preview && file.type.startsWith('image/')) {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      } else if (preview && file.type.startsWith('video/')) {
+      // Revoke old blob URL before creating new one
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+      if (preview && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
       }
 
       onFileSelect(file);
     },
-    [maxSize, onFileSelect, preview]
+    [maxSize, onFileSelect, preview, previewUrl]
   );
 
   const handleDrop = useCallback(

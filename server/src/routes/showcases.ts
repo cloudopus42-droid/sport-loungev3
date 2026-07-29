@@ -4,7 +4,7 @@ import { isAdmin } from '../middleware/isAdmin';
 import { supabase } from '../config/supabase';
 import multer from 'multer';
 import path from 'path';
-import { execSync } from 'child_process';
+import fs from 'fs';
 
 const router = Router();
 
@@ -33,7 +33,7 @@ async function getShowcaseSettings() {
 
 const showcaseUploadDir = path.resolve(__dirname, '../../uploads/showcases');
 try {
-  execSync(`mkdir -p "${showcaseUploadDir}"`, { stdio: 'ignore' });
+  fs.mkdirSync(showcaseUploadDir, { recursive: true });
 } catch {
   // bootstrap() handles this
 }
