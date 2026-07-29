@@ -58,9 +58,11 @@ export function FloorMapEditor() {
   const [editingInline, setEditingInline] = useState<string | null>(null);
   const [inlineName, setInlineName] = useState('');
 
-  // Lasso (rubber band) state
-  const [lasso, setLasso] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  // Lasso (rubber band) — refs for zero-render overlay
   const [isLassoing, setIsLassoing] = useState(false);
+  const lassoRef = useRef<HTMLDivElement>(null);
+  const lassoCoords = useRef({ x1: 0, y1: 0, x2: 0, y2: 0 });
+  const lassoRaf = useRef<number>(0);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -197,21 +199,27 @@ export function FloorMapEditor() {
       setSelectedIds(new Set([table.id]));
     }
 
+    let rafId = 0;
     const onMove = (ev: MouseEvent) => {
-      const dx = pxToFrac(ev.clientX - startX, rect.width);
-      const dy = pxToFrac(ev.clientY - startY, rect.height);
-      setTables(prev => prev.map(t => {
-        const orig = originals.find(o => o.id === t.id);
-        if (!orig) return t;
-        return {
-          ...t,
-          x: clamp(orig.x + dx, 0, 1 - t.width),
-          y: clamp(orig.y + dy, 0, 1 - t.height),
-        };
-      }));
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        const dx = pxToFrac(ev.clientX - startX, rect.width);
+        const dy = pxToFrac(ev.clientY - startY, rect.height);
+        setTables(prev => prev.map(t => {
+          const orig = originals.find(o => o.id === t.id);
+          if (!orig) return t;
+          return {
+            ...t,
+            x: clamp(orig.x + dx, 0, 1 - t.width),
+            y: clamp(orig.y + dy, 0, 1 - t.height),
+          };
+        }));
+      });
     };
 
     const onUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
@@ -236,25 +244,31 @@ export function FloorMapEditor() {
     const origW = table.width;
     const origH = table.height;
 
+    let rafId = 0;
     const onMove = (ev: MouseEvent) => {
-      const dx = pxToFrac(ev.clientX - startX, rect.width);
-      const dy = pxToFrac(ev.clientY - startY, rect.height);
-      let newX = origX, newY = origY, newW = origW, newH = origH;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        const dx = pxToFrac(ev.clientX - startX, rect.width);
+        const dy = pxToFrac(ev.clientY - startY, rect.height);
+        let newX = origX, newY = origY, newW = origW, newH = origH;
 
-      if (dir.includes('e')) newW = clamp(origW + dx, MIN_SIZE, 1 - origX);
-      else if (dir.includes('w')) {
-        newW = clamp(origW - dx, MIN_SIZE, origX + origW);
-        newX = clamp(origX + dx, 0, origX + origW - MIN_SIZE);
-      }
-      if (dir.includes('s')) newH = clamp(origH + dy, MIN_SIZE, 1 - origY);
-      else if (dir.includes('n')) {
-        newH = clamp(origH - dy, MIN_SIZE, origY + origH);
-        newY = clamp(origY + dy, 0, origY + origH - MIN_SIZE);
-      }
-      updateTable(table.id, { x: newX, y: newY, width: newW, height: newH });
+        if (dir.includes('e')) newW = clamp(origW + dx, MIN_SIZE, 1 - origX);
+        else if (dir.includes('w')) {
+          newW = clamp(origW - dx, MIN_SIZE, origX + origW);
+          newX = clamp(origX + dx, 0, origX + origW - MIN_SIZE);
+        }
+        if (dir.includes('s')) newH = clamp(origH + dy, MIN_SIZE, 1 - origY);
+        else if (dir.includes('n')) {
+          newH = clamp(origH - dy, MIN_SIZE, origY + origH);
+          newY = clamp(origY + dy, 0, origY + origH - MIN_SIZE);
+        }
+        updateTable(table.id, { x: newX, y: newY, width: newW, height: newH });
+      });
     };
 
     const onUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
@@ -263,44 +277,69 @@ export function FloorMapEditor() {
   }, [updateTable]);
 
   // ══════════════════════════════════════════════
-  //  LASSO (rubber band selection)
+  //  LASSO (rubber band selection) — zero-render during drag
   // ══════════════════════════════════════════════
   const startLasso = useCallback((e: React.MouseEvent) => {
     if (e.target !== canvasRef.current) return;
-    // Only start lasso with left click on empty canvas area
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const x1 = pxToFrac(e.clientX - rect.left, rect.width);
     const y1 = pxToFrac(e.clientY - rect.top, rect.height);
 
+    lassoCoords.current = { x1, y1, x2: x1, y2: y1 };
     setIsLassoing(true);
-    setLasso({ x1, y1, x2: x1, y2: y1 });
     setSelectedIds(new Set());
 
+    const overlay = lassoRef.current;
+    if (overlay) {
+      overlay.style.display = 'block';
+      overlay.style.left = `${x1 * 100}%`;
+      overlay.style.top = `${y1 * 100}%`;
+      overlay.style.width = '0%';
+      overlay.style.height = '0%';
+    }
+
+    let rafId = 0;
     const onMove = (ev: MouseEvent) => {
       const x2 = pxToFrac(ev.clientX - rect.left, rect.width);
       const y2 = pxToFrac(ev.clientY - rect.top, rect.height);
-      setLasso({ x1, y1, x2, y2 });
+      lassoCoords.current = { x1, y1, x2, y2 };
 
-      // Find blocks inside lasso
-      const lx = Math.min(x1, x2);
-      const ly = Math.min(y1, y2);
-      const lw = Math.abs(x2 - x1);
-      const lh = Math.abs(y2 - y1);
+      // Direct DOM update for lasso overlay — zero React renders
+      if (overlay) {
+        const lx = Math.min(x1, x2) * 100;
+        const ly = Math.min(y1, y2) * 100;
+        const lw = Math.abs(x2 - x1) * 100;
+        const lh = Math.abs(y2 - y1) * 100;
+        overlay.style.left = `${lx}%`;
+        overlay.style.top = `${ly}%`;
+        overlay.style.width = `${lw}%`;
+        overlay.style.height = `${lh}%`;
+      }
 
-      const hit = new Set<string>();
-      tables.forEach(t => {
-        if (t.x < lx + lw && t.x + t.width > lx && t.y < ly + lh && t.y + t.height > ly) {
-          hit.add(t.id);
-        }
+      // Throttle selection updates with rAF
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        const lx = Math.min(x1, x2);
+        const ly = Math.min(y1, y2);
+        const lw = Math.abs(x2 - x1);
+        const lh = Math.abs(y2 - y1);
+        const hit = new Set<string>();
+        tables.forEach(t => {
+          if (t.x < lx + lw && t.x + t.width > lx && t.y < ly + lh && t.y + t.height > ly) {
+            hit.add(t.id);
+          }
+        });
+        setSelectedIds(hit);
       });
-      setSelectedIds(hit);
     };
 
     const onUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
       setIsLassoing(false);
-      setLasso(null);
+      if (overlay) overlay.style.display = 'none';
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
@@ -561,18 +600,12 @@ export function FloorMapEditor() {
           );
         })}
 
-        {/* Lasso rectangle */}
-        {lasso && (
-          <div
-            className="absolute border border-purple-400/60 bg-purple-400/10 pointer-events-none z-50"
-            style={{
-              left: `${Math.min(lasso.x1, lasso.x2) * 100}%`,
-              top: `${Math.min(lasso.y1, lasso.y2) * 100}%`,
-              width: `${Math.abs(lasso.x2 - lasso.x1) * 100}%`,
-              height: `${Math.abs(lasso.y2 - lasso.y1) * 100}%`,
-            }}
-          />
-        )}
+        {/* Lasso rectangle — always in DOM, hidden by default, updated via ref */}
+        <div
+          ref={lassoRef}
+          className="absolute border border-purple-400/60 bg-purple-400/10 pointer-events-none z-50"
+          style={{ display: 'none' }}
+        />
       </div>
 
       {/* ═══════════ SETTINGS MODAL ═══════════ */}
